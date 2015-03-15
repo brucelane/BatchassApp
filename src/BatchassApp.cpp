@@ -309,8 +309,19 @@ void BatchassApp::drawMain()
 		}
 		if (ImGui::CollapsingHeader("Effects", NULL, true, true))
 		{
-			if (ImGui::Button("Chromatic")) { mParameterBag->controlValues[15] = !mParameterBag->controlValues[15]; }
-
+			if (ImGui::Button("chromatic")) { mParameterBag->controlValues[15] = !mParameterBag->controlValues[15]; }
+			ImGui::SameLine();
+			if (ImGui::Button("origin\nupper left")) { mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft; }
+			ImGui::SameLine();
+			if (ImGui::Button("repeat")) { mParameterBag->iRepeat = !mParameterBag->iRepeat; }
+			ImGui::SameLine();
+			if (ImGui::Button("45 glitch")) { mParameterBag->controlValues[45] = !mParameterBag->controlValues[45]; }
+			ImGui::SameLine();
+			if (ImGui::Button("46 toggle")) { mParameterBag->controlValues[46] = !mParameterBag->controlValues[46]; }
+			ImGui::SameLine();
+			if (ImGui::Button("47 vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
+			ImGui::SameLine();
+			if (ImGui::Button("48 invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
 		}
 		if (ImGui::CollapsingHeader("Animation", NULL, true, true))
 		{
@@ -320,6 +331,12 @@ void BatchassApp::drawMain()
 
 			// ratio
 			ctrl = 11;
+			if (ImGui::Button("a")) { mBatchass->lockRatio(); }
+			ImGui::SameLine();
+			if (ImGui::Button("t")) { mBatchass->tempoRatio(); }
+			ImGui::SameLine();
+			if (ImGui::Button("x")) { mBatchass->resetRatio(); }
+			ImGui::SameLine();
 
 			static float ratio[3] = { mParameterBag->controlValues[ctrl], mBatchass->minRatio, mBatchass->maxRatio };
 			ImGui::SliderFloat3("ratio/min/max", ratio, mBatchass->minRatio, mBatchass->maxRatio);
@@ -329,55 +346,80 @@ void BatchassApp::drawMain()
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << ratio[0] << "}";
 				mParameterBag->controlValues[ctrl] = ratio[0];
 			}
-			ImGui::SameLine();
-			if (ImGui::Button("a")) { mBatchass->lockRatio(); }
-			ImGui::SameLine();
-			if (ImGui::Button("t")) { mBatchass->tempoRatio(); }
-			ImGui::SameLine();
-			if (ImGui::Button("x")) { mBatchass->resetRatio(); }
-			ImGui::SameLine();
-			/*
-			sliderRatio = mParams->addToggleSlider("ratio", &mParameterBag->controlValues[11], "a", std::bind(&SlidersPanel::lockRatio, this, std::placeholders::_1), "{ \"clear\":false, \"width\":" + toString(mParameterBag->mPreviewWidth - 39) + ", \"min\":" + toString(minRatio) + ", \"max\":" + toString(maxRatio) + " }", "{ \"width\":9, \"stateless\":false, \"group\":\"ratio\", \"exclusive\":true, \"clear\":false }");
-
-			mParams->addButton("t", std::bind(&SlidersPanel::tempoRatio, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"ratio\", \"exclusive\":true, \"clear\":false }");
-			mParams->addButton("x", std::bind(&SlidersPanel::resetRatio, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"ratio\", \"exclusive\":true, \"pressed\":true, \"clear\":false }");
-			mParams->addSlider("m", &minRatio, "{ \"min\":" + toString(minRatio) + ", \"max\":" + toString(maxRatio) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true, \"clear\":false }");
-			mParams->addSlider("M", &maxRatio, "{ \"min\":" + toString(minRatio) + ", \"max\":" + toString(maxRatio) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true }");
-
 			// exposure
-			sliderExposure = mParams->addToggleSlider("exposure", &mParameterBag->controlValues[14], "a", std::bind(&SlidersPanel::lockExposure, this, std::placeholders::_1), "{ \"clear\":false, \"width\":" + toString(mParameterBag->mPreviewWidth - 39) + ", \"min\":" + toString(minExposure) + ", \"max\":" + toString(maxExposure) + " }", "{ \"width\":9, \"stateless\":false, \"group\":\"exposure\", \"exclusive\":true, \"clear\":false }");
-			mParams->addButton("t", std::bind(&SlidersPanel::tempoExposure, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"exposure\", \"exclusive\":true, \"clear\":false }");
-			mParams->addButton("x", std::bind(&SlidersPanel::resetExposure, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"exposure\", \"exclusive\":true, \"pressed\":true, \"clear\":false }");
-			mParams->addSlider("m", &minExposure, "{ \"min\":" + toString(minExposure) + ", \"max\":" + toString(maxExposure) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true, \"clear\":false }");
-			mParams->addSlider("M", &maxExposure, "{ \"min\":" + toString(minExposure) + ", \"max\":" + toString(maxExposure) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true }");
+			ctrl = 14;
+			if (ImGui::Button("a")) { mBatchass->lockExposure(); }
+			ImGui::SameLine();
+			if (ImGui::Button("t")) { mBatchass->tempoExposure(); }
+			ImGui::SameLine();
+			if (ImGui::Button("x")) { mBatchass->resetExposure(); }
+			ImGui::SameLine();
+			static float exposure = mParameterBag->controlValues[ctrl];
+			ImGui::SliderFloat("exposure", &exposure, mBatchass->minExposure, mBatchass->maxExposure);
+
+			if (mParameterBag->controlValues[ctrl] != exposure)
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << exposure << "}";
+				mParameterBag->controlValues[ctrl] = exposure;
+			}
 			// zoom
-			//sliderZoom = mParams->addSlider("zoom", &mParameterBag->iZoom, "{ \"min\":5.0, \"max\":0.1 }");
-			sliderZoom = mParams->addToggleSlider("zoom", &mParameterBag->controlValues[13], "a", std::bind(&SlidersPanel::lockZoom, this, std::placeholders::_1), "{ \"clear\":false, \"width\":" + toString(mParameterBag->mPreviewWidth - 39) + ", \"min\":" + toString(minZoom) + ", \"max\":" + toString(maxZoom) + " }", "{ \"width\":9, \"stateless\":false, \"group\":\"zoom\", \"exclusive\":true, \"clear\":false }");
-			mParams->addButton("t", std::bind(&SlidersPanel::tempoZoom, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"zoom\", \"exclusive\":true, \"clear\":false }");
-			mParams->addButton("x", std::bind(&SlidersPanel::resetZoom, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"zoom\", \"exclusive\":true, \"pressed\":true, \"clear\":false }");
-			mParams->addSlider("m", &minZoom, "{ \"min\":" + toString(minZoom) + ", \"max\":" + toString(maxZoom) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true, \"clear\":false }");
-			mParams->addSlider("M", &maxZoom, "{ \"min\":" + toString(minZoom) + ", \"max\":" + toString(maxZoom) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true }");
+			ctrl = 13;
+			if (ImGui::Button("a")) { mBatchass->lockZoom(); }
+			ImGui::SameLine();
+			if (ImGui::Button("t")) { mBatchass->tempoZoom(); }
+			ImGui::SameLine();
+			if (ImGui::Button("x")) { mBatchass->resetZoom(); }
+			ImGui::SameLine();
+			static float zoom = mParameterBag->controlValues[ctrl];
+			ImGui::SliderFloat("zoom", &zoom, mBatchass->minZoom, mBatchass->maxZoom);
 
-			sliderSpeed = mParams->addSlider("speed", &mParameterBag->controlValues[12], "{ \"min\":1.0, \"max\":255.0, \"nameColor\":\"0xFFFFFFFF\" }");
-
+			if (mParameterBag->controlValues[ctrl] != zoom)
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << zoom << "}";
+				mParameterBag->controlValues[ctrl] = zoom;
+			}
 			// z position
-			sliderZPos = mParams->addToggleSlider("z Position", &mParameterBag->mZPosition, "a", std::bind(&SlidersPanel::lockZPos, this, std::placeholders::_1), "{ \"width\":" + toString(mParameterBag->mPreviewWidth - 39) + ", \"clear\":false, \"min\":" + toString(minZPos) + ", \"max\":" + toString(maxZPos) + " }", "{ \"width\":9, \"stateless\":false, \"group\":\"zpos\", \"exclusive\":true, \"clear\":false }");
-			mParams->addButton("t", std::bind(&SlidersPanel::tempoZPos, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"zpos\", \"exclusive\":true, \"clear\":false }");
-			mParams->addButton("x", std::bind(&SlidersPanel::resetZPos, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"zpos\", \"exclusive\":true, \"pressed\":true, \"clear\":false }");
-			mParams->addSlider("m", &minZPos, "{ \"min\":" + toString(minZPos) + ", \"max\":" + toString(maxZPos) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true, \"clear\":false }");
-			mParams->addSlider("M", &maxZPos, "{ \"min\":" + toString(minZPos) + ", \"max\":" + toString(maxZPos) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true }");
-			// rotation speed
-			sliderRotationSpeed = mParams->addToggleSlider("rotation", &mParameterBag->controlValues[19], "a", std::bind(&SlidersPanel::lockRotationSpeed, this, std::placeholders::_1), "{ \"width\":" + toString(mParameterBag->mPreviewWidth - 39) + ", \"clear\":false, \"min\":" + toString(minRotationSpeed) + ", \"max\":" + toString(maxRotationSpeed) + " }", "{ \"width\":9, \"stateless\":false, \"group\":\"rotationspeed\", \"exclusive\":true, \"clear\":false }");
-			mParams->addButton("t", std::bind(&SlidersPanel::tempoRotationSpeed, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"rotationspeed\", \"exclusive\":true, \"clear\":false }");
-			mParams->addButton("x", std::bind(&SlidersPanel::resetRotationSpeed, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"rotationspeed\", \"exclusive\":true, \"pressed\":true, \"clear\":false }");
-			mParams->addSlider("m", &minRotationSpeed, "{ \"min\":" + toString(minRotationSpeed) + ", \"max\":" + toString(maxRotationSpeed) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true, \"clear\":false }");
-			mParams->addSlider("M", &maxRotationSpeed, "{ \"min\":" + toString(minRotationSpeed) + ", \"max\":" + toString(maxRotationSpeed) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true }");
+			ctrl = 9;
+			if (ImGui::Button("a")) { mBatchass->lockZPos(); }
+			ImGui::SameLine();
+			if (ImGui::Button("t")) { mBatchass->tempoZPos(); }
+			ImGui::SameLine();
+			if (ImGui::Button("x")) { mBatchass->resetZPos(); }
+			ImGui::SameLine();
+			static float zPosition = mParameterBag->controlValues[ctrl];
+			ImGui::SliderFloat("zPosition", &zPosition, mBatchass->minZPos, mBatchass->maxZPos);
 
+			if (mParameterBag->controlValues[ctrl] != zPosition)
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << zPosition << "}";
+				mParameterBag->controlValues[ctrl] = zPosition; 
+			}
+
+			// rotation speed
+			ctrl = 19;
+			if (ImGui::Button("a")) { mBatchass->lockRotationSpeed(); }
+			ImGui::SameLine();
+			if (ImGui::Button("t")) { mBatchass->tempoRotationSpeed(); }
+			ImGui::SameLine();
+			if (ImGui::Button("x")) { mBatchass->resetRotationSpeed(); }
+			ImGui::SameLine();
+			static float rotationSpeed = mParameterBag->controlValues[ctrl];
+			ImGui::SliderFloat("rotationSpeed", &rotationSpeed, mBatchass->minRotationSpeed, mBatchass->maxRotationSpeed);
+
+			if (mParameterBag->controlValues[ctrl] != rotationSpeed)
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << rotationSpeed << "}";
+				mParameterBag->controlValues[ctrl] = rotationSpeed;
+			}
+			/*			
 			//sliderBlendmode = mParams->addSlider("blendmode", &mParameterBag->controlValues[15], "{ \"min\":0.0, \"max\":27.0 }");
 			sliderSteps = mParams->addSlider("steps", &mParameterBag->controlValues[16], "{ \"min\":1.0, \"max\":128.0, \"nameColor\":\"0xFFFFFFFF\" }");
 			sliderPixelate = mParams->addSlider("pixelate", &mParameterBag->controlValues[18], "{ \"min\":0.01, \"max\":1.0 }");
 			sliderPreviewCrossfade = mParams->addSlider("PreviewXFade", &mParameterBag->iPreviewCrossfade, "{ \"min\":0.0, \"max\":1.0 }");
-			sliderCrossfade = mParams->addSlider("xFade", &mParameterBag->iCrossfade, "{ \"min\":0.0, \"max\":1.0 }");*/
+			sliderCrossfade = mParams->addSlider("xFade", &mParameterBag->iCrossfade, "{ \"min\":0.0, \"max\":1.0 }");
+			
+			sliderSpeed = mParams->addSlider("speed", &mParameterBag->controlValues[12], "{ \"min\":1.0, \"max\":255.0, \"nameColor\":\"0xFFFFFFFF\" }");
+			*/
 			aParams << "]}";
 			string strAParams = aParams.str();
 			if (strAParams.length() > 60)
@@ -385,7 +427,7 @@ void BatchassApp::drawMain()
 				mWebSockets->write(strAParams);
 			}
 		}
-		if (ImGui::CollapsingHeader("Colors", "13", true, true))
+		if (ImGui::CollapsingHeader("Colors", NULL, true, true))
 		{
 			stringstream sParams;
 			sParams << "{\"colors\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp

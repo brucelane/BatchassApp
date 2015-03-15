@@ -54,7 +54,7 @@ void PointSphere::keyUp(KeyEvent event)
 }
 void PointSphere::update()
 {
-	mSphereAngle += mParameterBag->mZPosition;// controlValues[19];
+	mSphereAngle += mParameterBag->controlValues[9];// controlValues[19];
 	mSphereQuat.set(mSphereAxis, mSphereAngle);
 	//aggressivity += 0.01;
 }
@@ -88,7 +88,7 @@ void PointSphere::draw()
 			Matrix44f transform;
 			// turn according to position on Earth
 			transform.rotate(Vec3f(0.0f, toRadians((float)longitude + (mParameterBag->controlValues[19])), 0.0f));
-			transform.rotate(Vec3f(toRadians((float)-latitude+(mParameterBag->mZPosition*20.0)), 0.0f, 0.0f));
+			transform.rotate(Vec3f(toRadians((float)-latitude + (mParameterBag->controlValues[9] * 20.0)), 0.0f, 0.0f));
 			// place on surface of Earth
 			transform.translate(Vec3f(0.0f, 0.0f, radius));
 
