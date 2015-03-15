@@ -1,24 +1,33 @@
 #include "BatchassApp.h"
 
-void BatchassApp::prepareSettings(Settings* settings){
-	settings->setFrameRate(12.0f);
+void BatchassApp::prepareSettings(Settings* settings)
+{
 	// parameters
 	mParameterBag = ParameterBag::create();
 	// utils
 	mBatchass = Batchass::create(mParameterBag);
+	mBatchass->log("start");
 	// if AutoLayout, try to position the window on the 2nd screen
 	if (mParameterBag->mAutoLayout)
 	{
 		mBatchass->getWindowsResolution();
 	}
 
-	settings->setWindowSize(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
-	settings->setWindowPos(Vec2i(mParameterBag->mRenderX, mParameterBag->mRenderY));
+	settings->setWindowSize(mParameterBag->mMainWindowWidth, mParameterBag->mMainWindowHeight);
+	// Setting an unrealistically high frame rate effectively
+	// disables frame rate limiting
+	//settings->setFrameRate(10000.0f);
+	settings->setFrameRate(60.0f);
+	settings->setResizable(true);
+	settings->setWindowPos(Vec2i(mParameterBag->mMainWindowX, mParameterBag->mMainWindowY));
 }
 
 
 void BatchassApp::setup()
 {
+	mBatchass->log("setup");
+	mIsShutDown = false;
+	removeUI = false;
 	getWindow()->setTitle("Batchass");
 	ci::app::App::get()->getSignalShutdown().connect([&]() {
 		BatchassApp::shutdown();
@@ -30,8 +39,26 @@ void BatchassApp::setup()
 
 	// instanciate the WebSockets class
 	mWebSockets = WebSockets::create(mParameterBag);
-	mBatchass->setup();
 
+	// setup sahders and textures
+	mBatchass->setup();
+	// setup the main window and associated draw function
+	mMainWindow = getWindow();
+	mMainWindow->setTitle("Reymenta ShadaMixa");
+	mMainWindow->connectDraw(&BatchassApp::drawMain, this);
+	mMainWindow->connectClose(&BatchassApp::shutdown, this);
+	// instanciate the audio class
+	mAudio = AudioWrapper::create(mParameterBag, mBatchass->getTexturesRef());
+	// instanciate the warp wrapper class
+	mWarpings = WarpWrapper::create(mParameterBag, mBatchass->getTexturesRef(), mBatchass->getShadersRef());
+	// instanciate the Meshes class
+	mMeshes = Meshes::create(mParameterBag, mBatchass->getTexturesRef());
+	// instanciate the PointSphere class
+	mSphere = PointSphere::create(mParameterBag, mBatchass->getTexturesRef(), mBatchass->getShadersRef());
+	// instanciate the spout class
+	mSpout = SpoutWrapper::create(mParameterBag, mBatchass->getTexturesRef());
+
+	mTimer = 0.0f;
 	newLogMsg = false;
 
 	// set ui window and io events callbacks
@@ -127,28 +154,39 @@ void BatchassApp::midiListener(midi::Message msg){
 	mOSC->sendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
 	mWebSockets->write("{\"params\" :[{" + controlType);
 }
-/*void BatchassApp::shutdown()
+void BatchassApp::createRenderWindow()
 {
-	// save warp settings
-	fs::path settings = getAssetPath("") / "warps.xml";
-	Warp::writeSettings( mWarps, writeFile( settings ) );
-}*/
+	deleteRenderWindows();
+	mBatchass->getWindowsResolution();
 
-void BatchassApp::update()
-{
-	mWebSockets->update();
-	mOSC->update();
-	getWindow()->setTitle("(" + toString(floor(getAverageFps())) + " fps) Batchass");
-	/*if (mSeconds != (int)getElapsedSeconds())
-	{
-	mSeconds = (int)getElapsedSeconds();
-	stringstream s;
-	s << mSeconds;
-	mWebSockets->write(s.str());
-	}*/
+	mParameterBag->iResolution.x = mParameterBag->mRenderWidth;
+	mParameterBag->iResolution.y = mParameterBag->mRenderHeight;
+	mParameterBag->mRenderResolution = Vec2i(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
+
+	mBatchass->log("createRenderWindow, resolution:" + toString(mParameterBag->iResolution.x) + "x" + toString(mParameterBag->iResolution.y));
+
+	string windowName = "render";
+
+	WindowRef	mRenderWindow;
+	mRenderWindow = createWindow(Window::Format().size(mParameterBag->iResolution.x, mParameterBag->iResolution.y));
+
+	// create instance of the window and store in vector
+	WindowMngr rWin = WindowMngr(windowName, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mRenderWindow);
+	allRenderWindows.push_back(rWin);
+
+	mRenderWindow->setBorderless();
+	mParameterBag->mRenderResoXY = Vec2f(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
+	mRenderWindow->connectDraw(&BatchassApp::drawRender, this);
+	mParameterBag->mRenderPosXY = Vec2i(mParameterBag->mRenderX, mParameterBag->mRenderY);//20141214 was 0
+	mRenderWindow->setPos(mParameterBag->mRenderX, mParameterBag->mRenderY);
+
 }
-
-void BatchassApp::draw()
+void BatchassApp::deleteRenderWindows()
+{
+	for (auto wRef : allRenderWindows) DestroyWindow((HWND)wRef.mWRef->getNative());
+	allRenderWindows.clear();
+}
+void BatchassApp::drawMain()
 {
 	gl::clear(ColorAf(0.0f, 0.0f, 0.0f, 0.0f));
 
@@ -160,7 +198,6 @@ void BatchassApp::draw()
 
 	static bool showTest = false, showTheme = false, showAudio = true, showShaders = true, showOSC = true, showFps = true, showWS = true;
 	ImGui::NewFrame();
-
 	// start a new window
 	ImGui::Begin("MIDI2OSC", NULL, ImVec2(500, 500));
 	{
@@ -479,59 +516,456 @@ void BatchassApp::draw()
 				values_offset = (values_offset + 1) % values.size();
 			}
 
-			ImGui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, toString(floor(getAverageFps())).c_str(), 0.0f, 300.0f, ImVec2(0, 30));
+			ImGui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
 		}
 		ImGui::End();
 	}
 
 	ImGui::Render();
+
+	mSpout->draw();
+	// draw the fbos
+	mBatchass->getTexturesRef()->draw();
+	//if (mParameterBag->mUIRefresh < 1.0) mParameterBag->mUIRefresh = 1.0;
+	//if (getElapsedFrames() % (int)(mParameterBag->mUIRefresh + 0.1) == 0)
+	if (getElapsedFrames() % mParameterBag->mUIRefresh == 0)
+	{
+		//gl::clear();
+		//gl::setViewport(getWindowBounds());
+		//20140703 gl::setMatricesWindow(getWindowSize());
+		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);// mParameterBag->mOriginUpperLeft);
+
+		gl::color(ColorAf(1.0f, 1.0f, 1.0f, 1.0f));
+		if (mParameterBag->mPreviewEnabled)
+		{
+			// select drawing mode 
+			switch (mParameterBag->mMode)
+			{
+				/*case MODE_NORMAL:
+				gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, mParameterBag->mOriginUpperLeft);
+				gl::draw(mTextures->getFboTexture(mParameterBag->mCurrentPreviewFboIndex));
+				break;
+				case MODE_MIX:
+				gl::draw(mTextures->getFboTexture(mParameterBag->mMixFboIndex));
+				break;*/
+			case MODE_AUDIO:
+				mAudio->draw();
+				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mAudioFboIndex));
+				break;
+			case MODE_WARP:
+				mWarpings->draw();
+				break;
+			case MODE_SPHERE:
+				mSphere->draw();
+				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mSphereFboIndex));
+				break;
+			case MODE_MESH:
+				if (mMeshes->isSetup())
+				{
+					mMeshes->draw();
+					gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMeshFboIndex));
+				}
+				break;
+			case MODE_KINECT:
+				for (int i = 0; i < 20; i++)
+				{
+					gl::drawLine(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), Vec2f(mOSC->skeleton[i].z, mOSC->skeleton[i].w));
+					gl::drawSolidCircle(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), 5.0f, 16);
+				}
+				break;
+			default:
+				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
+				break;
+			}
+		}
+	}
+	else
+	{
+		if (mParameterBag->mMode == MODE_MESH){ if (mMeshes->isSetup()) mMeshes->draw(); }
+	}
+	//if (!removeUI) mUI->draw();
+	//mUserInterface->draw();
+
+	gl::disableAlphaBlending();
+}
+void BatchassApp::drawRender()
+{
+	// clear
+	gl::clear();
+	// shaders			
+	gl::setViewport(getWindowBounds());
+	gl::enableAlphaBlending();
+	//20140703 gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);//NEW 20140620, needed?
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);// mParameterBag->mOriginUpperLeft);
+	switch (mParameterBag->mMode)
+	{
+	case MODE_AUDIO:
+		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mAudioFboIndex));
+		break;
+	case MODE_WARP:
+		mWarpings->draw();
+		break;
+	case MODE_SPHERE:
+		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mSphereFboIndex));
+		break;
+	case MODE_MESH:
+		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMeshFboIndex));
+		break;
+	default:
+		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
+		break;
+	}
+
+	gl::disableAlphaBlending();
+}
+void BatchassApp::save()
+{
+	string filename = mBatchass->getShadersRef()->getMiddleFragFileName() + ".png";
+	//string fpsFilename = ci::toString((int)getAverageFps()) + "-fps-" + mShaders->getMiddleFragFileName() + ".json";
+	try
+	{
+		/*if (mParameterBag->iDebug)
+		{
+		JsonTree node = JsonTree();
+		node.pushBack(JsonTree("RenderResolution width", mParameterBag->mRenderResolution.x));
+		node.pushBack(JsonTree("RenderResolution height", mParameterBag->mRenderResolution.y));
+		fs::path localFile = getAssetPath("") / "fps" / fpsFilename;
+		node.write(localFile);
+		log->logTimedString("saved:" + fpsFilename);
+		Area area = Area(0, mParameterBag->mMainWindowHeight, mParameterBag->mPreviewWidth, mParameterBag->mMainWindowHeight - mParameterBag->mPreviewHeight);
+		writeImage(getAssetPath("") / "thumbs" / filename, copyWindowSurface(area));*/
+		writeImage(getAssetPath("") / "thumbs" / filename, mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mCurrentPreviewFboIndex));
+		mBatchass->log("saved:" + filename);
+		//}
+	}
+	catch (const std::exception &e)
+	{
+		mBatchass->log("unable to save:" + filename + string(e.what()));
+	}
+}
+void BatchassApp::keyUp(KeyEvent event)
+{
+	if (mParameterBag->mMode == MODE_WARP) mWarpings->keyUp(event);
+}
+
+void BatchassApp::fileDrop(FileDropEvent event)
+{
+	bool loaded = false;
+	string ext = "";
+	// use the last of the dropped files
+	boost::filesystem::path mPath = event.getFile(event.getNumFiles() - 1);
+	string mFile = mPath.string();
+	if (mFile.find_last_of(".") != std::string::npos) ext = mFile.substr(mFile.find_last_of(".") + 1);
+	//mParameterBag->currentSelectedIndex = (int)(event.getX() / 80);//76+margin mParameterBag->mPreviewWidth);
+	mBatchass->log(mFile + " dropped, currentSelectedIndex:" + toString(mParameterBag->currentSelectedIndex) + " x: " + toString(event.getX()) + " mPreviewWidth: " + toString(mParameterBag->mPreviewWidth));
+
+	if (ext == "wav" || ext == "mp3")
+	{
+		//do not try to load by other ways
+		loaded = true;
+		mAudio->loadWaveFile(mFile);
+
+	}
+	if (ext == "png" || ext == "jpg")
+	{
+		//do not try to load by other ways
+		loaded = true;
+		//mTextures->loadImageFile(mParameterBag->currentSelectedIndex, mFile);
+		mBatchass->getTexturesRef()->loadImageFile(1, mFile);
+	}
+	/*if (!loaded && ext == "frag")
+	{
+	//do not try to load by other ways
+	loaded = true;
+	//mShaders->incrementPreviewIndex();
+
+	if (mShaders->loadPixelFrag(mFile))
+	{
+	mParameterBag->controlValues[13] = 1.0f;
+	timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ save(); });
+	}
+	if (mCodeEditor) mCodeEditor->fileDrop(event);
+	}*/
+	if (!loaded && ext == "glsl")
+	{
+		//do not try to load by other ways
+		loaded = true;
+		//mShaders->incrementPreviewIndex();
+		//mUserInterface->mLibraryPanel->addShader(mFile);
+		if (mBatchass->getShadersRef()->loadPixelFragmentShader(mFile))
+		{
+			mParameterBag->controlValues[13] = 1.0f;
+			// send content via OSC
+			fs::path fr = mFile;
+			string name = "unknown";
+			if (mFile.find_last_of("\\") != std::string::npos) name = mFile.substr(mFile.find_last_of("\\") + 1);
+			if (fs::exists(fr))
+			{
+				std::string fs = loadString(loadFile(mFile));
+				mOSC->sendOSCStringMessage("/fs", 0, fs, name);
+			}
+			// save thumb
+			timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ save(); });
+		}
+	}
+	if (!loaded && ext == "fs")
+	{
+		//do not try to load by other ways
+		loaded = true;
+		//mShaders->incrementPreviewIndex();
+		mBatchass->getShadersRef()->loadFragmentShader(mPath);
+		timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ save(); });
+	}
+	if (!loaded && ext == "patchjson")
+	{
+		// try loading patch
+		//do not try to load by other ways
+		loaded = true;
+		try
+		{
+			JsonTree patchjson;
+			try
+			{
+				patchjson = JsonTree(loadFile(mFile));
+				mParameterBag->mCurrentFilePath = mFile;
+			}
+			catch (cinder::JsonTree::Exception exception)
+			{
+				mBatchass->log("patchjsonparser exception " + mFile + ": " + exception.what());
+
+			}
+			//Assets
+			int i = 1; // 0 is audio
+			JsonTree jsons = patchjson.getChild("assets");
+			for (JsonTree::ConstIter jsonElement = jsons.begin(); jsonElement != jsons.end(); ++jsonElement)
+			{
+				string jsonFileName = jsonElement->getChild("filename").getValue<string>();
+				int channel = jsonElement->getChild("channel").getValue<int>();
+				if (channel < mBatchass->getTexturesRef()->getTextureCount())
+				{
+					mBatchass->log("asset filename: " + jsonFileName);
+					mBatchass->getTexturesRef()->setTexture(channel, jsonFileName);
+				}
+				i++;
+			}
+
+		}
+		catch (...)
+		{
+			mBatchass->log("patchjson parsing error: " + mFile);
+		}
+	}
+	if (!loaded && ext == "txt")
+	{
+		//do not try to load by other ways
+		loaded = true;
+		// try loading shader parts
+		if (mBatchass->getShadersRef()->loadTextFile(mFile))
+		{
+
+		}
+	}
+
+	if (!loaded && ext == "")
+	{
+		//do not try to load by other ways
+		loaded = true;
+		// try loading image sequence from dir
+		//mTextures->createFromDir(mFile + "/");
+
+	}
+	mParameterBag->isUIDirty = true;
+}
+
+void BatchassApp::shutdown()
+{
+	if (!mIsShutDown)
+	{
+		mIsShutDown = true;
+		mBatchass->log("shutdown");
+		deleteRenderWindows();
+		// save warp settings
+		mWarpings->save();
+		// save params
+		mParameterBag->save();
+		//mUI->shutdown();
+		if (mMeshes->isSetup()) mMeshes->shutdown();
+		// not implemented mShaders->shutdownLoader();
+		// close spout
+		mSpout->shutdown();
+		quit();
+	}
+}
+
+void BatchassApp::update()
+{
+	mWebSockets->update();
+	mOSC->update();
+	mParameterBag->iFps = getAverageFps();
+	mParameterBag->sFps = toString(floor(getAverageFps()));
+	getWindow()->setTitle("(" + mParameterBag->sFps + " fps) Batchass");
+	if (mParameterBag->iGreyScale)
+	{
+		mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3];
+		mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7];
+	}
+
+	mParameterBag->iChannelTime[0] = getElapsedSeconds();
+	mParameterBag->iChannelTime[1] = getElapsedSeconds() - 1;
+	mParameterBag->iChannelTime[3] = getElapsedSeconds() - 2;
+	mParameterBag->iChannelTime[4] = getElapsedSeconds() - 3;
+	//
+	if (mParameterBag->mUseTimeWithTempo)
+	{
+		mParameterBag->iGlobalTime = mParameterBag->iTempoTime*mParameterBag->iTimeFactor;
+	}
+	else
+	{
+		mParameterBag->iGlobalTime = getElapsedSeconds();
+	}
+
+	switch (mParameterBag->mMode)
+	{
+	case MODE_SPHERE:
+		mSphere->update();
+		break;
+	case MODE_MESH:
+		if (mMeshes->isSetup()) mMeshes->update();
+		break;
+	default:
+		break;
+	}
+	mSpout->update();
+	mBatchass->update();
+	mWebSockets->update();
+	mOSC->update();
+	mAudio->update();
+	if (mParameterBag->mWindowToCreate > 0)
+	{
+		// try to create the window only once
+		int windowToCreate = mParameterBag->mWindowToCreate;
+		mParameterBag->mWindowToCreate = NONE;
+		switch (windowToCreate)
+		{
+		case RENDER_1:
+			createRenderWindow();
+			break;
+		case RENDER_DELETE:
+			deleteRenderWindows();
+			break;
+			/*case MIDI_IN:
+				setupMidi();
+				break;*/
+		}
+	}
+	/*if (mSeconds != (int)getElapsedSeconds())
+	{
+	mSeconds = (int)getElapsedSeconds();
+	stringstream s;
+	s << mSeconds;
+	mWebSockets->write(s.str());
+	}*/
 }
 
 void BatchassApp::resize()
 {
+	mWarpings->resize();
+}
+
+void BatchassApp::mouseMove(MouseEvent event)
+{
+	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseMove(event);
 
 }
 
-void BatchassApp::mouseMove( MouseEvent event )
+void BatchassApp::mouseDown(MouseEvent event)
 {
+	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseDown(event);
+	if (mParameterBag->mMode == MODE_MESH) mMeshes->mouseDown(event);
 
 }
 
-void BatchassApp::mouseDown( MouseEvent event )
+void BatchassApp::mouseDrag(MouseEvent event)
 {
+	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseDrag(event);
+	if (mParameterBag->mMode == MODE_MESH) mMeshes->mouseDrag(event);
 
 }
 
-void BatchassApp::mouseDrag( MouseEvent event )
+void BatchassApp::mouseUp(MouseEvent event)
 {
+	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseUp(event);
 
 }
 
-void BatchassApp::mouseUp( MouseEvent event )
+void BatchassApp::keyDown(KeyEvent event)
 {
-
-}
-
-void BatchassApp::keyDown( KeyEvent event )
-{
-	switch (event.getCode())
+	if (mParameterBag->mMode == MODE_WARP)
+	{
+		mWarpings->keyDown(event);
+	}
+	else
 	{
 
-	case ci::app::KeyEvent::KEY_ESCAPE:
-		mParameterBag->save();
-		//mBatchass->shutdownLoader(); // Not yet used (loading shaders in a different thread
-		ImGui::Shutdown();
-		mMidiIn0.closePort();
-		mMidiIn1.closePort();
-		mMidiIn2.closePort();
-		quit();
-		break;
+		switch (event.getCode())
+		{
+		case ci::app::KeyEvent::KEY_a:
+			mParameterBag->mMode = MODE_AUDIO;
+			break;
+		case ci::app::KeyEvent::KEY_s:
+			mParameterBag->mMode = MODE_SPHERE;
+			break;
+		case ci::app::KeyEvent::KEY_w:
+			mParameterBag->mMode = MODE_WARP;
+			break;
+		case ci::app::KeyEvent::KEY_m:
+			mParameterBag->mMode = MODE_MESH;
+			break;
+		case ci::app::KeyEvent::KEY_o:
+			mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft;
+			break;
+		case ci::app::KeyEvent::KEY_g:
+			mParameterBag->iGreyScale = !mParameterBag->iGreyScale;
+			break;
+		case ci::app::KeyEvent::KEY_p:
+			mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled;
+			break;
+		case ci::app::KeyEvent::KEY_v:
+			mParameterBag->controlValues[48] = !mParameterBag->controlValues[48];
+			break;
+		case ci::app::KeyEvent::KEY_f:
+			if (allRenderWindows.size() > 0) allRenderWindows[0].mWRef->setFullScreen(!allRenderWindows[0].mWRef->isFullScreen());
+			break;
+		case ci::app::KeyEvent::KEY_x:
+			removeUI = !removeUI;
+			break;
+		case ci::app::KeyEvent::KEY_c:
+			if (mParameterBag->mCursorVisible)
+			{
+				hideCursor();
+			}
+			else
+			{
+				showCursor();
+			}
+			mParameterBag->mCursorVisible = !mParameterBag->mCursorVisible;
+			break;
+		case ci::app::KeyEvent::KEY_ESCAPE:
+			mParameterBag->save();
+			//mBatchass->shutdownLoader(); // Not yet used (loading shaders in a different thread
+			ImGui::Shutdown();
+			mMidiIn0.closePort();
+			mMidiIn1.closePort();
+			mMidiIn2.closePort();
+			quit();
+			break;
 
-	default:
-		break;
+		default:
+			break;
+		}
 	}
 	//mWebSockets->write("yo");
 }
 
 
-CINDER_APP_BASIC( BatchassApp, RendererGl )
+CINDER_APP_BASIC(BatchassApp, RendererGl)

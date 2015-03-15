@@ -94,6 +94,9 @@
     <Filter Include="Blocks\OSC\src\ip\win32">
       <UniqueIdentifier>{0DBB2E5F-65A5-4709-AC1B-F775D1E70356}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Blocks\Cinder-MeshHelper">
+      <UniqueIdentifier>{d947c661-c93a-4c0e-9b94-fbe51e96be62}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\BatchassApp.cpp">
@@ -399,6 +402,18 @@
     <ClCompile Include="..\..\..\blocks\OSC\src\ip\win32\UdpSocket.cpp">
       <Filter>Blocks\OSC\src\ip\win32</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\WarpWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Meshes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PointSphere.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.cpp">
+      <Filter>Blocks\Cinder-MeshHelper</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Resources.h">
@@ -406,6 +421,21 @@
     </ClInclude>
     <ClInclude Include="..\include\BatchassApp.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\WarpWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\WindowMngr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Meshes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\PointSphere.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.h">
+      <Filter>Blocks\Cinder-MeshHelper</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

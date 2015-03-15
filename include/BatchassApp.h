@@ -32,6 +32,8 @@ along with Cinder-MIDI.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <list>
 
+// window manager
+#include "WindowMngr.h"
 // UserInterface
 #include "imGuiCinder.h"
 // parameters
@@ -42,6 +44,17 @@ along with Cinder-MIDI.  If not, see <http://www.gnu.org/licenses/>.
 #include "JSONWrapper.h"
 // WebSockets
 #include "WebSocketsWrapper.h"
+// warps
+#include "WarpWrapper.h"
+// audio
+#include "AudioWrapper.h"
+// meshes
+#include "Meshes.h"
+// point sphere
+#include "PointSphere.h"
+// spout
+#include "SpoutWrapper.h"
+
 // Utils
 #include "Batchass.h"
 
@@ -62,14 +75,17 @@ public:
 	void prepareSettings(Settings* settings);
 	void setup();
 	void update();
-	void draw();
 	void keyDown(KeyEvent event);
-	//void shutDown(); // is it called?
+	void keyUp(KeyEvent event);
+	void fileDrop(FileDropEvent event);
+	void shutdown();
 	void resize();
 	void mouseMove(MouseEvent event);
 	void mouseDown(MouseEvent event);
 	void mouseDrag(MouseEvent event);
 	void mouseUp(MouseEvent event);
+	void save();
+
 private:
 	// parameters
 	ParameterBagRef				mParameterBag;
@@ -79,8 +95,20 @@ private:
 	JSONWrapperRef				mJson;
 	// WebSockets
 	WebSocketsRef				mWebSockets;
+	// warps
+	WarpWrapperRef				mWarpings;
+	// audio
+	AudioWrapperRef				mAudio;
+	// mesh helper
+	MeshesRef					mMeshes;
+	// point sphere
+	PointSphereRef				mSphere;
+	// spout
+	SpoutWrapperRef				mSpout;
 	// utils
 	BatchassRef					mBatchass;
+	// timeline
+	Anim<float>					mTimer;
 	// midi
 	vector<midiInput>			mMidiInputs;
 	void						setupMidi();
@@ -95,4 +123,30 @@ private:
 	bool						newLogMsg;
 	// misc
 	int							mSeconds;
+	// windows
+	WindowRef					mMainWindow;
+	//void						windowManagement();
+	void						drawMain();
+	bool						mIsShutDown;
+	// render
+	void						createRenderWindow();
+	void						deleteRenderWindows();
+	vector<WindowMngr>			allRenderWindows;
+	void						drawRender();
+	void						createUIWindow();
+	bool						removeUI;
+
+	// modes, should be the same as in ParameterBag
+	static const int			MODE_MIX = 1;
+	static const int			MODE_AUDIO = 2;
+	static const int			MODE_WARP = 3;
+	static const int			MODE_SPHERE = 4;
+	static const int			MODE_MESH = 5;
+	static const int			MODE_KINECT = 6;
+	// windows to create, should be the same as in ParameterBag
+	static const int			NONE = 0;
+	static const int			RENDER_1 = 1;
+	static const int			RENDER_DELETE = 5;
+	static const int			MIDI_IN = 6;
+
 };
