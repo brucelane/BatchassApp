@@ -135,7 +135,7 @@ private:
 	void						drawRender();
 	void						createUIWindow();
 	bool						removeUI;
-
+	void						changeMode(int newMode);
 	// modes, should be the same as in ParameterBag
 	static const int			MODE_MIX = 1;
 	static const int			MODE_AUDIO = 2;
@@ -148,5 +148,6 @@ private:
 	static const int			RENDER_1 = 1;
 	static const int			RENDER_DELETE = 5;
 	static const int			MIDI_IN = 6;
+
 
 };

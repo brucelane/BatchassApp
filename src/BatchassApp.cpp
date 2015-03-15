@@ -7,11 +7,8 @@ void BatchassApp::prepareSettings(Settings* settings)
 	// utils
 	mBatchass = Batchass::create(mParameterBag);
 	mBatchass->log("start");
-	// if AutoLayout, try to position the window on the 2nd screen
-	if (mParameterBag->mAutoLayout)
-	{
-		mBatchass->getWindowsResolution();
-	}
+
+	mBatchass->getWindowsResolution();
 
 	settings->setWindowSize(mParameterBag->mMainWindowWidth, mParameterBag->mMainWindowHeight);
 	// Setting an unrealistically high frame rate effectively
@@ -44,7 +41,7 @@ void BatchassApp::setup()
 	mBatchass->setup();
 	// setup the main window and associated draw function
 	mMainWindow = getWindow();
-	mMainWindow->setTitle("Reymenta ShadaMixa");
+	mMainWindow->setTitle("Batchass");
 	mMainWindow->connectDraw(&BatchassApp::drawMain, this);
 	mMainWindow->connectClose(&BatchassApp::shutdown, this);
 	// instanciate the audio class
@@ -59,6 +56,7 @@ void BatchassApp::setup()
 	mSpout = SpoutWrapper::create(mParameterBag, mBatchass->getTexturesRef());
 
 	mTimer = 0.0f;
+
 	newLogMsg = false;
 
 	// set ui window and io events callbacks
@@ -67,6 +65,12 @@ void BatchassApp::setup()
 	// midi
 	setupMidi();
 	mSeconds = 0;
+	// if AutoLayout, create render window on the 2nd screen
+	if (mParameterBag->mAutoLayout)
+	{
+		createRenderWindow();
+	}
+
 }
 void BatchassApp::setupMidi()
 {
@@ -285,54 +289,143 @@ void BatchassApp::drawMain()
 			if (ImGui::Button("Save Params")) { mParameterBag->save(); }
 
 		}
-		if (ImGui::CollapsingHeader("Render Window", "12", true, true))
+		if (ImGui::CollapsingHeader("Mode", NULL, true, true))
+		{
+			static int mode = mParameterBag->mMode;
+			ImGui::RadioButton("Mix", &mode, MODE_MIX); ImGui::SameLine();
+			ImGui::RadioButton("Audio", &mode, MODE_AUDIO); ImGui::SameLine();
+			ImGui::RadioButton("Sphere", &mode, MODE_SPHERE); ImGui::SameLine();
+			ImGui::RadioButton("Warp", &mode, MODE_WARP); ImGui::SameLine();
+			ImGui::RadioButton("Mesh", &mode, MODE_MESH);
+			if (mParameterBag->mMode != mode) changeMode(mode);
+		}
+		if (ImGui::CollapsingHeader("Render Window", NULL, true, true))
 		{
 			if (ImGui::Button("Create")) { createRenderWindow(); }
 			ImGui::SameLine();
 			if (ImGui::Button("Delete")) { deleteRenderWindows(); }
+			ImGui::SameLine();
+			if (ImGui::Button("Debug")) { mParameterBag->iDebug = !mParameterBag->iDebug; }
+		}
+		if (ImGui::CollapsingHeader("Effects", NULL, true, true))
+		{
+			if (ImGui::Button("Chromatic")) { mParameterBag->controlValues[15] = !mParameterBag->controlValues[15]; }
+
+		}
+		if (ImGui::CollapsingHeader("Animation", NULL, true, true))
+		{
+			int ctrl;
+			stringstream aParams;
+			aParams << "{\"anim\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
+
+			// ratio
+			ctrl = 11;
+
+			static float ratio[3] = { mParameterBag->controlValues[ctrl], mBatchass->minRatio, mBatchass->maxRatio };
+			ImGui::SliderFloat3("ratio/min/max", ratio, mBatchass->minRatio, mBatchass->maxRatio);
+
+			if (mParameterBag->controlValues[ctrl] != ratio[0])
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << ratio[0] << "}";
+				mParameterBag->controlValues[ctrl] = ratio[0];
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("a")) { mBatchass->lockRatio(); }
+			ImGui::SameLine();
+			if (ImGui::Button("t")) { mBatchass->tempoRatio(); }
+			ImGui::SameLine();
+			if (ImGui::Button("x")) { mBatchass->resetRatio(); }
+			ImGui::SameLine();
+			/*
+			sliderRatio = mParams->addToggleSlider("ratio", &mParameterBag->controlValues[11], "a", std::bind(&SlidersPanel::lockRatio, this, std::placeholders::_1), "{ \"clear\":false, \"width\":" + toString(mParameterBag->mPreviewWidth - 39) + ", \"min\":" + toString(minRatio) + ", \"max\":" + toString(maxRatio) + " }", "{ \"width\":9, \"stateless\":false, \"group\":\"ratio\", \"exclusive\":true, \"clear\":false }");
+
+			mParams->addButton("t", std::bind(&SlidersPanel::tempoRatio, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"ratio\", \"exclusive\":true, \"clear\":false }");
+			mParams->addButton("x", std::bind(&SlidersPanel::resetRatio, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"ratio\", \"exclusive\":true, \"pressed\":true, \"clear\":false }");
+			mParams->addSlider("m", &minRatio, "{ \"min\":" + toString(minRatio) + ", \"max\":" + toString(maxRatio) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true, \"clear\":false }");
+			mParams->addSlider("M", &maxRatio, "{ \"min\":" + toString(minRatio) + ", \"max\":" + toString(maxRatio) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true }");
+
+			// exposure
+			sliderExposure = mParams->addToggleSlider("exposure", &mParameterBag->controlValues[14], "a", std::bind(&SlidersPanel::lockExposure, this, std::placeholders::_1), "{ \"clear\":false, \"width\":" + toString(mParameterBag->mPreviewWidth - 39) + ", \"min\":" + toString(minExposure) + ", \"max\":" + toString(maxExposure) + " }", "{ \"width\":9, \"stateless\":false, \"group\":\"exposure\", \"exclusive\":true, \"clear\":false }");
+			mParams->addButton("t", std::bind(&SlidersPanel::tempoExposure, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"exposure\", \"exclusive\":true, \"clear\":false }");
+			mParams->addButton("x", std::bind(&SlidersPanel::resetExposure, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"exposure\", \"exclusive\":true, \"pressed\":true, \"clear\":false }");
+			mParams->addSlider("m", &minExposure, "{ \"min\":" + toString(minExposure) + ", \"max\":" + toString(maxExposure) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true, \"clear\":false }");
+			mParams->addSlider("M", &maxExposure, "{ \"min\":" + toString(minExposure) + ", \"max\":" + toString(maxExposure) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true }");
+			// zoom
+			//sliderZoom = mParams->addSlider("zoom", &mParameterBag->iZoom, "{ \"min\":5.0, \"max\":0.1 }");
+			sliderZoom = mParams->addToggleSlider("zoom", &mParameterBag->controlValues[13], "a", std::bind(&SlidersPanel::lockZoom, this, std::placeholders::_1), "{ \"clear\":false, \"width\":" + toString(mParameterBag->mPreviewWidth - 39) + ", \"min\":" + toString(minZoom) + ", \"max\":" + toString(maxZoom) + " }", "{ \"width\":9, \"stateless\":false, \"group\":\"zoom\", \"exclusive\":true, \"clear\":false }");
+			mParams->addButton("t", std::bind(&SlidersPanel::tempoZoom, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"zoom\", \"exclusive\":true, \"clear\":false }");
+			mParams->addButton("x", std::bind(&SlidersPanel::resetZoom, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"zoom\", \"exclusive\":true, \"pressed\":true, \"clear\":false }");
+			mParams->addSlider("m", &minZoom, "{ \"min\":" + toString(minZoom) + ", \"max\":" + toString(maxZoom) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true, \"clear\":false }");
+			mParams->addSlider("M", &maxZoom, "{ \"min\":" + toString(minZoom) + ", \"max\":" + toString(maxZoom) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true }");
+
+			sliderSpeed = mParams->addSlider("speed", &mParameterBag->controlValues[12], "{ \"min\":1.0, \"max\":255.0, \"nameColor\":\"0xFFFFFFFF\" }");
+
+			// z position
+			sliderZPos = mParams->addToggleSlider("z Position", &mParameterBag->mZPosition, "a", std::bind(&SlidersPanel::lockZPos, this, std::placeholders::_1), "{ \"width\":" + toString(mParameterBag->mPreviewWidth - 39) + ", \"clear\":false, \"min\":" + toString(minZPos) + ", \"max\":" + toString(maxZPos) + " }", "{ \"width\":9, \"stateless\":false, \"group\":\"zpos\", \"exclusive\":true, \"clear\":false }");
+			mParams->addButton("t", std::bind(&SlidersPanel::tempoZPos, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"zpos\", \"exclusive\":true, \"clear\":false }");
+			mParams->addButton("x", std::bind(&SlidersPanel::resetZPos, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"zpos\", \"exclusive\":true, \"pressed\":true, \"clear\":false }");
+			mParams->addSlider("m", &minZPos, "{ \"min\":" + toString(minZPos) + ", \"max\":" + toString(maxZPos) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true, \"clear\":false }");
+			mParams->addSlider("M", &maxZPos, "{ \"min\":" + toString(minZPos) + ", \"max\":" + toString(maxZPos) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true }");
+			// rotation speed
+			sliderRotationSpeed = mParams->addToggleSlider("rotation", &mParameterBag->controlValues[19], "a", std::bind(&SlidersPanel::lockRotationSpeed, this, std::placeholders::_1), "{ \"width\":" + toString(mParameterBag->mPreviewWidth - 39) + ", \"clear\":false, \"min\":" + toString(minRotationSpeed) + ", \"max\":" + toString(maxRotationSpeed) + " }", "{ \"width\":9, \"stateless\":false, \"group\":\"rotationspeed\", \"exclusive\":true, \"clear\":false }");
+			mParams->addButton("t", std::bind(&SlidersPanel::tempoRotationSpeed, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"rotationspeed\", \"exclusive\":true, \"clear\":false }");
+			mParams->addButton("x", std::bind(&SlidersPanel::resetRotationSpeed, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"rotationspeed\", \"exclusive\":true, \"pressed\":true, \"clear\":false }");
+			mParams->addSlider("m", &minRotationSpeed, "{ \"min\":" + toString(minRotationSpeed) + ", \"max\":" + toString(maxRotationSpeed) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true, \"clear\":false }");
+			mParams->addSlider("M", &maxRotationSpeed, "{ \"min\":" + toString(minRotationSpeed) + ", \"max\":" + toString(maxRotationSpeed) + ", \"handleVisible\":false, \"width\":16, \"vertical\":true }");
+
+			//sliderBlendmode = mParams->addSlider("blendmode", &mParameterBag->controlValues[15], "{ \"min\":0.0, \"max\":27.0 }");
+			sliderSteps = mParams->addSlider("steps", &mParameterBag->controlValues[16], "{ \"min\":1.0, \"max\":128.0, \"nameColor\":\"0xFFFFFFFF\" }");
+			sliderPixelate = mParams->addSlider("pixelate", &mParameterBag->controlValues[18], "{ \"min\":0.01, \"max\":1.0 }");
+			sliderPreviewCrossfade = mParams->addSlider("PreviewXFade", &mParameterBag->iPreviewCrossfade, "{ \"min\":0.0, \"max\":1.0 }");
+			sliderCrossfade = mParams->addSlider("xFade", &mParameterBag->iCrossfade, "{ \"min\":0.0, \"max\":1.0 }");*/
+			aParams << "]}";
+			string strAParams = aParams.str();
+			if (strAParams.length() > 60)
+			{
+				mWebSockets->write(strAParams);
+			}
 		}
 		if (ImGui::CollapsingHeader("Colors", "13", true, true))
 		{
-
-		stringstream sParams;
-		sParams << "{\"colors\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
-		// foreground color
-		static float color[4] = { mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4] };
-		ImGui::ColorEdit4("f", color);
-		for (int i = 0; i < 4; i++)
-		{
-			if (mParameterBag->controlValues[i + 1] != color[i])
+			stringstream sParams;
+			sParams << "{\"colors\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
+			// foreground color
+			static float color[4] = { mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4] };
+			ImGui::ColorEdit4("f", color);
+			for (int i = 0; i < 4; i++)
 			{
-				sParams << ",{\"name\" : " << i + 1 << ",\"value\" : " << color[i] << "}";
-				mParameterBag->controlValues[i + 1] = color[i];
+				if (mParameterBag->controlValues[i + 1] != color[i])
+				{
+					sParams << ",{\"name\" : " << i + 1 << ",\"value\" : " << color[i] << "}";
+					mParameterBag->controlValues[i + 1] = color[i];
+				}
+
+			}
+			//ImGui::SameLine();
+			//ImGui::TextColored(ImVec4(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4]), "fg color");
+
+			// background color
+			static float backcolor[4] = { mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8] };
+			ImGui::ColorEdit4("g", backcolor);
+			for (int i = 0; i < 4; i++)
+			{
+				if (mParameterBag->controlValues[i + 5] != backcolor[i])
+				{
+					sParams << ",{\"name\" : " << i + 5 << ",\"value\" : " << backcolor[i] << "}";
+					mParameterBag->controlValues[i + 5] = backcolor[i];
+				}
+
 			}
 
-		}
-		//ImGui::SameLine();
-		//ImGui::TextColored(ImVec4(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4]), "fg color");
+			//ImGui::SameLine();
+			//ImGui::TextColored(ImVec4(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8]), "bg color");
 
-		// background color
-		static float backcolor[4] = { mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8] };
-		ImGui::ColorEdit4("g", backcolor);
-		for (int i = 0; i < 4; i++)
-		{
-			if (mParameterBag->controlValues[i + 5] != backcolor[i])
+			sParams << "]}";
+			string strParams = sParams.str();
+			if (strParams.length() > 60)
 			{
-				sParams << ",{\"name\" : " << i + 5 << ",\"value\" : " << backcolor[i] << "}";
-				mParameterBag->controlValues[i + 5] = backcolor[i];
+				mWebSockets->write(strParams);
 			}
-
-		}
-
-		//ImGui::SameLine();
-		//ImGui::TextColored(ImVec4(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8]), "bg color");
-
-		sParams << "]}";
-		string strParams = sParams.str();
-		if (strParams.length() > 60)
-		{
-			mWebSockets->write(strParams);
-		}
 		}
 
 	}
@@ -834,6 +927,7 @@ void BatchassApp::shutdown()
 
 void BatchassApp::update()
 {
+
 	mWebSockets->update();
 	mOSC->update();
 	mParameterBag->iFps = getAverageFps();
@@ -945,19 +1039,19 @@ void BatchassApp::keyDown(KeyEvent event)
 		switch (event.getCode())
 		{
 		case ci::app::KeyEvent::KEY_n:
-			mParameterBag->mMode = MODE_MIX;
+			changeMode(MODE_MIX);
 			break;
 		case ci::app::KeyEvent::KEY_a:
-			mParameterBag->mMode = MODE_AUDIO;
+			changeMode(MODE_AUDIO);
 			break;
 		case ci::app::KeyEvent::KEY_s:
-			mParameterBag->mMode = MODE_SPHERE;
+			changeMode(MODE_SPHERE);
 			break;
 		case ci::app::KeyEvent::KEY_w:
-			mParameterBag->mMode = MODE_WARP;
+			changeMode(MODE_WARP);
 			break;
 		case ci::app::KeyEvent::KEY_m:
-			mParameterBag->mMode = MODE_MESH;
+			changeMode(MODE_MESH);
 			break;
 		case ci::app::KeyEvent::KEY_o:
 			mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft;
@@ -1004,6 +1098,47 @@ void BatchassApp::keyDown(KeyEvent event)
 	}
 	//mWebSockets->write("yo");
 }
+void BatchassApp::changeMode(int newMode)
+{
+	if (mParameterBag->mMode != newMode)
+	{
+		mParameterBag->controlValues[4] = 1.0f;
+		mParameterBag->controlValues[8] = 1.0f;
 
+		mParameterBag->mPreviousMode = mParameterBag->mMode;
+		switch (mParameterBag->mPreviousMode)
+		{
+		case 3: //warp
+			//mWarpPanel->toggleVisibility();
+			break;
+		case 5: //mesh
+			mParameterBag->iLight = false;
+			mParameterBag->controlValues[19] = 0.0; //reset rotation
+			break;
+		}
+		mParameterBag->mMode = newMode;
+		switch (newMode)
+		{
+		case 3: //warp
+			//mWarpPanel->toggleVisibility();
+			break;
+		case 4: //sphere
+			//mChannelsPanel->show();
+			mParameterBag->mCamPosXY = Vec2f(-155.6, -87.3);
+			mParameterBag->mCamEyePointZ = -436.f;
+			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
+			break;
+		case 5: //mesh
+			//mChannelsPanel->show();
+			mParameterBag->controlValues[19] = 1.0; //reset rotation
+			mParameterBag->mRenderPosXY = Vec2f(0.0, 0.0);
+			mParameterBag->mCamEyePointZ = -56.f;
+			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
+			mParameterBag->currentSelectedIndex = 5;
+			mParameterBag->iLight = true;
+			break;
+		}
+	}
+}
 
 CINDER_APP_BASIC(BatchassApp, RendererGl)
