@@ -17,6 +17,12 @@ void BatchassApp::prepareSettings(Settings* settings)
 	settings->setFrameRate(60.0f);
 	settings->setResizable(true);
 	settings->setWindowPos(Vec2i(mParameterBag->mMainWindowX, mParameterBag->mMainWindowY));
+
+#ifdef _DEBUG
+
+#else
+	settings->setBorderless();
+#endif  // _DEBUG
 }
 
 
@@ -280,6 +286,21 @@ void BatchassApp::drawMain()
 
 	static bool showTest = false, showMidi = false, showTheme = false, showAudio = true, showShaders = true, showOSC = true, showFps = true, showWS = true;
 	ImGui::NewFrame();
+	// our theme variables
+	static float WindowPadding[2] = { 25, 10 };
+	static float WindowMinSize[2] = { 160, 80 };
+	static float FramePadding[2] = { 4, 4 };
+	static float ItemSpacing[2] = { 10, 5 };
+	static float ItemInnerSpacing[2] = { 5, 5 };
+
+	static float WindowFillAlphaDefault = 0.7;
+	static float WindowRounding = 4;
+	static float TreeNodeSpacing = 22;
+	static float ColumnsMinSpacing = 50;
+	static float ScrollBarWidth = 12;
+
+
+	if (showTest) ImGui::ShowTestWindow();
 
 #pragma region Global
 
@@ -321,6 +342,8 @@ void BatchassApp::drawMain()
 			if (ImGui::Button("Create")) { createRenderWindow(); }
 			ImGui::SameLine();
 			if (ImGui::Button("Delete")) { deleteRenderWindows(); }
+			ImGui::SameLine();
+			if (ImGui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
 			ImGui::SameLine();
 			if (ImGui::Button("Debug")) { mParameterBag->iDebug = !mParameterBag->iDebug; }
 		}
@@ -451,7 +474,7 @@ void BatchassApp::drawMain()
 			// pixelate
 			ctrl = 18;
 			static float pixelate = mParameterBag->controlValues[ctrl];
-			ImGui::SliderFloat("steps", &pixelate, 0.01f, 1.0f);
+			ImGui::SliderFloat("pixelate", &pixelate, 0.01f, 1.0f);
 
 			if (mParameterBag->controlValues[ctrl] != pixelate)
 			{
@@ -540,6 +563,73 @@ void BatchassApp::drawMain()
 	}
 	ImGui::End();
 #pragma endregion Global
+#pragma region shaders
+	
+	if (showShaders)
+	{
+		ImGui::Begin("shaders", NULL, ImVec2(300, 300));
+		{
+			/*for (int i = 0; i < 5; i++)
+			{
+
+				if (ImGui::Button(mBatchass->getShadersRef()->getShaderName(i).c_str()))
+				{
+					mParameterBag->mLeftFragIndex = i;
+				}
+			}
+			
+			ImGui::BeginChild("Sub2", ImVec2(0,300), true);
+		ImGui::Text("With border");
+		ImGui::Columns(2);
+		for (int i = 0; i < 100; i++)
+		{
+			char buf[32];
+			ImFormatString(buf, IM_ARRAYSIZE(buf), "%08x", i*5731);
+			ImGui::Button(buf);
+			ImGui::NextColumn();
+		}
+		ImGui::EndChild();
+			*/
+			ImGui::BeginChild("shadas", ImVec2(0, 450), true);		
+			ImGui::Columns(4, "data", true);
+
+			for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
+			{
+				//char buf[32];
+				//sprintf_s(buf, "s %d", i);
+				if (ImGui::Button(mBatchass->getShadersRef()->getShaderName(i).c_str()))
+				{
+					//setCurrentFbo mParameterBag->mCurrentFboLibraryIndex = aIndex;
+				}
+				ImGui::NextColumn();
+				char buf[32];
+				sprintf_s(buf, "L%d", i);
+				if (ImGui::Button(buf))
+				{
+					mParameterBag->mLeftFragIndex = i;
+				}
+				ImGui::NextColumn();
+				sprintf_s(buf, "R%d", i);
+				if (ImGui::Button(buf))
+				{
+					mParameterBag->mRightFragIndex = i;
+				}
+				ImGui::NextColumn();
+				sprintf_s(buf, "P%d", i);
+				if (ImGui::Button(buf))
+				{
+					mParameterBag->mPreviewFragIndex = i;
+				}
+				ImGui::NextColumn();
+				//ImGui::Separator();
+			}
+			ImGui::EndChild();
+			ImGui::Columns(1);
+		}
+		ImGui::End();
+	}
+
+#pragma endregion shaders
 #pragma region MIDI
 
 	// MIDI window
@@ -547,19 +637,6 @@ void BatchassApp::drawMain()
 	{
 		ImGui::Begin("MIDI", NULL, ImVec2(300, 300));
 		{
-			// our theme variables
-			static float WindowPadding[2] = { 25, 10 };
-			static float WindowMinSize[2] = { 160, 80 };
-			static float FramePadding[2] = { 4, 4 };
-			static float ItemSpacing[2] = { 10, 5 };
-			static float ItemInnerSpacing[2] = { 5, 5 };
-
-			static float WindowFillAlphaDefault = 0.7;
-			static float WindowRounding = 4;
-			static float TreeNodeSpacing = 22;
-			static float ColumnsMinSpacing = 50;
-			static float ScrollBarWidth = 12;
-
 			if (ImGui::CollapsingHeader("MidiIn", "20", true, true))
 			{
 				ImGui::Columns(2, "data", true);
@@ -651,8 +728,6 @@ void BatchassApp::drawMain()
 	}
 #pragma endregion MIDI
 #pragma region OSC
-
-	if (showTest) ImGui::ShowTestWindow();
 
 	if (showOSC)
 	{
@@ -759,8 +834,8 @@ void BatchassApp::drawMain()
 		}
 		ImGui::Columns(1);
 		ImGui::EndChild();
-		ImGui::End();
 	}
+	ImGui::End();
 #pragma endregion Routing
 #pragma region Audio
 
@@ -855,9 +930,9 @@ void BatchassApp::drawRender()
 
 	gl::disableAlphaBlending();
 }
-void BatchassApp::save()
+void BatchassApp::saveThumb()
 {
-	string filename = mBatchass->getShadersRef()->getMiddleFragFileName() + ".png";
+	string filename;
 	//string fpsFilename = ci::toString((int)getAverageFps()) + "-fps-" + mShaders->getMiddleFragFileName() + ".json";
 	try
 	{
@@ -871,9 +946,10 @@ void BatchassApp::save()
 		log->logTimedString("saved:" + fpsFilename);
 		Area area = Area(0, mParameterBag->mMainWindowHeight, mParameterBag->mPreviewWidth, mParameterBag->mMainWindowHeight - mParameterBag->mPreviewHeight);
 		writeImage(getAssetPath("") / "thumbs" / filename, copyWindowSurface(area));*/
+		filename = mBatchass->getShadersRef()->getFragFileName() + ".png";
 		writeImage(getAssetPath("") / "thumbs" / filename, mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mCurrentPreviewFboIndex));
 		mBatchass->log("saved:" + filename);
-		//}
+
 	}
 	catch (const std::exception &e)
 	{
@@ -929,20 +1005,22 @@ void BatchassApp::fileDrop(FileDropEvent event)
 		loaded = true;
 		//mShaders->incrementPreviewIndex();
 		//mUserInterface->mLibraryPanel->addShader(mFile);
-		if (mBatchass->getShadersRef()->loadPixelFragmentShader(mFile))
+		int rtn = mBatchass->getShadersRef()->loadPixelFragmentShader(mFile);
+		if (rtn > -1 && rtn < mBatchass->getShadersRef()->getCount())
 		{
 			mParameterBag->controlValues[13] = 1.0f;
 			// send content via OSC
-			fs::path fr = mFile;
+			/*fs::path fr = mFile;
 			string name = "unknown";
 			if (mFile.find_last_of("\\") != std::string::npos) name = mFile.substr(mFile.find_last_of("\\") + 1);
 			if (fs::exists(fr))
 			{
-				std::string fs = loadString(loadFile(mFile));
-				mOSC->sendOSCStringMessage("/fs", 0, fs, name);
-			}
+
+			std::string fs = loadString(loadFile(mFile));
+			mOSC->sendOSCStringMessage("/fs", 0, fs, name);
+			}*/
 			// save thumb
-			timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ save(); });
+			timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ saveThumb(); });
 		}
 	}
 	if (!loaded && ext == "fs")
@@ -951,7 +1029,6 @@ void BatchassApp::fileDrop(FileDropEvent event)
 		loaded = true;
 		//mShaders->incrementPreviewIndex();
 		mBatchass->getShadersRef()->loadFragmentShader(mPath);
-		timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ save(); });
 	}
 	if (!loaded && ext == "patchjson")
 	{

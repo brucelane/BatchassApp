@@ -84,8 +84,11 @@ public:
 	void mouseDown(MouseEvent event);
 	void mouseDrag(MouseEvent event);
 	void mouseUp(MouseEvent event);
-	void save();
-
+	void saveThumb();
+	//! Override to receive window activate events
+	void	activate();
+	//! Override to receive window deactivate events
+	void	deactivate();
 private:
 	// parameters
 	ParameterBagRef				mParameterBag;
