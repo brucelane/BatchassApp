@@ -524,15 +524,27 @@ void BatchassApp::drawMain()
 			// foreground color
 			static float color[4] = { mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4] };
 			ImGui::ColorEdit4("f", color);
+
 			for (int i = 0; i < 4; i++)
 			{
 				if (mParameterBag->controlValues[i + 1] != color[i])
 				{
 					sParams << ",{\"name\" : " << i + 1 << ",\"value\" : " << color[i] << "}";
 					mParameterBag->controlValues[i + 1] = color[i];
+					stringstream s;
+					s << mParameterBag->controlValues[1];// << "," << mParameterBag->controlValues[2] << "," << mParameterBag->controlValues[3] << "," << mParameterBag->controlValues[4];
+					string strColor = s.str();
+					mWebSockets->write(strColor);
+					if (i == 0) mOSC->sendOSCColorMessage("/fr", mParameterBag->controlValues[1]);
+					if (i == 1) mOSC->sendOSCColorMessage("/fg", mParameterBag->controlValues[2]);
+					if (i == 2) mOSC->sendOSCColorMessage("/fb", mParameterBag->controlValues[3]);
+					if (i == 3) mOSC->sendOSCColorMessage("/fa", mParameterBag->controlValues[4]);
+
+
 				}
 
 			}
+
 			//ImGui::SameLine();
 			//ImGui::TextColored(ImVec4(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4]), "fg color");
 
@@ -554,10 +566,11 @@ void BatchassApp::drawMain()
 
 			sParams << "]}";
 			string strParams = sParams.str();
-			if (strParams.length() > 60)
+			/*if (strParams.length() > 60)
 			{
 				mWebSockets->write(strParams);
-			}
+			}*/
+
 		}
 
 	}
