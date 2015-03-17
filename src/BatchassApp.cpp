@@ -37,7 +37,7 @@ void BatchassApp::setup()
 	// instanciate the WebSockets class
 	mWebSockets = WebSockets::create(mParameterBag);
 
-	// setup sahders and textures
+	// setup shaders and textures
 	mBatchass->setup();
 	// setup the main window and associated draw function
 	mMainWindow = getWindow();
@@ -70,7 +70,7 @@ void BatchassApp::setup()
 	{
 		createRenderWindow();
 	}
-
+	mBatchass->tapTempo(true);
 }
 void BatchassApp::setupMidi()
 {
@@ -192,10 +192,27 @@ void BatchassApp::deleteRenderWindows()
 }
 void BatchassApp::drawMain()
 {
+	margin = 10;
+	int texY = 10;
+	int fboY = 10 + mParameterBag->mPreviewFboHeight;
 	gl::clear(ColorAf(0.0f, 0.0f, 0.0f, 0.0f));
+	gl::setViewport(getWindowBounds());
+	gl::setMatricesWindow(getWindowSize());
+
 	mSpout->draw();
 	// draw the fbos
 	mBatchass->getTexturesRef()->draw();
+	// previews
+	//gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true); 
+	for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
+	{
+		gl::draw(mBatchass->getTexturesRef()->getTexture(i), Rectf(i* mParameterBag->mPreviewFboWidth, texY, (i + 1) * mParameterBag->mPreviewFboWidth + margin, texY + mParameterBag->mPreviewFboHeight));
+	}
+	for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
+	{
+		gl::draw(mBatchass->getTexturesRef()->getFboTexture(i), Rectf(i* mParameterBag->mPreviewFboWidth, fboY, (i + 1) * mParameterBag->mPreviewFboWidth + margin, fboY + mParameterBag->mPreviewFboHeight));
+	}
+
 	//if (mParameterBag->mUIRefresh < 1.0) mParameterBag->mUIRefresh = 1.0;
 	//if (getElapsedFrames() % (int)(mParameterBag->mUIRefresh + 0.1) == 0)
 	if (getElapsedFrames() % mParameterBag->mUIRefresh == 0)
@@ -311,7 +328,7 @@ void BatchassApp::drawMain()
 		{
 			if (ImGui::Button("chromatic")) { mParameterBag->controlValues[15] = !mParameterBag->controlValues[15]; }
 			ImGui::SameLine();
-			if (ImGui::Button("origin\nupper left")) { mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft; }
+			if (ImGui::Button("origin up left")) { mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft; }
 			ImGui::SameLine();
 			if (ImGui::Button("repeat")) { mParameterBag->iRepeat = !mParameterBag->iRepeat; }
 			ImGui::SameLine();
@@ -392,7 +409,7 @@ void BatchassApp::drawMain()
 			if (mParameterBag->controlValues[ctrl] != zPosition)
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << zPosition << "}";
-				mParameterBag->controlValues[ctrl] = zPosition; 
+				mParameterBag->controlValues[ctrl] = zPosition;
 			}
 
 			// rotation speed
@@ -411,13 +428,63 @@ void BatchassApp::drawMain()
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << rotationSpeed << "}";
 				mParameterBag->controlValues[ctrl] = rotationSpeed;
 			}
-			/*			
-			//sliderBlendmode = mParams->addSlider("blendmode", &mParameterBag->controlValues[15], "{ \"min\":0.0, \"max\":27.0 }");
-			sliderSteps = mParams->addSlider("steps", &mParameterBag->controlValues[16], "{ \"min\":1.0, \"max\":128.0, \"nameColor\":\"0xFFFFFFFF\" }");
-			sliderPixelate = mParams->addSlider("pixelate", &mParameterBag->controlValues[18], "{ \"min\":0.01, \"max\":1.0 }");
-			sliderPreviewCrossfade = mParams->addSlider("PreviewXFade", &mParameterBag->iPreviewCrossfade, "{ \"min\":0.0, \"max\":1.0 }");
-			sliderCrossfade = mParams->addSlider("xFade", &mParameterBag->iCrossfade, "{ \"min\":0.0, \"max\":1.0 }");
-			
+			// blend modes
+			ctrl = 15;
+			static float blendmode = mParameterBag->controlValues[ctrl];
+			ImGui::SliderFloat("blendmode", &blendmode, 0.0f, 27.0f);
+
+			if (mParameterBag->controlValues[ctrl] != blendmode)
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << blendmode << "}";
+				mParameterBag->controlValues[ctrl] = blendmode;
+			}
+			// steps
+			ctrl = 16;
+			static float steps = mParameterBag->controlValues[ctrl];
+			ImGui::SliderFloat("steps", &steps, 1.0f, 128.0f);
+
+			if (mParameterBag->controlValues[ctrl] != steps)
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << steps << "}";
+				mParameterBag->controlValues[ctrl] = steps;
+			}
+			// pixelate
+			ctrl = 18;
+			static float pixelate = mParameterBag->controlValues[ctrl];
+			ImGui::SliderFloat("steps", &pixelate, 0.01f, 1.0f);
+
+			if (mParameterBag->controlValues[ctrl] != pixelate)
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << pixelate << "}";
+				mParameterBag->controlValues[ctrl] = pixelate;
+			}
+			// iPreviewCrossfade
+			ctrl = 17;
+			static float previewCrossfade = mParameterBag->controlValues[ctrl];
+			ImGui::SliderFloat("previewCrossfade", &previewCrossfade, 0.01f, 1.0f);
+
+			if (mParameterBag->controlValues[ctrl] != previewCrossfade)
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << previewCrossfade << "}";
+				mParameterBag->controlValues[ctrl] = previewCrossfade;
+			}
+			// crossfade
+			ctrl = 18;
+			static float crossfade = mParameterBag->controlValues[ctrl];
+			ImGui::SliderFloat("crossfade", &crossfade, 0.01f, 1.0f);
+
+			if (mParameterBag->controlValues[ctrl] != crossfade)
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << crossfade << "}";
+				mParameterBag->controlValues[ctrl] = crossfade;
+			}
+			/*
+			//
+			sliderPreviewCrossfade = mParams->addSlider("PreviewXFade", &mParameterBag->controlValues[17], "{ \"min\":0.0, \"max\":1.0 }");
+			sliderCrossfade = mParams->addSlider("xFade", &mParameterBag->controlValues[18], "{ \"min\":0.0, \"max\":1.0 }");
+			controlValues[17] = 1.0f;
+			// iCrossfade
+			controlValues[18] = 1.0f;
 			sliderSpeed = mParams->addSlider("speed", &mParameterBag->controlValues[12], "{ \"min\":1.0, \"max\":255.0, \"nameColor\":\"0xFFFFFFFF\" }");
 			*/
 			aParams << "]}";

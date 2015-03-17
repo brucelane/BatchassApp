@@ -123,6 +123,7 @@ private:
 	bool						newLogMsg;
 	// misc
 	int							mSeconds;
+	int							margin;
 	// windows
 	WindowRef					mMainWindow;
 	//void						windowManagement();
