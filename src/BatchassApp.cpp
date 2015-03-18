@@ -198,16 +198,27 @@ void BatchassApp::deleteRenderWindows()
 }
 void BatchassApp::drawMain()
 {
+	// must be first to avoid gl matrices to change
+	// draw from Spout receivers
+	mSpout->draw();
+	// draw the fbos
+	mBatchass->getTexturesRef()->draw();	
+	//gl::setViewport(getWindowBounds());
+	//gl::setViewport(mBatchass->getTexturesRef()->getFbo(0).getBounds());
+	Area mViewportArea = Area(0, 0, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
+
+	gl::setViewport(mViewportArea);
+
+	gl::setMatricesWindow(mParameterBag->mMainDisplayWidth, mParameterBag->mMainDisplayHeight, true);// mParameterBag->mOriginUpperLeft);
+	gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, false);
+
+	//gl::setMatricesWindow(getWindowSize());
 	gl::clear(ColorAf(0.0f, 0.0f, 0.0f, 0.0f));
-	gl::setViewport(getWindowBounds());
-	gl::setMatricesWindow(mParameterBag->mMainDisplayWidth, mParameterBag->mMainDisplayHeight, false);// mParameterBag->mOriginUpperLeft);
+	gl::color(ColorAf(1.0f, 1.0f, 1.0f, 1.0f));
 	// draw preview
 	if (getElapsedFrames() % mParameterBag->mUIRefresh == 0)
 	{
 		Rectf rect = Rectf(50, 40, 50 + mParameterBag->mPreviewFboWidth, 40 + mParameterBag->mPreviewFboHeight);
-		//gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, false);// mParameterBag->mOriginUpperLeft);
-
-		gl::color(ColorAf(1.0f, 1.0f, 1.0f, 1.0f));
 		if (mParameterBag->mPreviewEnabled)
 		{
 			// select drawing mode 
@@ -239,15 +250,8 @@ void BatchassApp::drawMain()
 				}
 				break;
 			default:
-				gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);
-
-				gl::setViewport(Area(0, 0, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight));
-				// clear the window and set the drawing color to white
-				gl::clear();
-				gl::color(Color::white());
-				gl::disableAlphaBlending();
-				gl::disable(GL_TEXTURE_2D);
-				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex), rect);
+				//gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex), rect);
+				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
 				break;
 			}
 		}
@@ -256,15 +260,14 @@ void BatchassApp::drawMain()
 	{
 		if (mParameterBag->mMode == MODE_MESH){ if (mMeshes->isSetup()) mMeshes->draw(); }
 	}
-	// draw textures and fbos 		
+	gl::setViewport(getWindowBounds());
+	gl::setMatricesWindow(getWindowSize());
 
+	// draw textures and fbos 		
 	margin = 10;
 	int texY = 10;
 	int fboY = 10 + mParameterBag->mPreviewFboHeight;
 
-	mSpout->draw();
-	// draw the fbos
-	mBatchass->getTexturesRef()->draw();
 	// previews
 	//gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true); 
 	for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
@@ -275,15 +278,6 @@ void BatchassApp::drawMain()
 	{
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(i), Rectf(i* mParameterBag->mPreviewFboWidth, fboY, (i + 1) * mParameterBag->mPreviewFboWidth + margin, fboY + mParameterBag->mPreviewFboHeight));
 	}
-
-	/*sliderLeftRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mLeftFboIndex));
-	sliderRightRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mRightFboIndex));
-	sliderMixRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mMixFboIndex));
-	sliderPreviewRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mCurrentPreviewFboIndex));*/
-
-
-	//if (!removeUI) mUI->draw();
-	//mUserInterface->draw();
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
 
@@ -878,8 +872,6 @@ void BatchassApp::drawMain()
 #pragma endregion FPS
 
 	ImGui::Render();
-
-
 
 	gl::disableAlphaBlending();
 }
