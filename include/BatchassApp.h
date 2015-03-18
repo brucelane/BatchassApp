@@ -54,7 +54,8 @@ along with Cinder-MIDI.  If not, see <http://www.gnu.org/licenses/>.
 #include "PointSphere.h"
 // spout
 #include "SpoutWrapper.h"
-
+// UI
+#include "UI.h"
 // Utils
 #include "Batchass.h"
 
@@ -62,6 +63,7 @@ using namespace ci;
 using namespace ci::app;
 using namespace std;
 using namespace Reymenta;
+using namespace MinimalUI;
 
 #define IM_ARRAYSIZE(_ARR)			((int)(sizeof(_ARR)/sizeof(*_ARR)))
 
@@ -110,6 +112,8 @@ private:
 	SpoutWrapperRef				mSpout;
 	// utils
 	BatchassRef					mBatchass;
+	// minimalUI
+	UIRef						mUI;
 	// timeline
 	Anim<float>					mTimer;
 	// midi

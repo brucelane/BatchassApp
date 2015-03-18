@@ -65,6 +65,9 @@ void BatchassApp::setup()
 
 	newLogMsg = false;
 
+	// Setup the MinimalUI user interface
+	mUI = UI::create(mParameterBag, mBatchass->getShadersRef(), mBatchass->getTexturesRef(), mMainWindow);
+	mUI->setup();
 	// set ui window and io events callbacks
 	ImGui::setWindow(getWindow());
 
@@ -203,14 +206,14 @@ void BatchassApp::drawMain()
 	mSpout->draw();
 	// draw the fbos
 	mBatchass->getTexturesRef()->draw();	
-	//gl::setViewport(getWindowBounds());
+
+	gl::setViewport(getWindowBounds());
 	//gl::setViewport(mBatchass->getTexturesRef()->getFbo(0).getBounds());
-	Area mViewportArea = Area(0, 0, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
+	//Area mViewportArea = Area(0, -300, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
+	//gl::setViewport(mViewportArea);
 
-	gl::setViewport(mViewportArea);
-
-	gl::setMatricesWindow(mParameterBag->mMainDisplayWidth, mParameterBag->mMainDisplayHeight, true);// mParameterBag->mOriginUpperLeft);
-	gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, false);
+	//gl::setMatricesWindow(mParameterBag->mMainDisplayWidth, mParameterBag->mMainDisplayHeight, true);// mParameterBag->mOriginUpperLeft);
+	gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);// , false);
 
 	//gl::setMatricesWindow(getWindowSize());
 	gl::clear(ColorAf(0.0f, 0.0f, 0.0f, 0.0f));
@@ -262,9 +265,14 @@ void BatchassApp::drawMain()
 	}
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);
+	if (!removeUI) mUI->draw();
+
+	gl::setViewport(getWindowBounds());
+	gl::setMatricesWindow(getWindowSize());
 
 	// draw textures and fbos 		
-	margin = 10;
+	/*margin = 10;
 	int texY = 10;
 	int fboY = 10 + mParameterBag->mPreviewFboHeight;
 
@@ -277,14 +285,14 @@ void BatchassApp::drawMain()
 	for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
 	{
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(i), Rectf(i* mParameterBag->mPreviewFboWidth, fboY, (i + 1) * mParameterBag->mPreviewFboWidth + margin, fboY + mParameterBag->mPreviewFboHeight));
-	}
+	}*/
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
 
 	//imgui
 	static float f = 0.0f;
 
-	static bool showTest = false, showMidi = false, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
+	static bool showTest = false, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
 	ImGui::NewFrame();
 	// our theme variables
 	static float WindowPadding[2] = { 4, 2 };
@@ -300,12 +308,14 @@ void BatchassApp::drawMain()
 	static float ScrollBarWidth = 12;
 
 	ImGui::GetStyle().FramePadding = ImVec2(2, 2);
-	ImVec4 color0 = ImVec4(0.431373, 0.160784, 0.372549, 1);
+	/*ImVec4 color0 = ImVec4(0.431373, 0.160784, 0.372549, 1);
 	ImVec4 color1 = ImVec4(0.2, 0.0392157, 0.0392157, 1);
 	ImVec4 color2 = ImVec4(0.317647, 0.184314, 0.2, 1);
 	ImVec4 color3 = ImVec4(1, 0.647059, 1, 1);
 	ImVec4 color4 = ImVec4(0.741176, 0.0941176, 1, 1);
 	ImGui::setThemeColor(color0, color1, color2, color3, color4);
+	\"panelColor\":\"0x44282828\",  \"defaultBackgroundColor\":\"0xFF0d0d0d\", \"defaultNameColor\":\"0xFF90a5b6\", \"defaultStrokeColor\":\"0xFF282828\", \"activeStrokeColor\":\"0xFF919ea7\" }");
+	*/
 
 	if (showTest) ImGui::ShowTestWindow();
 
@@ -363,7 +373,7 @@ void BatchassApp::drawMain()
 			if (ImGui::Button("repeat")) { mParameterBag->iRepeat = !mParameterBag->iRepeat; }
 			ImGui::SameLine();
 			if (ImGui::Button("45 glitch")) { mParameterBag->controlValues[45] = !mParameterBag->controlValues[45]; }
-			ImGui::SameLine();
+
 			if (ImGui::Button("46 toggle")) { mParameterBag->controlValues[46] = !mParameterBag->controlValues[46]; }
 			ImGui::SameLine();
 			if (ImGui::Button("47 vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
@@ -372,6 +382,8 @@ void BatchassApp::drawMain()
 		}
 		if (ImGui::CollapsingHeader("Animation", NULL, true, true))
 		{
+			
+			ImGui::SliderInt("mUIRefresh", &mParameterBag->mUIRefresh, 1, 255);
 			int ctrl;
 			stringstream aParams;
 			aParams << "{\"anim\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
@@ -592,7 +604,7 @@ void BatchassApp::drawMain()
 				{
 					mParameterBag->mPreviewFragIndex = i;
 				}
-				ImGui::NextColumn();
+				ImGui::NextColumn();			
 				//ImGui::Separator();
 			}
 			ImGui::EndChild();
@@ -602,6 +614,40 @@ void BatchassApp::drawMain()
 	}
 
 #pragma endregion shaders
+#pragma region fbos
+
+	if (showFbos)
+	{
+		ImGui::Begin("fbos", NULL, ImVec2(300, 300));
+		{
+
+			ImGui::BeginChild("fbo", ImVec2(0, 450), true);
+			ImGui::Columns(2, "data", true);
+
+			for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
+			{
+				char buf[32];
+				sprintf_s(buf, "fbo %d", i);
+				if (ImGui::Button(buf))
+				{
+					//setCurrentFbo 
+				}
+				ImGui::NextColumn();
+				sprintf_s(buf, "F%d", i);
+				if (ImGui::Button(buf))
+				{
+					mBatchass->getTexturesRef()->flipFbo(i);
+				}
+				ImGui::NextColumn();
+				//ImGui::Separator();
+			}
+			ImGui::EndChild();
+			ImGui::Columns(1);
+		}
+		ImGui::End();
+	}
+
+#pragma endregion fbos
 #pragma region MIDI
 
 	// MIDI window
@@ -883,7 +929,7 @@ void BatchassApp::drawRender()
 	gl::setViewport(getWindowBounds());
 	gl::enableAlphaBlending();
 	//20140703 gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);//NEW 20140620, needed?
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, false);
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);// , false);
 	switch (mParameterBag->mMode)
 	{
 	case MODE_AUDIO:
@@ -1130,6 +1176,7 @@ void BatchassApp::update()
 	mWebSockets->update();
 	mOSC->update();
 	mAudio->update();
+	mUI->update();
 	if (mParameterBag->mWindowToCreate > 0)
 	{
 		// try to create the window only once
@@ -1231,6 +1278,7 @@ void BatchassApp::keyDown(KeyEvent event)
 			break;
 		case ci::app::KeyEvent::KEY_x:
 			removeUI = !removeUI;
+			mUI->toggleVisibility();
 			break;
 		case ci::app::KeyEvent::KEY_c:
 			if (mParameterBag->mCursorVisible)
@@ -1269,9 +1317,6 @@ void BatchassApp::changeMode(int newMode)
 		mParameterBag->mPreviousMode = mParameterBag->mMode;
 		switch (mParameterBag->mPreviousMode)
 		{
-		case 3: //warp
-			//mWarpPanel->toggleVisibility();
-			break;
 		case 5: //mesh
 			mParameterBag->iLight = false;
 			mParameterBag->controlValues[19] = 0.0; //reset rotation
@@ -1280,17 +1325,12 @@ void BatchassApp::changeMode(int newMode)
 		mParameterBag->mMode = newMode;
 		switch (newMode)
 		{
-		case 3: //warp
-			//mWarpPanel->toggleVisibility();
-			break;
 		case 4: //sphere
-			//mChannelsPanel->show();
 			mParameterBag->mCamPosXY = Vec2f(-155.6, -87.3);
 			mParameterBag->mCamEyePointZ = -436.f;
 			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
 			break;
 		case 5: //mesh
-			//mChannelsPanel->show();
 			mParameterBag->controlValues[19] = 1.0; //reset rotation
 			mParameterBag->mRenderPosXY = Vec2f(0.0, 0.0);
 			mParameterBag->mCamEyePointZ = -56.f;

@@ -74,11 +74,11 @@
       <IgnoreSpecificDefaultLibraries>LIBCMT;LIBCPMT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "..\..\..\blocks\Cinder-KCB\lib\x86\dll\Release\KinectCommonBridge.dll" "$(OutDir)"
-xcopy /y "$(KINECT_TOOLKIT_DIR)Redist\x86\FaceTrackLib.dll" "$(OutDir)"
-xcopy /y "$(KINECT_TOOLKIT_DIR)Redist\x86\FaceTrackData.dll" "$(OutDir)"
-xcopy /y "..\..\..\blocks\Cinder-Spout\lib\Spout.dll" "$(OutDir)"
-xcopy /y "..\..\..\blocks\Cinder-Spout\lib\SpoutPanel.exe" "$(OutDir)"</Command>
+      <Command>rem xcopy /y "..\..\..\blocks\Cinder-KCB\lib\x86\dll\Release\KinectCommonBridge.dll" "$(OutDir)"
+rem xcopy /y "$(KINECT_TOOLKIT_DIR)Redist\x86\FaceTrackLib.dll" "$(OutDir)"
+rem xcopy /y "$(KINECT_TOOLKIT_DIR)Redist\x86\FaceTrackData.dll" "$(OutDir)"
+rem xcopy /y "..\..\..\blocks\Cinder-Spout\lib\Spout.dll" "$(OutDir)"
+rem xcopy /y "..\..\..\blocks\Cinder-Spout\lib\SpoutPanel.exe" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -182,6 +182,7 @@
     <ClInclude Include="..\..\..\blocks\OSC\src\osc\OscPrintReceivedElements.h" />
     <ClInclude Include="..\..\..\blocks\OSC\src\osc\OscReceivedElements.h" />
     <ClInclude Include="..\..\..\blocks\OSC\src\osc\OscTypes.h" />
+    <ClInclude Include="..\include\UI.h" />
     <ClInclude Include="..\include\WarpWrapper.h" />
     <ClInclude Include="..\include\WindowMngr.h" />
   </ItemGroup>
@@ -233,6 +234,7 @@
     <ClCompile Include="..\..\..\blocks\OSC\src\ip\win32\UdpSocket.cpp" />
     <ClCompile Include="..\src\Meshes.cpp" />
     <ClCompile Include="..\src\PointSphere.cpp" />
+    <ClCompile Include="..\src\UI.cpp" />
     <ClCompile Include="..\src\WarpWrapper.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
