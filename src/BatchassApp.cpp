@@ -129,8 +129,6 @@ void BatchassApp::setupMidi()
 }
 void BatchassApp::midiListener(midi::Message msg){
 	float normalizedValue;
-	stringstream ss;
-	ss << "midi port: " << msg.port << " ch: " << msg.channel << " status: " << msg.status;
 	string controlType = "unknown";
 
 	newLogMsg = true;
@@ -158,10 +156,12 @@ void BatchassApp::midiListener(midi::Message msg){
 		break;
 	}
 	normalizedValue = lmap<float>(newValue, 0.0, 127.0, 0.0, 1.0);
-	ss << " control: " << name << " value: " << newValue << " normalized: " << normalizedValue << std::endl;
+	stringstream ss;
+	ss << "ctrl: " << name << " value: " << newValue << " normalized: " << normalizedValue;
+	ss << " midi port: " << msg.port << " ch: " << msg.channel << " status: " << msg.status << std::endl;
 	mLogMsg = ss.str();
 	mOSC->updateAndSendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
-	mOSC->sendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
+	// CHECK why? mOSC->sendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
 	mWebSockets->write("{\"params\" :[{" + controlType);
 }
 void BatchassApp::createRenderWindow()
@@ -198,12 +198,69 @@ void BatchassApp::deleteRenderWindows()
 }
 void BatchassApp::drawMain()
 {
+	gl::clear(ColorAf(0.0f, 0.0f, 0.0f, 0.0f));
+	gl::setViewport(getWindowBounds());
+	gl::setMatricesWindow(mParameterBag->mMainDisplayWidth, mParameterBag->mMainDisplayHeight, false);// mParameterBag->mOriginUpperLeft);
+	// draw preview
+	if (getElapsedFrames() % mParameterBag->mUIRefresh == 0)
+	{
+		Rectf rect = Rectf(50, 40, 50 + mParameterBag->mPreviewFboWidth, 40 + mParameterBag->mPreviewFboHeight);
+		//gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, false);// mParameterBag->mOriginUpperLeft);
+
+		gl::color(ColorAf(1.0f, 1.0f, 1.0f, 1.0f));
+		if (mParameterBag->mPreviewEnabled)
+		{
+			// select drawing mode 
+			switch (mParameterBag->mMode)
+			{
+			case MODE_AUDIO:
+				mAudio->draw();
+				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mAudioFboIndex), rect);
+				break;
+			case MODE_WARP:
+				mWarpings->draw();
+				break;
+			case MODE_SPHERE:
+				mSphere->draw();
+				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mSphereFboIndex), rect);
+				break;
+			case MODE_MESH:
+				if (mMeshes->isSetup())
+				{
+					mMeshes->draw();
+					gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMeshFboIndex), rect);
+				}
+				break;
+			case MODE_KINECT:
+				for (int i = 0; i < 20; i++)
+				{
+					gl::drawLine(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), Vec2f(mOSC->skeleton[i].z, mOSC->skeleton[i].w));
+					gl::drawSolidCircle(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), 5.0f, 16);
+				}
+				break;
+			default:
+				gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);
+
+				gl::setViewport(Area(0, 0, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight));
+				// clear the window and set the drawing color to white
+				gl::clear();
+				gl::color(Color::white());
+				gl::disableAlphaBlending();
+				gl::disable(GL_TEXTURE_2D);
+				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex), rect);
+				break;
+			}
+		}
+	}
+	else
+	{
+		if (mParameterBag->mMode == MODE_MESH){ if (mMeshes->isSetup()) mMeshes->draw(); }
+	}
+	// draw textures and fbos 		
+
 	margin = 10;
 	int texY = 10;
 	int fboY = 10 + mParameterBag->mPreviewFboHeight;
-	gl::clear(ColorAf(0.0f, 0.0f, 0.0f, 0.0f));
-	gl::setViewport(getWindowBounds());
-	gl::setMatricesWindow(getWindowSize());
 
 	mSpout->draw();
 	// draw the fbos
@@ -219,63 +276,12 @@ void BatchassApp::drawMain()
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(i), Rectf(i* mParameterBag->mPreviewFboWidth, fboY, (i + 1) * mParameterBag->mPreviewFboWidth + margin, fboY + mParameterBag->mPreviewFboHeight));
 	}
 
-	//if (mParameterBag->mUIRefresh < 1.0) mParameterBag->mUIRefresh = 1.0;
-	//if (getElapsedFrames() % (int)(mParameterBag->mUIRefresh + 0.1) == 0)
-	if (getElapsedFrames() % mParameterBag->mUIRefresh == 0)
-	{
-		//gl::clear();
-		//gl::setViewport(getWindowBounds());
-		//20140703 gl::setMatricesWindow(getWindowSize());
-		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);// mParameterBag->mOriginUpperLeft);
+	/*sliderLeftRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mLeftFboIndex));
+	sliderRightRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mRightFboIndex));
+	sliderMixRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mMixFboIndex));
+	sliderPreviewRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mCurrentPreviewFboIndex));*/
 
-		gl::color(ColorAf(1.0f, 1.0f, 1.0f, 1.0f));
-		if (mParameterBag->mPreviewEnabled)
-		{
-			// select drawing mode 
-			switch (mParameterBag->mMode)
-			{
-				/*case MODE_NORMAL:
-				gl::setMatricesWindow(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight, mParameterBag->mOriginUpperLeft);
-				gl::draw(mTextures->getFboTexture(mParameterBag->mCurrentPreviewFboIndex));
-				break;
-				case MODE_MIX:
-				gl::draw(mTextures->getFboTexture(mParameterBag->mMixFboIndex));
-				break;*/
-			case MODE_AUDIO:
-				mAudio->draw();
-				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mAudioFboIndex));
-				break;
-			case MODE_WARP:
-				mWarpings->draw();
-				break;
-			case MODE_SPHERE:
-				mSphere->draw();
-				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mSphereFboIndex));
-				break;
-			case MODE_MESH:
-				if (mMeshes->isSetup())
-				{
-					mMeshes->draw();
-					gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMeshFboIndex));
-				}
-				break;
-			case MODE_KINECT:
-				for (int i = 0; i < 20; i++)
-				{
-					gl::drawLine(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), Vec2f(mOSC->skeleton[i].z, mOSC->skeleton[i].w));
-					gl::drawSolidCircle(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), 5.0f, 16);
-				}
-				break;
-			default:
-				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
-				break;
-			}
-		}
-	}
-	else
-	{
-		if (mParameterBag->mMode == MODE_MESH){ if (mMeshes->isSetup()) mMeshes->draw(); }
-	}
+
 	//if (!removeUI) mUI->draw();
 	//mUserInterface->draw();
 	gl::setViewport(getWindowBounds());
@@ -284,21 +290,28 @@ void BatchassApp::drawMain()
 	//imgui
 	static float f = 0.0f;
 
-	static bool showTest = false, showMidi = false, showTheme = false, showAudio = true, showShaders = true, showOSC = true, showFps = true, showWS = true;
+	static bool showTest = false, showMidi = false, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
 	ImGui::NewFrame();
 	// our theme variables
-	static float WindowPadding[2] = { 25, 10 };
+	static float WindowPadding[2] = { 4, 2 };
 	static float WindowMinSize[2] = { 160, 80 };
 	static float FramePadding[2] = { 4, 4 };
 	static float ItemSpacing[2] = { 10, 5 };
 	static float ItemInnerSpacing[2] = { 5, 5 };
 
-	static float WindowFillAlphaDefault = 0.7;
-	static float WindowRounding = 4;
+	static float WindowFillAlphaDefault = 0.35;
+	static float WindowRounding = 7;
 	static float TreeNodeSpacing = 22;
 	static float ColumnsMinSpacing = 50;
 	static float ScrollBarWidth = 12;
 
+	ImGui::GetStyle().FramePadding = ImVec2(2, 2);
+	ImVec4 color0 = ImVec4(0.431373, 0.160784, 0.372549, 1);
+	ImVec4 color1 = ImVec4(0.2, 0.0392157, 0.0392157, 1);
+	ImVec4 color2 = ImVec4(0.317647, 0.184314, 0.2, 1);
+	ImVec4 color3 = ImVec4(1, 0.647059, 1, 1);
+	ImVec4 color4 = ImVec4(0.741176, 0.0941176, 1, 1);
+	ImGui::setThemeColor(color0, color1, color2, color3, color4);
 
 	if (showTest) ImGui::ShowTestWindow();
 
@@ -378,13 +391,11 @@ void BatchassApp::drawMain()
 			if (ImGui::Button("x")) { mBatchass->resetRatio(); }
 			ImGui::SameLine();
 
-			static float ratio[3] = { mParameterBag->controlValues[ctrl], mBatchass->minRatio, mBatchass->maxRatio };
-			ImGui::SliderFloat3("ratio/min/max", ratio, mBatchass->minRatio, mBatchass->maxRatio);
-
-			if (mParameterBag->controlValues[ctrl] != ratio[0])
+			static float ratio = mParameterBag->controlValues[ctrl];
+			if ( ImGui::SliderFloat("ratio/min/max", &ratio, mBatchass->minRatio, mBatchass->maxRatio))
 			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << ratio[0] << "}";
-				mParameterBag->controlValues[ctrl] = ratio[0];
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << ratio << "}";
+				mParameterBag->controlValues[ctrl] = ratio;
 			}
 			// exposure
 			ctrl = 14;
@@ -395,9 +406,7 @@ void BatchassApp::drawMain()
 			if (ImGui::Button("x")) { mBatchass->resetExposure(); }
 			ImGui::SameLine();
 			static float exposure = mParameterBag->controlValues[ctrl];
-			ImGui::SliderFloat("exposure", &exposure, mBatchass->minExposure, mBatchass->maxExposure);
-
-			if (mParameterBag->controlValues[ctrl] != exposure)
+			if (ImGui::SliderFloat("exposure", &exposure, mBatchass->minExposure, mBatchass->maxExposure))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << exposure << "}";
 				mParameterBag->controlValues[ctrl] = exposure;
@@ -411,9 +420,7 @@ void BatchassApp::drawMain()
 			if (ImGui::Button("x")) { mBatchass->resetZoom(); }
 			ImGui::SameLine();
 			static float zoom = mParameterBag->controlValues[ctrl];
-			ImGui::SliderFloat("zoom", &zoom, mBatchass->minZoom, mBatchass->maxZoom);
-
-			if (mParameterBag->controlValues[ctrl] != zoom)
+			if (ImGui::SliderFloat("zoom", &zoom, mBatchass->minZoom, mBatchass->maxZoom))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << zoom << "}";
 				mParameterBag->controlValues[ctrl] = zoom;
@@ -427,9 +434,7 @@ void BatchassApp::drawMain()
 			if (ImGui::Button("x")) { mBatchass->resetZPos(); }
 			ImGui::SameLine();
 			static float zPosition = mParameterBag->controlValues[ctrl];
-			ImGui::SliderFloat("zPosition", &zPosition, mBatchass->minZPos, mBatchass->maxZPos);
-
-			if (mParameterBag->controlValues[ctrl] != zPosition)
+			if (ImGui::SliderFloat("zPosition", &zPosition, mBatchass->minZPos, mBatchass->maxZPos))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << zPosition << "}";
 				mParameterBag->controlValues[ctrl] = zPosition;
@@ -444,9 +449,7 @@ void BatchassApp::drawMain()
 			if (ImGui::Button("x")) { mBatchass->resetRotationSpeed(); }
 			ImGui::SameLine();
 			static float rotationSpeed = mParameterBag->controlValues[ctrl];
-			ImGui::SliderFloat("rotationSpeed", &rotationSpeed, mBatchass->minRotationSpeed, mBatchass->maxRotationSpeed);
-
-			if (mParameterBag->controlValues[ctrl] != rotationSpeed)
+			if (ImGui::SliderFloat("rotationSpeed", &rotationSpeed, mBatchass->minRotationSpeed, mBatchass->maxRotationSpeed))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << rotationSpeed << "}";
 				mParameterBag->controlValues[ctrl] = rotationSpeed;
@@ -454,9 +457,7 @@ void BatchassApp::drawMain()
 			// blend modes
 			ctrl = 15;
 			static float blendmode = mParameterBag->controlValues[ctrl];
-			ImGui::SliderFloat("blendmode", &blendmode, 0.0f, 27.0f);
-
-			if (mParameterBag->controlValues[ctrl] != blendmode)
+			if (ImGui::SliderFloat("blendmode", &blendmode, 0.0f, 27.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << blendmode << "}";
 				mParameterBag->controlValues[ctrl] = blendmode;
@@ -464,19 +465,15 @@ void BatchassApp::drawMain()
 			// steps
 			ctrl = 16;
 			static float steps = mParameterBag->controlValues[ctrl];
-			ImGui::SliderFloat("steps", &steps, 1.0f, 128.0f);
-
-			if (mParameterBag->controlValues[ctrl] != steps)
+			if (ImGui::SliderFloat("steps", &steps, 1.0f, 128.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << steps << "}";
 				mParameterBag->controlValues[ctrl] = steps;
 			}
 			// pixelate
-			ctrl = 18;
+			ctrl = 20;
 			static float pixelate = mParameterBag->controlValues[ctrl];
-			ImGui::SliderFloat("pixelate", &pixelate, 0.01f, 1.0f);
-
-			if (mParameterBag->controlValues[ctrl] != pixelate)
+			if (ImGui::SliderFloat("pixelate", &pixelate, 0.01f, 1.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << pixelate << "}";
 				mParameterBag->controlValues[ctrl] = pixelate;
@@ -484,32 +481,20 @@ void BatchassApp::drawMain()
 			// iPreviewCrossfade
 			ctrl = 17;
 			static float previewCrossfade = mParameterBag->controlValues[ctrl];
-			ImGui::SliderFloat("previewCrossfade", &previewCrossfade, 0.01f, 1.0f);
-
-			if (mParameterBag->controlValues[ctrl] != previewCrossfade)
+			if (ImGui::SliderFloat("previewCrossfade", &previewCrossfade, 0.01f, 1.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << previewCrossfade << "}";
 				mParameterBag->controlValues[ctrl] = previewCrossfade;
 			}
 			// crossfade
-			ctrl = 18;
+			ctrl = 18;		
 			static float crossfade = mParameterBag->controlValues[ctrl];
-			ImGui::SliderFloat("crossfade", &crossfade, 0.01f, 1.0f);
-
-			if (mParameterBag->controlValues[ctrl] != crossfade)
+			if (ImGui::SliderFloat("crossfade", &crossfade, 0.01f, 1.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << crossfade << "}";
 				mParameterBag->controlValues[ctrl] = crossfade;
 			}
-			/*
-			//
-			sliderPreviewCrossfade = mParams->addSlider("PreviewXFade", &mParameterBag->controlValues[17], "{ \"min\":0.0, \"max\":1.0 }");
-			sliderCrossfade = mParams->addSlider("xFade", &mParameterBag->controlValues[18], "{ \"min\":0.0, \"max\":1.0 }");
-			controlValues[17] = 1.0f;
-			// iCrossfade
-			controlValues[18] = 1.0f;
-			sliderSpeed = mParams->addSlider("speed", &mParameterBag->controlValues[12], "{ \"min\":1.0, \"max\":255.0, \"nameColor\":\"0xFFFFFFFF\" }");
-			*/
+
 			aParams << "]}";
 			string strAParams = aParams.str();
 			if (strAParams.length() > 60)
@@ -582,27 +567,7 @@ void BatchassApp::drawMain()
 	{
 		ImGui::Begin("shaders", NULL, ImVec2(300, 300));
 		{
-			/*for (int i = 0; i < 5; i++)
-			{
 
-				if (ImGui::Button(mBatchass->getShadersRef()->getShaderName(i).c_str()))
-				{
-					mParameterBag->mLeftFragIndex = i;
-				}
-			}
-			
-			ImGui::BeginChild("Sub2", ImVec2(0,300), true);
-		ImGui::Text("With border");
-		ImGui::Columns(2);
-		for (int i = 0; i < 100; i++)
-		{
-			char buf[32];
-			ImFormatString(buf, IM_ARRAYSIZE(buf), "%08x", i*5731);
-			ImGui::Button(buf);
-			ImGui::NextColumn();
-		}
-		ImGui::EndChild();
-			*/
 			ImGui::BeginChild("shadas", ImVec2(0, 450), true);		
 			ImGui::Columns(4, "data", true);
 
@@ -874,7 +839,11 @@ void BatchassApp::drawMain()
 				values[values_offset] = mParameterBag->maxVolume;
 				values_offset = (values_offset + 1) % values.size();
 			}
-			ImGui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 1.0f, ImVec2(0, 30));
+			if (mParameterBag->maxVolume > 240.0) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+			ImGui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
+			if (mParameterBag->maxVolume > 240.0) ImGui::PopStyleColor();
+			
+			ImGui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
 
 			/*for (int a = 0; a < MAX; a++)
 			{
@@ -897,11 +866,12 @@ void BatchassApp::drawMain()
 			if (ImGui::GetTime() > refresh_time + 1.0f / 6.0f)
 			{
 				refresh_time = ImGui::GetTime();
-				values[values_offset] = getAverageFps();
+				values[values_offset] = mParameterBag->iFps;
 				values_offset = (values_offset + 1) % values.size();
 			}
-
+			if (mParameterBag->iFps < 12.0) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
 			ImGui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
+			if (mParameterBag->iFps < 12.0) ImGui::PopStyleColor();
 		}
 		ImGui::End();
 	}
@@ -921,7 +891,7 @@ void BatchassApp::drawRender()
 	gl::setViewport(getWindowBounds());
 	gl::enableAlphaBlending();
 	//20140703 gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);//NEW 20140620, needed?
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);// mParameterBag->mOriginUpperLeft);
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, false);
 	switch (mParameterBag->mMode)
 	{
 	case MODE_AUDIO:

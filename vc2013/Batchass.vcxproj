@@ -121,6 +121,7 @@
     <ResourceCompile Include="Resources.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\blocks\Cinder-ImGui\include\imgui.h" />
     <ClInclude Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.h" />
     <ClInclude Include="..\include\BatchassApp.h" />
     <ClInclude Include="..\include\Meshes.h" />

@@ -437,6 +437,9 @@
     <ClInclude Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.h">
       <Filter>Blocks\Cinder-MeshHelper</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\blocks\Cinder-ImGui\include\imgui.h">
+      <Filter>Blocks\imGui\src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources.rc">
