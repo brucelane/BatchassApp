@@ -52,7 +52,7 @@ void UI::setup()
 }
 void UI::setupMiniControl()
 {
-	mMiniControl = UIController::create("{ \"depth\":100, \"width\":1052, \"height\":300, \"fboNumSamples\":0, \"panelColor\":\"0x44282828\", \"defaultBackgroundColor\":\"0xFF0d0d0d\", \"defaultNameColor\":\"0xFF90a5b6\", \"defaultStrokeColor\":\"0xFF282828\", \"activeStrokeColor\":\"0xFF919ea7\" }");
+	mMiniControl = UIController::create("{ \"depth\":100, \"width\":1052, \"height\":200, \"fboNumSamples\":0, \"panelColor\":\"0x44282828\", \"defaultBackgroundColor\":\"0xFF0d0d0d\", \"defaultNameColor\":\"0xFF90a5b6\", \"defaultStrokeColor\":\"0xFF282828\", \"activeStrokeColor\":\"0xFF919ea7\" }");
 	mMiniControl->DEFAULT_UPDATE_FREQUENCY = 12;
 	mMiniControl->setFont("label", mParameterBag->mLabelFont);
 	mMiniControl->setFont("smallLabel", mParameterBag->mSmallLabelFont);
@@ -203,157 +203,6 @@ string UI::formatNumber(float f)
 }
 void UI::update()
 {
-	// check this line position: can't remember
-	currentTime = timer.getSeconds();
-
-	int time = (currentTime - startTime)*1000000.0;
-	int elapsed = mParameterBag->iDeltaTime*1000000.0;
-	if (elapsed > 0)
-	{
-		double modulo = (time % elapsed) / 1000000.0;
-		mParameterBag->iTempoTime = (float)modulo;
-		if (mParameterBag->iTempoTime < previousTime)
-		{
-			beatIndex++;
-			if (beatIndex > 3) beatIndex = 0;
-		}
-		previousTime = mParameterBag->iTempoTime;
-
-		(modulo < 0.1) ? tempoMvg->setNameColor(ColorA::white()) : tempoMvg->setNameColor(UIController::DEFAULT_NAME_COLOR);
-		// exposure
-		/*if (mSlidersPanel->tExposure)
-		{
-			mParameterBag->controlValues[14] = (modulo < 0.1) ? mSlidersPanel->maxExposure : mSlidersPanel->minExposure;
-		}
-		else
-		{
-			mParameterBag->controlValues[14] = mSlidersPanel->autoExposure ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, mSlidersPanel->minExposure, mSlidersPanel->maxExposure) : mParameterBag->controlValues[14];
-			//mParameterBag->controlValues[14] = mSlidersPanel->autoExposure ? (sin(getElapsedFrames() / (mParameterBag->controlValues[12] + 1.0))) : mParameterBag->controlValues[14];
-		}
-		// zoom
-		if (mSlidersPanel->tZoom)
-		{
-			mParameterBag->controlValues[13] = (modulo < 0.1) ? mSlidersPanel->maxZoom : mSlidersPanel->minZoom;
-		}
-		else
-		{
-			mParameterBag->controlValues[13] = mSlidersPanel->autoZoom ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, mSlidersPanel->minZoom, mSlidersPanel->maxZoom) : mParameterBag->controlValues[13];
-		}
-		// ratio
-		if (mSlidersPanel->tRatio)
-		{
-			mParameterBag->controlValues[11] = (modulo < 0.1) ? mSlidersPanel->maxRatio : mSlidersPanel->minRatio;
-		}
-		else
-		{
-			mParameterBag->controlValues[11] = mSlidersPanel->autoRatio ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, mSlidersPanel->minRatio, mSlidersPanel->maxRatio) : mParameterBag->controlValues[11];
-		}
-		// RotationSpeed
-		if (mSlidersPanel->tRotationSpeed)
-		{
-			mParameterBag->controlValues[19] = (modulo < 0.1) ? mSlidersPanel->maxRotationSpeed : mSlidersPanel->minRotationSpeed;
-		}
-		else
-		{
-			mParameterBag->controlValues[19] = mSlidersPanel->autoRotationSpeed ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, mSlidersPanel->minRotationSpeed, mSlidersPanel->maxRotationSpeed) : mParameterBag->controlValues[19];
-		}
-		// ZPos
-		if (mSlidersPanel->tZPos)
-		{
-			mParameterBag->controlValues[9] = (modulo < 0.1) ? mSlidersPanel->maxZPos : mSlidersPanel->minZPos;
-		}
-		else
-		{
-			mParameterBag->controlValues[9] = mSlidersPanel->autoZPos ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, mSlidersPanel->minZPos, mSlidersPanel->maxZPos) : mParameterBag->controlValues[9];
-		}
-		*/
-		// Front Red
-		if (mParameterBag->tFR)
-		{
-			mParameterBag->controlValues[1] = (modulo < 0.1) ? 1.0 : 0.0;
-		}
-		else
-		{
-			mParameterBag->controlValues[1] = mParameterBag->mLockFR ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, 0.0, 1.0) : mParameterBag->controlValues[1];
-		}
-		// Front Green
-		if (mParameterBag->tFG)
-		{
-			mParameterBag->controlValues[2] = (modulo < 0.1) ? 1.0 : 0.0;
-		}
-		else
-		{
-			mParameterBag->controlValues[2] = mParameterBag->mLockFG ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, 0.0, 1.0) : mParameterBag->controlValues[2];
-		}
-		// front blue
-		if (mParameterBag->tFB)
-		{
-			mParameterBag->controlValues[3] = (modulo < 0.1) ? 1.0 : 0.0;
-		}
-		else
-		{
-			mParameterBag->controlValues[3] = mParameterBag->mLockFB ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, 0.0, 1.0) : mParameterBag->controlValues[3];
-		}
-		// front alpha
-		if (mParameterBag->tFA)
-		{
-			mParameterBag->controlValues[4] = (modulo < 0.1) ? 1.0 : 0.0;
-		}
-		else
-		{
-			mParameterBag->controlValues[4] = mParameterBag->mLockFA ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, 0.0, 1.0) : mParameterBag->controlValues[4];
-		}
-		// 
-		if (mParameterBag->tBR)
-		{
-			mParameterBag->controlValues[5] = (modulo < 0.1) ? 1.0 : 0.0;
-		}
-		else
-		{
-			mParameterBag->controlValues[5] = mParameterBag->mLockBR ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, 0.0, 1.0) : mParameterBag->controlValues[5];
-		}
-		// 
-		if (mParameterBag->tBG)
-		{
-			mParameterBag->controlValues[6] = (modulo < 0.1) ? 1.0 : 0.0;
-		}
-		else
-		{
-			mParameterBag->controlValues[6] = mParameterBag->mLockBG ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, 0.0, 1.0) : mParameterBag->controlValues[6];
-		}
-		// 
-		if (mParameterBag->tBB)
-		{
-			mParameterBag->controlValues[7] = (modulo < 0.1) ? 1.0 : 0.0;
-		}
-		else
-		{
-			mParameterBag->controlValues[7] = mParameterBag->mLockBB ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, 0.0, 1.0) : mParameterBag->controlValues[7];
-		}
-		// 
-		if (mParameterBag->tBA)
-		{
-			mParameterBag->controlValues[8] = (modulo < 0.1) ? 1.0 : 0.0;
-		}
-		else
-		{
-			mParameterBag->controlValues[8] = mParameterBag->mLockBA ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, 0.0, 1.0) : mParameterBag->controlValues[8];
-		}
-		if (mParameterBag->autoInvert)
-		{
-			mParameterBag->controlValues[48] = (modulo < 0.1) ? 1.0 : 0.0;
-		}
-
-		if (mParameterBag->tEyePointZ)
-		{
-			mParameterBag->mCamEyePointZ = (modulo < 0.1) ? mParameterBag->minEyePointZ : mParameterBag->maxEyePointZ;
-		}
-		else
-		{
-			mParameterBag->mCamEyePointZ = mParameterBag->autoEyePointZ ? lmap<float>(mParameterBag->iTempoTime, 0.00001, mParameterBag->iDeltaTime, mParameterBag->minEyePointZ, mParameterBag->maxEyePointZ) : mParameterBag->mCamEyePointZ;
-		}
-
-	}
 
 	for (auto & panel : mPanels) panel->update();
 
@@ -366,15 +215,6 @@ void UI::update()
 				tempoMvg->setName(toString(floor(mParameterBag->mTempo)) + "bpm\n" + toString(floor(mParameterBag->iDeltaTime * 1000)) + "ms " + formatNumber(mParameterBag->iTempoTime));
 				
 				sliderTimeFactor->setName(formatNumber(mParameterBag->iTimeFactor));
-				if (mParameterBag->iFps > 12.0)
-				{
-					mParameterBag->FPSColor = UIController::DEFAULT_NAME_COLOR;
-				}
-				else
-				{
-					mParameterBag->FPSColor = mParameterBag->ColorRed;
-				}
-				fpsMvg->setNameColor(mParameterBag->FPSColor);
 			}
 			if (mParameterBag->controlValues[12] == 0.0) mParameterBag->controlValues[12] = 0.01;
 

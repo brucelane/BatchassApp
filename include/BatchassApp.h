@@ -35,7 +35,7 @@ along with Cinder-MIDI.  If not, see <http://www.gnu.org/licenses/>.
 // window manager
 #include "WindowMngr.h"
 // UserInterface
-#include "imGuiCinder.h"
+#include "CinderImGui.h"
 // parameters
 #include "ParameterBag.h"
 // OSC

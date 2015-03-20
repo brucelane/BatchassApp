@@ -69,7 +69,10 @@ void BatchassApp::setup()
 	mUI = UI::create(mParameterBag, mBatchass->getShadersRef(), mBatchass->getTexturesRef(), mMainWindow);
 	mUI->setup();
 	// set ui window and io events callbacks
-	ImGui::setWindow(getWindow());
+	//ImGui::setWindow(getWindow());
+	// set ui window and io events callbacks
+	ImGui::connectWindow(getWindow());
+	ImGui::initialize();
 
 	// midi
 	setupMidi();
@@ -205,7 +208,7 @@ void BatchassApp::drawMain()
 	// draw from Spout receivers
 	mSpout->draw();
 	// draw the fbos
-	mBatchass->getTexturesRef()->draw();	
+	mBatchass->getTexturesRef()->draw();
 
 	gl::setViewport(getWindowBounds());
 	//gl::setViewport(mBatchass->getTexturesRef()->getFbo(0).getBounds());
@@ -277,14 +280,14 @@ void BatchassApp::drawMain()
 	int fboY = 10 + mParameterBag->mPreviewFboHeight;
 
 	// previews
-	//gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true); 
+	//gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);
 	for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
 	{
-		gl::draw(mBatchass->getTexturesRef()->getTexture(i), Rectf(i* mParameterBag->mPreviewFboWidth, texY, (i + 1) * mParameterBag->mPreviewFboWidth + margin, texY + mParameterBag->mPreviewFboHeight));
+	gl::draw(mBatchass->getTexturesRef()->getTexture(i), Rectf(i* mParameterBag->mPreviewFboWidth, texY, (i + 1) * mParameterBag->mPreviewFboWidth + margin, texY + mParameterBag->mPreviewFboHeight));
 	}
 	for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
 	{
-		gl::draw(mBatchass->getTexturesRef()->getFboTexture(i), Rectf(i* mParameterBag->mPreviewFboWidth, fboY, (i + 1) * mParameterBag->mPreviewFboWidth + margin, fboY + mParameterBag->mPreviewFboHeight));
+	gl::draw(mBatchass->getTexturesRef()->getFboTexture(i), Rectf(i* mParameterBag->mPreviewFboWidth, fboY, (i + 1) * mParameterBag->mPreviewFboWidth + margin, fboY + mParameterBag->mPreviewFboHeight));
 	}*/
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
@@ -379,10 +382,18 @@ void BatchassApp::drawMain()
 			if (ImGui::Button("47 vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
 			ImGui::SameLine();
 			if (ImGui::Button("48 invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
+			ImGui::SameLine();
+			if (ImGui::Button("greyscale")) { mParameterBag->iGreyScale = !mParameterBag->iGreyScale; }
+			ImGui::SameLine();
+			if (ImGui::Button("instant black"))
+			{
+				mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3] = mParameterBag->controlValues[4] = 0.0;
+				mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = mParameterBag->controlValues[8] = 0.0;
+			}
 		}
 		if (ImGui::CollapsingHeader("Animation", NULL, true, true))
 		{
-			
+
 			ImGui::SliderInt("mUIRefresh", &mParameterBag->mUIRefresh, 1, 255);
 			int ctrl;
 			stringstream aParams;
@@ -398,7 +409,7 @@ void BatchassApp::drawMain()
 			ImGui::SameLine();
 
 			static float ratio = mParameterBag->controlValues[ctrl];
-			if ( ImGui::SliderFloat("ratio/min/max", &ratio, mBatchass->minRatio, mBatchass->maxRatio))
+			if (ImGui::SliderFloat("ratio/min/max", &ratio, mBatchass->minRatio, mBatchass->maxRatio))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << ratio << "}";
 				mParameterBag->controlValues[ctrl] = ratio;
@@ -493,7 +504,7 @@ void BatchassApp::drawMain()
 				mParameterBag->controlValues[ctrl] = previewCrossfade;
 			}
 			// crossfade
-			ctrl = 18;		
+			ctrl = 18;
 			static float crossfade = mParameterBag->controlValues[ctrl];
 			if (ImGui::SliderFloat("crossfade", &crossfade, 0.01f, 1.0f))
 			{
@@ -559,7 +570,7 @@ void BatchassApp::drawMain()
 			string strParams = sParams.str();
 			/*if (strParams.length() > 60)
 			{
-				mWebSockets->write(strParams);
+			mWebSockets->write(strParams);
 			}*/
 
 		}
@@ -568,13 +579,13 @@ void BatchassApp::drawMain()
 	ImGui::End();
 #pragma endregion Global
 #pragma region shaders
-	
+
 	if (showShaders)
 	{
 		ImGui::Begin("shaders", NULL, ImVec2(300, 300));
 		{
 
-			ImGui::BeginChild("shadas", ImVec2(0, 450), true);		
+			ImGui::BeginChild("shadas", ImVec2(0, 450), true);
 			ImGui::Columns(4, "data", true);
 
 			for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
@@ -604,7 +615,7 @@ void BatchassApp::drawMain()
 				{
 					mParameterBag->mPreviewFragIndex = i;
 				}
-				ImGui::NextColumn();			
+				ImGui::NextColumn();
 				//ImGui::Separator();
 			}
 			ImGui::EndChild();
@@ -860,7 +871,6 @@ void BatchassApp::drawMain()
 	// audio window
 	if (showAudio)
 	{
-
 		ImGui::Begin("Audio", NULL, ImVec2(200, 100));
 		{
 			ImGui::Checkbox("Playing", &mParameterBag->mIsPlaying);
@@ -882,9 +892,19 @@ void BatchassApp::drawMain()
 			if (mParameterBag->maxVolume > 240.0) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
 			ImGui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
 			if (mParameterBag->maxVolume > 240.0) ImGui::PopStyleColor();
-			
+
 			ImGui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
 
+			static int fftSize = mAudio->getFftSize();
+			if (ImGui::SliderInt("fft size", &fftSize, 1, 1024))
+			{
+				mAudio->setFftSize(fftSize);
+			}
+			static int windowSize = mAudio->getWindowSize();
+			if (ImGui::SliderInt("window size", &windowSize, 1, 1024))
+			{
+				mAudio->setWindowSize(windowSize);
+			}
 			/*for (int a = 0; a < MAX; a++)
 			{
 			if (mOSC->tracks[a] != "default.glsl") ImGui::Button(mOSC->tracks[a].c_str());
@@ -912,8 +932,12 @@ void BatchassApp::drawMain()
 			if (mParameterBag->iFps < 12.0) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
 			ImGui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
 			if (mParameterBag->iFps < 12.0) ImGui::PopStyleColor();
+			ImGui::Text("mouse %d", ImGui::GetIO().MouseDown[0]);
+
 		}
+
 		ImGui::End();
+
 	}
 #pragma endregion FPS
 
@@ -1138,7 +1162,7 @@ void BatchassApp::update()
 	mWebSockets->update();
 	mOSC->update();
 	mParameterBag->iFps = getAverageFps();
-	mParameterBag->sFps = toString(floor(getAverageFps()));
+	mParameterBag->sFps = toString(floor(mParameterBag->iFps));
 	getWindow()->setTitle("(" + mParameterBag->sFps + " fps) Batchass");
 	if (mParameterBag->iGreyScale)
 	{
@@ -1219,19 +1243,21 @@ void BatchassApp::mouseDown(MouseEvent event)
 {
 	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseDown(event);
 	if (mParameterBag->mMode == MODE_MESH) mMeshes->mouseDown(event);
-
+	if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseDown(event);
+	
 }
 
 void BatchassApp::mouseDrag(MouseEvent event)
 {
 	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseDrag(event);
 	if (mParameterBag->mMode == MODE_MESH) mMeshes->mouseDrag(event);
-
+	if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseDrag(event);
 }
 
 void BatchassApp::mouseUp(MouseEvent event)
 {
 	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseUp(event);
+	if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseUp(event);
 
 }
 
