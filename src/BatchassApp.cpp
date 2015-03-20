@@ -69,10 +69,11 @@ void BatchassApp::setup()
 	mUI = UI::create(mParameterBag, mBatchass->getShadersRef(), mBatchass->getTexturesRef(), mMainWindow);
 	mUI->setup();
 	// set ui window and io events callbacks
-	//ImGui::setWindow(getWindow());
+	//ui::setWindow(getWindow());
 	// set ui window and io events callbacks
-	ImGui::connectWindow(getWindow());
-	ImGui::initialize();
+	//ui::connectWindow(getWindow());
+	//ui::initialize();
+	ui::initialize();
 
 	// midi
 	setupMidi();
@@ -296,7 +297,7 @@ void BatchassApp::drawMain()
 	static float f = 0.0f;
 
 	static bool showTest = false, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
-	ImGui::NewFrame();
+	//ui::NewFrame();
 	// our theme variables
 	static float WindowPadding[2] = { 4, 2 };
 	static float WindowMinSize[2] = { 160, 80 };
@@ -310,148 +311,148 @@ void BatchassApp::drawMain()
 	static float ColumnsMinSpacing = 50;
 	static float ScrollBarWidth = 12;
 
-	ImGui::GetStyle().FramePadding = ImVec2(2, 2);
+	ui::GetStyle().FramePadding = ImVec2(2, 2);
 	/*ImVec4 color0 = ImVec4(0.431373, 0.160784, 0.372549, 1);
 	ImVec4 color1 = ImVec4(0.2, 0.0392157, 0.0392157, 1);
 	ImVec4 color2 = ImVec4(0.317647, 0.184314, 0.2, 1);
 	ImVec4 color3 = ImVec4(1, 0.647059, 1, 1);
 	ImVec4 color4 = ImVec4(0.741176, 0.0941176, 1, 1);
-	ImGui::setThemeColor(color0, color1, color2, color3, color4);
+	ui::setThemeColor(color0, color1, color2, color3, color4);
 	\"panelColor\":\"0x44282828\",  \"defaultBackgroundColor\":\"0xFF0d0d0d\", \"defaultNameColor\":\"0xFF90a5b6\", \"defaultStrokeColor\":\"0xFF282828\", \"activeStrokeColor\":\"0xFF919ea7\" }");
 	*/
 
-	if (showTest) ImGui::ShowTestWindow();
+	if (showTest) ui::ShowTestWindow();
 
 #pragma region Global
 
 	// start a new window
-	ImGui::Begin("Global", NULL, ImVec2(500, 200));
+	ui::Begin("Global", NULL, ImVec2(500, 200));
 	{
-		if (ImGui::CollapsingHeader("Panels", "11", true, true))
+		if (ui::CollapsingHeader("Panels", "11", true, true))
 		{
 			// Checkbox
-			ImGui::Checkbox("Audio", &showAudio);
-			ImGui::SameLine();
-			ImGui::Checkbox("WebSockets", &showWS);
-			ImGui::SameLine();
-			ImGui::Checkbox("Shada", &showShaders);
-			ImGui::SameLine();
-			ImGui::Checkbox("FPS", &showFps);
-			ImGui::Checkbox("OSC", &showOSC);
-			ImGui::SameLine();
-			ImGui::Checkbox("MIDI", &showMidi);
-			ImGui::SameLine();
-			ImGui::Checkbox("Test", &showTest);
-			ImGui::SameLine();
-			ImGui::Checkbox("Editor", &showTheme);
-			if (ImGui::Button("Save Params")) { mParameterBag->save(); }
+			ui::Checkbox("Audio", &showAudio);
+			ui::SameLine();
+			ui::Checkbox("WebSockets", &showWS);
+			ui::SameLine();
+			ui::Checkbox("Shada", &showShaders);
+			ui::SameLine();
+			ui::Checkbox("FPS", &showFps);
+			ui::Checkbox("OSC", &showOSC);
+			ui::SameLine();
+			ui::Checkbox("MIDI", &showMidi);
+			ui::SameLine();
+			ui::Checkbox("Test", &showTest);
+			ui::SameLine();
+			ui::Checkbox("Editor", &showTheme);
+			if (ui::Button("Save Params")) { mParameterBag->save(); }
 
 		}
-		if (ImGui::CollapsingHeader("Mode", NULL, true, true))
+		if (ui::CollapsingHeader("Mode", NULL, true, true))
 		{
 			static int mode = mParameterBag->mMode;
-			ImGui::RadioButton("Mix", &mode, MODE_MIX); ImGui::SameLine();
-			ImGui::RadioButton("Audio", &mode, MODE_AUDIO); ImGui::SameLine();
-			ImGui::RadioButton("Sphere", &mode, MODE_SPHERE); ImGui::SameLine();
-			ImGui::RadioButton("Warp", &mode, MODE_WARP); ImGui::SameLine();
-			ImGui::RadioButton("Mesh", &mode, MODE_MESH);
+			ui::RadioButton("Mix", &mode, MODE_MIX); ui::SameLine();
+			ui::RadioButton("Audio", &mode, MODE_AUDIO); ui::SameLine();
+			ui::RadioButton("Sphere", &mode, MODE_SPHERE); ui::SameLine();
+			ui::RadioButton("Warp", &mode, MODE_WARP); ui::SameLine();
+			ui::RadioButton("Mesh", &mode, MODE_MESH);
 			if (mParameterBag->mMode != mode) changeMode(mode);
 		}
-		if (ImGui::CollapsingHeader("Render Window", NULL, true, true))
+		if (ui::CollapsingHeader("Render Window", NULL, true, true))
 		{
-			if (ImGui::Button("Create")) { createRenderWindow(); }
-			ImGui::SameLine();
-			if (ImGui::Button("Delete")) { deleteRenderWindows(); }
-			ImGui::SameLine();
-			if (ImGui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
-			ImGui::SameLine();
-			if (ImGui::Button("Debug")) { mParameterBag->iDebug = !mParameterBag->iDebug; }
+			if (ui::Button("Create")) { createRenderWindow(); }
+			ui::SameLine();
+			if (ui::Button("Delete")) { deleteRenderWindows(); }
+			ui::SameLine();
+			if (ui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
+			ui::SameLine();
+			if (ui::Button("Debug")) { mParameterBag->iDebug = !mParameterBag->iDebug; }
 		}
-		if (ImGui::CollapsingHeader("Effects", NULL, true, true))
+		if (ui::CollapsingHeader("Effects", NULL, true, true))
 		{
-			if (ImGui::Button("chromatic")) { mParameterBag->controlValues[15] = !mParameterBag->controlValues[15]; }
-			ImGui::SameLine();
-			if (ImGui::Button("origin up left")) { mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft; }
-			ImGui::SameLine();
-			if (ImGui::Button("repeat")) { mParameterBag->iRepeat = !mParameterBag->iRepeat; }
-			ImGui::SameLine();
-			if (ImGui::Button("45 glitch")) { mParameterBag->controlValues[45] = !mParameterBag->controlValues[45]; }
+			if (ui::Button("chromatic")) { mParameterBag->controlValues[15] = !mParameterBag->controlValues[15]; }
+			ui::SameLine();
+			if (ui::Button("origin up left")) { mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft; }
+			ui::SameLine();
+			if (ui::Button("repeat")) { mParameterBag->iRepeat = !mParameterBag->iRepeat; }
+			ui::SameLine();
+			if (ui::Button("45 glitch")) { mParameterBag->controlValues[45] = !mParameterBag->controlValues[45]; }
 
-			if (ImGui::Button("46 toggle")) { mParameterBag->controlValues[46] = !mParameterBag->controlValues[46]; }
-			ImGui::SameLine();
-			if (ImGui::Button("47 vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
-			ImGui::SameLine();
-			if (ImGui::Button("48 invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
-			ImGui::SameLine();
-			if (ImGui::Button("greyscale")) { mParameterBag->iGreyScale = !mParameterBag->iGreyScale; }
-			ImGui::SameLine();
-			if (ImGui::Button("instant black"))
+			if (ui::Button("46 toggle")) { mParameterBag->controlValues[46] = !mParameterBag->controlValues[46]; }
+			ui::SameLine();
+			if (ui::Button("47 vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
+			ui::SameLine();
+			if (ui::Button("48 invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
+			ui::SameLine();
+			if (ui::Button("greyscale")) { mParameterBag->iGreyScale = !mParameterBag->iGreyScale; }
+			ui::SameLine();
+			if (ui::Button("instant black"))
 			{
 				mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3] = mParameterBag->controlValues[4] = 0.0;
 				mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = mParameterBag->controlValues[8] = 0.0;
 			}
 		}
-		if (ImGui::CollapsingHeader("Animation", NULL, true, true))
+		if (ui::CollapsingHeader("Animation", NULL, true, true))
 		{
 
-			ImGui::SliderInt("mUIRefresh", &mParameterBag->mUIRefresh, 1, 255);
+			ui::SliderInt("mUIRefresh", &mParameterBag->mUIRefresh, 1, 255);
 			int ctrl;
 			stringstream aParams;
 			aParams << "{\"anim\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
 
 			// ratio
 			ctrl = 11;
-			if (ImGui::Button("a")) { mBatchass->lockRatio(); }
-			ImGui::SameLine();
-			if (ImGui::Button("t")) { mBatchass->tempoRatio(); }
-			ImGui::SameLine();
-			if (ImGui::Button("x")) { mBatchass->resetRatio(); }
-			ImGui::SameLine();
+			if (ui::Button("a")) { mBatchass->lockRatio(); }
+			ui::SameLine();
+			if (ui::Button("t")) { mBatchass->tempoRatio(); }
+			ui::SameLine();
+			if (ui::Button("x")) { mBatchass->resetRatio(); }
+			ui::SameLine();
 
 			static float ratio = mParameterBag->controlValues[ctrl];
-			if (ImGui::SliderFloat("ratio/min/max", &ratio, mBatchass->minRatio, mBatchass->maxRatio))
+			if (ui::SliderFloat("ratio/min/max", &ratio, mBatchass->minRatio, mBatchass->maxRatio))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << ratio << "}";
 				mParameterBag->controlValues[ctrl] = ratio;
 			}
 			// exposure
 			ctrl = 14;
-			if (ImGui::Button("a")) { mBatchass->lockExposure(); }
-			ImGui::SameLine();
-			if (ImGui::Button("t")) { mBatchass->tempoExposure(); }
-			ImGui::SameLine();
-			if (ImGui::Button("x")) { mBatchass->resetExposure(); }
-			ImGui::SameLine();
+			if (ui::Button("a")) { mBatchass->lockExposure(); }
+			ui::SameLine();
+			if (ui::Button("t")) { mBatchass->tempoExposure(); }
+			ui::SameLine();
+			if (ui::Button("x")) { mBatchass->resetExposure(); }
+			ui::SameLine();
 			static float exposure = mParameterBag->controlValues[ctrl];
-			if (ImGui::SliderFloat("exposure", &exposure, mBatchass->minExposure, mBatchass->maxExposure))
+			if (ui::SliderFloat("exposure", &exposure, mBatchass->minExposure, mBatchass->maxExposure))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << exposure << "}";
 				mParameterBag->controlValues[ctrl] = exposure;
 			}
 			// zoom
 			ctrl = 13;
-			if (ImGui::Button("a")) { mBatchass->lockZoom(); }
-			ImGui::SameLine();
-			if (ImGui::Button("t")) { mBatchass->tempoZoom(); }
-			ImGui::SameLine();
-			if (ImGui::Button("x")) { mBatchass->resetZoom(); }
-			ImGui::SameLine();
+			if (ui::Button("a")) { mBatchass->lockZoom(); }
+			ui::SameLine();
+			if (ui::Button("t")) { mBatchass->tempoZoom(); }
+			ui::SameLine();
+			if (ui::Button("x")) { mBatchass->resetZoom(); }
+			ui::SameLine();
 			static float zoom = mParameterBag->controlValues[ctrl];
-			if (ImGui::SliderFloat("zoom", &zoom, mBatchass->minZoom, mBatchass->maxZoom))
+			if (ui::SliderFloat("zoom", &zoom, mBatchass->minZoom, mBatchass->maxZoom))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << zoom << "}";
 				mParameterBag->controlValues[ctrl] = zoom;
 			}
 			// z position
 			ctrl = 9;
-			if (ImGui::Button("a")) { mBatchass->lockZPos(); }
-			ImGui::SameLine();
-			if (ImGui::Button("t")) { mBatchass->tempoZPos(); }
-			ImGui::SameLine();
-			if (ImGui::Button("x")) { mBatchass->resetZPos(); }
-			ImGui::SameLine();
+			if (ui::Button("a")) { mBatchass->lockZPos(); }
+			ui::SameLine();
+			if (ui::Button("t")) { mBatchass->tempoZPos(); }
+			ui::SameLine();
+			if (ui::Button("x")) { mBatchass->resetZPos(); }
+			ui::SameLine();
 			static float zPosition = mParameterBag->controlValues[ctrl];
-			if (ImGui::SliderFloat("zPosition", &zPosition, mBatchass->minZPos, mBatchass->maxZPos))
+			if (ui::SliderFloat("zPosition", &zPosition, mBatchass->minZPos, mBatchass->maxZPos))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << zPosition << "}";
 				mParameterBag->controlValues[ctrl] = zPosition;
@@ -459,14 +460,14 @@ void BatchassApp::drawMain()
 
 			// rotation speed
 			ctrl = 19;
-			if (ImGui::Button("a")) { mBatchass->lockRotationSpeed(); }
-			ImGui::SameLine();
-			if (ImGui::Button("t")) { mBatchass->tempoRotationSpeed(); }
-			ImGui::SameLine();
-			if (ImGui::Button("x")) { mBatchass->resetRotationSpeed(); }
-			ImGui::SameLine();
+			if (ui::Button("a")) { mBatchass->lockRotationSpeed(); }
+			ui::SameLine();
+			if (ui::Button("t")) { mBatchass->tempoRotationSpeed(); }
+			ui::SameLine();
+			if (ui::Button("x")) { mBatchass->resetRotationSpeed(); }
+			ui::SameLine();
 			static float rotationSpeed = mParameterBag->controlValues[ctrl];
-			if (ImGui::SliderFloat("rotationSpeed", &rotationSpeed, mBatchass->minRotationSpeed, mBatchass->maxRotationSpeed))
+			if (ui::SliderFloat("rotationSpeed", &rotationSpeed, mBatchass->minRotationSpeed, mBatchass->maxRotationSpeed))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << rotationSpeed << "}";
 				mParameterBag->controlValues[ctrl] = rotationSpeed;
@@ -474,7 +475,7 @@ void BatchassApp::drawMain()
 			// blend modes
 			ctrl = 15;
 			static float blendmode = mParameterBag->controlValues[ctrl];
-			if (ImGui::SliderFloat("blendmode", &blendmode, 0.0f, 27.0f))
+			if (ui::SliderFloat("blendmode", &blendmode, 0.0f, 27.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << blendmode << "}";
 				mParameterBag->controlValues[ctrl] = blendmode;
@@ -482,7 +483,7 @@ void BatchassApp::drawMain()
 			// steps
 			ctrl = 16;
 			static float steps = mParameterBag->controlValues[ctrl];
-			if (ImGui::SliderFloat("steps", &steps, 1.0f, 128.0f))
+			if (ui::SliderFloat("steps", &steps, 1.0f, 128.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << steps << "}";
 				mParameterBag->controlValues[ctrl] = steps;
@@ -490,7 +491,7 @@ void BatchassApp::drawMain()
 			// pixelate
 			ctrl = 20;
 			static float pixelate = mParameterBag->controlValues[ctrl];
-			if (ImGui::SliderFloat("pixelate", &pixelate, 0.01f, 1.0f))
+			if (ui::SliderFloat("pixelate", &pixelate, 0.01f, 1.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << pixelate << "}";
 				mParameterBag->controlValues[ctrl] = pixelate;
@@ -498,7 +499,7 @@ void BatchassApp::drawMain()
 			// iPreviewCrossfade
 			ctrl = 17;
 			static float previewCrossfade = mParameterBag->controlValues[ctrl];
-			if (ImGui::SliderFloat("previewCrossfade", &previewCrossfade, 0.01f, 1.0f))
+			if (ui::SliderFloat("previewCrossfade", &previewCrossfade, 0.01f, 1.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << previewCrossfade << "}";
 				mParameterBag->controlValues[ctrl] = previewCrossfade;
@@ -506,7 +507,7 @@ void BatchassApp::drawMain()
 			// crossfade
 			ctrl = 18;
 			static float crossfade = mParameterBag->controlValues[ctrl];
-			if (ImGui::SliderFloat("crossfade", &crossfade, 0.01f, 1.0f))
+			if (ui::SliderFloat("crossfade", &crossfade, 0.01f, 1.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << crossfade << "}";
 				mParameterBag->controlValues[ctrl] = crossfade;
@@ -519,13 +520,13 @@ void BatchassApp::drawMain()
 				mWebSockets->write(strAParams);
 			}
 		}
-		if (ImGui::CollapsingHeader("Colors", NULL, true, true))
+		if (ui::CollapsingHeader("Colors", NULL, true, true))
 		{
 			stringstream sParams;
 			sParams << "{\"colors\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
 			// foreground color
 			static float color[4] = { mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4] };
-			ImGui::ColorEdit4("f", color);
+			ui::ColorEdit4("f", color);
 
 			for (int i = 0; i < 4; i++)
 			{
@@ -547,12 +548,12 @@ void BatchassApp::drawMain()
 
 			}
 
-			//ImGui::SameLine();
-			//ImGui::TextColored(ImVec4(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4]), "fg color");
+			//ui::SameLine();
+			//ui::TextColored(ImVec4(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4]), "fg color");
 
 			// background color
 			static float backcolor[4] = { mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8] };
-			ImGui::ColorEdit4("g", backcolor);
+			ui::ColorEdit4("g", backcolor);
 			for (int i = 0; i < 4; i++)
 			{
 				if (mParameterBag->controlValues[i + 5] != backcolor[i])
@@ -563,8 +564,8 @@ void BatchassApp::drawMain()
 
 			}
 
-			//ImGui::SameLine();
-			//ImGui::TextColored(ImVec4(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8]), "bg color");
+			//ui::SameLine();
+			//ui::TextColored(ImVec4(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8]), "bg color");
 
 			sParams << "]}";
 			string strParams = sParams.str();
@@ -576,52 +577,52 @@ void BatchassApp::drawMain()
 		}
 
 	}
-	ImGui::End();
+	ui::End();
 #pragma endregion Global
 #pragma region shaders
 
 	if (showShaders)
 	{
-		ImGui::Begin("shaders", NULL, ImVec2(300, 300));
+		ui::Begin("shaders", NULL, ImVec2(300, 300));
 		{
 
-			ImGui::BeginChild("shadas", ImVec2(0, 450), true);
-			ImGui::Columns(4, "data", true);
+			ui::BeginChild("shadas", ImVec2(0, 450), true);
+			ui::Columns(4, "data", true);
 
 			for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
 			{
 				//char buf[32];
 				//sprintf_s(buf, "s %d", i);
-				if (ImGui::Button(mBatchass->getShadersRef()->getShaderName(i).c_str()))
+				if (ui::Button(mBatchass->getShadersRef()->getShaderName(i).c_str()))
 				{
 					//setCurrentFbo mParameterBag->mCurrentFboLibraryIndex = aIndex;
 				}
-				ImGui::NextColumn();
+				ui::NextColumn();
 				char buf[32];
 				sprintf_s(buf, "L%d", i);
-				if (ImGui::Button(buf))
+				if (ui::Button(buf))
 				{
 					mParameterBag->mLeftFragIndex = i;
 				}
-				ImGui::NextColumn();
+				ui::NextColumn();
 				sprintf_s(buf, "R%d", i);
-				if (ImGui::Button(buf))
+				if (ui::Button(buf))
 				{
 					mParameterBag->mRightFragIndex = i;
 				}
-				ImGui::NextColumn();
+				ui::NextColumn();
 				sprintf_s(buf, "P%d", i);
-				if (ImGui::Button(buf))
+				if (ui::Button(buf))
 				{
 					mParameterBag->mPreviewFragIndex = i;
 				}
-				ImGui::NextColumn();
-				//ImGui::Separator();
+				ui::NextColumn();
+				//ui::Separator();
 			}
-			ImGui::EndChild();
-			ImGui::Columns(1);
+			ui::EndChild();
+			ui::Columns(1);
 		}
-		ImGui::End();
+		ui::End();
 	}
 
 #pragma endregion shaders
@@ -629,33 +630,33 @@ void BatchassApp::drawMain()
 
 	if (showFbos)
 	{
-		ImGui::Begin("fbos", NULL, ImVec2(300, 300));
+		ui::Begin("fbos", NULL, ImVec2(300, 300));
 		{
 
-			ImGui::BeginChild("fbo", ImVec2(0, 450), true);
-			ImGui::Columns(2, "data", true);
+			ui::BeginChild("fbo", ImVec2(0, 450), true);
+			ui::Columns(2, "data", true);
 
 			for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
 			{
 				char buf[32];
 				sprintf_s(buf, "fbo %d", i);
-				if (ImGui::Button(buf))
+				if (ui::Button(buf))
 				{
 					//setCurrentFbo 
 				}
-				ImGui::NextColumn();
+				ui::NextColumn();
 				sprintf_s(buf, "F%d", i);
-				if (ImGui::Button(buf))
+				if (ui::Button(buf))
 				{
 					mBatchass->getTexturesRef()->flipFbo(i);
 				}
-				ImGui::NextColumn();
-				//ImGui::Separator();
+				ui::NextColumn();
+				//ui::Separator();
 			}
-			ImGui::EndChild();
-			ImGui::Columns(1);
+			ui::EndChild();
+			ui::Columns(1);
 		}
-		ImGui::End();
+		ui::End();
 	}
 
 #pragma endregion fbos
@@ -664,18 +665,18 @@ void BatchassApp::drawMain()
 	// MIDI window
 	if (showMidi)
 	{
-		ImGui::Begin("MIDI", NULL, ImVec2(300, 300));
+		ui::Begin("MIDI", NULL, ImVec2(300, 300));
 		{
-			if (ImGui::CollapsingHeader("MidiIn", "20", true, true))
+			if (ui::CollapsingHeader("MidiIn", "20", true, true))
 			{
-				ImGui::Columns(2, "data", true);
-				ImGui::Text("Name"); ImGui::NextColumn();
-				ImGui::Text("Connect"); ImGui::NextColumn();
-				ImGui::Separator();
+				ui::Columns(2, "data", true);
+				ui::Text("Name"); ui::NextColumn();
+				ui::Text("Connect"); ui::NextColumn();
+				ui::Separator();
 
 				for (int i = 0; i < mMidiInputs.size(); i++)
 				{
-					ImGui::Text(mMidiInputs[i].portName.c_str()); ImGui::NextColumn();
+					ui::Text(mMidiInputs[i].portName.c_str()); ui::NextColumn();
 					char buf[32];
 					if (mMidiInputs[i].isConnected)
 					{
@@ -686,7 +687,7 @@ void BatchassApp::drawMain()
 						sprintf_s(buf, "Connect %d", i);
 					}
 
-					if (ImGui::Button(buf))
+					if (ui::Button(buf))
 					{
 						stringstream ss;
 						if (mMidiInputs[i].isConnected)
@@ -727,19 +728,19 @@ void BatchassApp::drawMain()
 						}
 						mLogMsg = ss.str();
 					}
-					ImGui::NextColumn();
-					ImGui::Separator();
+					ui::NextColumn();
+					ui::Separator();
 				}
-				ImGui::Columns(1);
+				ui::Columns(1);
 
 			}
-			if (ImGui::CollapsingHeader("Log", "21", true, true))
+			if (ui::CollapsingHeader("Log", "21", true, true))
 			{
 				static ImGuiTextBuffer log;
 				static int lines = 0;
-				ImGui::Text("Buffer contents: %d lines, %d bytes", lines, log.size());
-				if (ImGui::Button("Clear")) { log.clear(); lines = 0; }
-				//ImGui::SameLine();
+				ui::Text("Buffer contents: %d lines, %d bytes", lines, log.size());
+				if (ui::Button("Clear")) { log.clear(); lines = 0; }
+				//ui::SameLine();
 
 				if (newLogMsg)
 				{
@@ -748,41 +749,41 @@ void BatchassApp::drawMain()
 					lines++;
 					if (lines > 5) { log.clear(); lines = 0; }
 				}
-				ImGui::BeginChild("Log");
-				ImGui::TextUnformatted(log.begin(), log.end());
-				ImGui::EndChild();
+				ui::BeginChild("Log");
+				ui::TextUnformatted(log.begin(), log.end());
+				ui::EndChild();
 			}
 		}
-		ImGui::End();
+		ui::End();
 	}
 #pragma endregion MIDI
 #pragma region OSC
 
 	if (showOSC)
 	{
-		ImGui::Begin("OSC router", NULL, ImVec2(300, 300));
+		ui::Begin("OSC router", NULL, ImVec2(300, 300));
 		{
-			ImGui::Text("Sending to host %s", mParameterBag->mOSCDestinationHost.c_str());
-			ImGui::SameLine();
-			ImGui::Text(" on port %d", mParameterBag->mOSCDestinationPort);
-			ImGui::Text("Sending to 2nd host %s", mParameterBag->mOSCDestinationHost2.c_str());
-			ImGui::SameLine();
-			ImGui::Text(" on port %d", mParameterBag->mOSCDestinationPort2);
-			ImGui::Text(" Receiving on port %d", mParameterBag->mOSCReceiverPort);
+			ui::Text("Sending to host %s", mParameterBag->mOSCDestinationHost.c_str());
+			ui::SameLine();
+			ui::Text(" on port %d", mParameterBag->mOSCDestinationPort);
+			ui::Text("Sending to 2nd host %s", mParameterBag->mOSCDestinationHost2.c_str());
+			ui::SameLine();
+			ui::Text(" on port %d", mParameterBag->mOSCDestinationPort2);
+			ui::Text(" Receiving on port %d", mParameterBag->mOSCReceiverPort);
 
 			static char str0[128] = "/live/play";
 			static int i0 = 0;
 			static float f0 = 0.0f;
-			ImGui::InputText("address", str0, IM_ARRAYSIZE(str0));
-			ImGui::InputInt("track", &i0);
-			ImGui::InputFloat("clip", &f0, 0.01f, 1.0f);
-			if (ImGui::Button("Send")) { mOSC->sendOSCIntMessage(str0, i0); }
+			ui::InputText("address", str0, IM_ARRAYSIZE(str0));
+			ui::InputInt("track", &i0);
+			ui::InputFloat("clip", &f0, 0.01f, 1.0f);
+			if (ui::Button("Send")) { mOSC->sendOSCIntMessage(str0, i0); }
 
 			static ImGuiTextBuffer OSClog;
 			static int lines = 0;
-			if (ImGui::Button("Clear")) { OSClog.clear(); lines = 0; }
-			ImGui::SameLine();
-			ImGui::Text("Buffer contents: %d lines, %d bytes", lines, OSClog.size());
+			if (ui::Button("Clear")) { OSClog.clear(); lines = 0; }
+			ui::SameLine();
+			ui::Text("Buffer contents: %d lines, %d bytes", lines, OSClog.size());
 
 			if (mParameterBag->newOSCMsg)
 			{
@@ -791,30 +792,30 @@ void BatchassApp::drawMain()
 				lines++;
 				if (lines > 5) { OSClog.clear(); lines = 0; }
 			}
-			ImGui::BeginChild("OSClog");
-			ImGui::TextUnformatted(OSClog.begin(), OSClog.end());
-			ImGui::EndChild();
+			ui::BeginChild("OSClog");
+			ui::TextUnformatted(OSClog.begin(), OSClog.end());
+			ui::EndChild();
 		}
-		ImGui::End();
+		ui::End();
 	}
 #pragma endregion OSC
 #pragma region WebSockets
 	if (showWS)
 	{
-		ImGui::Begin("WebSockets", NULL, ImVec2(300, 300));
+		ui::Begin("WebSockets", NULL, ImVec2(300, 300));
 		{
 			if (mParameterBag->mIsWebSocketsServer)
 			{
-				ImGui::Text("Server %s", mParameterBag->mWebSocketsHost.c_str());
-				ImGui::SameLine();
+				ui::Text("Server %s", mParameterBag->mWebSocketsHost.c_str());
+				ui::SameLine();
 			}
 			else
 			{
-				ImGui::Text("Client %s", mParameterBag->mWebSocketsHost.c_str());
-				ImGui::SameLine();
+				ui::Text("Client %s", mParameterBag->mWebSocketsHost.c_str());
+				ui::SameLine();
 			}
-			ImGui::Text(" on port %d", mParameterBag->mWebSocketsPort);
-			if (ImGui::Button("Send"))
+			ui::Text(" on port %d", mParameterBag->mWebSocketsPort);
+			if (ui::Button("Send"))
 			{
 				mSeconds = (int)getElapsedSeconds();
 				stringstream s;
@@ -823,9 +824,9 @@ void BatchassApp::drawMain()
 			}
 			static ImGuiTextBuffer WSlog;
 			static int lines = 0;
-			if (ImGui::Button("Clear")) { WSlog.clear(); lines = 0; }
-			ImGui::SameLine();
-			ImGui::Text("Buffer contents: %d lines, %d bytes", lines, WSlog.size());
+			if (ui::Button("Clear")) { WSlog.clear(); lines = 0; }
+			ui::SameLine();
+			ui::Text("Buffer contents: %d lines, %d bytes", lines, WSlog.size());
 
 			if (mParameterBag->newWSMsg)
 			{
@@ -834,114 +835,114 @@ void BatchassApp::drawMain()
 				lines++;
 				if (lines > 5) { WSlog.clear(); lines = 0; }
 			}
-			ImGui::BeginChild("WSlog");
-			ImGui::TextUnformatted(WSlog.begin(), WSlog.end());
-			ImGui::EndChild();
+			ui::BeginChild("WSlog");
+			ui::TextUnformatted(WSlog.begin(), WSlog.end());
+			ui::EndChild();
 		}
-		ImGui::End();
+		ui::End();
 	}
 #pragma endregion WebSockets
 #pragma region Routing
 
-	ImGui::Begin("Routing", NULL, ImVec2(300, 300));
+	ui::Begin("Routing", NULL, ImVec2(300, 300));
 	{
-		ImGui::BeginChild("Warps routing", ImVec2(0, 300), true);
-		ImGui::Text("Selected warp: %d", mParameterBag->selectedWarp);
-		ImGui::Columns(4);
-		ImGui::Text("ID"); ImGui::NextColumn();
-		ImGui::Text("texIndex"); ImGui::NextColumn();
-		ImGui::Text("texMode"); ImGui::NextColumn();
-		ImGui::Text("active"); ImGui::NextColumn();
-		ImGui::Separator();
+		ui::BeginChild("Warps routing", ImVec2(0, 300), true);
+		ui::Text("Selected warp: %d", mParameterBag->selectedWarp);
+		ui::Columns(4);
+		ui::Text("ID"); ui::NextColumn();
+		ui::Text("texIndex"); ui::NextColumn();
+		ui::Text("texMode"); ui::NextColumn();
+		ui::Text("active"); ui::NextColumn();
+		ui::Separator();
 		for (int i = 0; i < mParameterBag->MAX; i++)
 		{
-			ImGui::Text("%d", i); ImGui::NextColumn();
-			ImGui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ImGui::NextColumn();
-			ImGui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ImGui::NextColumn();
-			ImGui::Text("%d", mParameterBag->mWarpFbos[i].active); ImGui::NextColumn();
+			ui::Text("%d", i); ui::NextColumn();
+			ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
+			ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
+			ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
 
 		}
-		ImGui::Columns(1);
-		ImGui::EndChild();
+		ui::Columns(1);
+		ui::EndChild();
 	}
-	ImGui::End();
+	ui::End();
 #pragma endregion Routing
 #pragma region Audio
 
 	// audio window
 	if (showAudio)
 	{
-		ImGui::Begin("Audio", NULL, ImVec2(200, 100));
+		ui::Begin("Audio", NULL, ImVec2(200, 100));
 		{
-			ImGui::Checkbox("Playing", &mParameterBag->mIsPlaying);
-			ImGui::SameLine();
-			ImGui::Text("Beat %d", mParameterBag->mBeat);
-			ImGui::SameLine();
-			ImGui::Text("Tempo %.2f", mParameterBag->mTempo);
+			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
+			ui::SameLine();
+			ui::Text("Beat %d", mParameterBag->mBeat);
+			ui::SameLine();
+			ui::Text("Tempo %.2f", mParameterBag->mTempo);
 
 			static ImVector<float> values; if (values.empty()) { values.resize(40); memset(&values.front(), 0, values.size()*sizeof(float)); }
 			static int values_offset = 0;
 			// audio maxVolume
 			static float refresh_time = -1.0f;
-			if (ImGui::GetTime() > refresh_time + 1.0f / 20.0f)
+			if (ui::GetTime() > refresh_time + 1.0f / 20.0f)
 			{
-				refresh_time = ImGui::GetTime();
+				refresh_time = ui::GetTime();
 				values[values_offset] = mParameterBag->maxVolume;
 				values_offset = (values_offset + 1) % values.size();
 			}
-			if (mParameterBag->maxVolume > 240.0) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
-			ImGui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
-			if (mParameterBag->maxVolume > 240.0) ImGui::PopStyleColor();
+			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+			ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
+			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
 
-			ImGui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
+			ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
 
 			static int fftSize = mAudio->getFftSize();
-			if (ImGui::SliderInt("fft size", &fftSize, 1, 1024))
+			if (ui::SliderInt("fft size", &fftSize, 1, 1024))
 			{
 				mAudio->setFftSize(fftSize);
 			}
 			static int windowSize = mAudio->getWindowSize();
-			if (ImGui::SliderInt("window size", &windowSize, 1, 1024))
+			if (ui::SliderInt("window size", &windowSize, 1, 1024))
 			{
 				mAudio->setWindowSize(windowSize);
 			}
 			/*for (int a = 0; a < MAX; a++)
 			{
-			if (mOSC->tracks[a] != "default.glsl") ImGui::Button(mOSC->tracks[a].c_str());
+			if (mOSC->tracks[a] != "default.glsl") ui::Button(mOSC->tracks[a].c_str());
 			}*/
 
 		}
-		ImGui::End();
+		ui::End();
 	}
 #pragma endregion Audio
 #pragma region FPS
 	// fps window
 	if (showFps)
 	{
-		ImGui::Begin("Fps", NULL, ImVec2(100, 100));
+		ui::Begin("Fps", NULL, ImVec2(100, 100));
 		{
 			static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
 			static int values_offset = 0;
 			static float refresh_time = -1.0f;
-			if (ImGui::GetTime() > refresh_time + 1.0f / 6.0f)
+			if (ui::GetTime() > refresh_time + 1.0f / 6.0f)
 			{
-				refresh_time = ImGui::GetTime();
+				refresh_time = ui::GetTime();
 				values[values_offset] = mParameterBag->iFps;
 				values_offset = (values_offset + 1) % values.size();
 			}
-			if (mParameterBag->iFps < 12.0) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
-			ImGui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
-			if (mParameterBag->iFps < 12.0) ImGui::PopStyleColor();
-			ImGui::Text("mouse %d", ImGui::GetIO().MouseDown[0]);
+			if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+			ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
+			if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
+			ui::Text("mouse %d", ui::GetIO().MouseDown[0]);
 
 		}
 
-		ImGui::End();
+		ui::End();
 
 	}
 #pragma endregion FPS
 
-	ImGui::Render();
+	//ui::Render();
 
 	gl::disableAlphaBlending();
 }
@@ -1147,7 +1148,7 @@ void BatchassApp::shutdown()
 		mWarpings->save();
 		// save params
 		mParameterBag->save();
-		//mUI->shutdown();
+		ui::Shutdown();
 		if (mMeshes->isSetup()) mMeshes->shutdown();
 		// not implemented mShaders->shutdownLoader();
 		// close spout
@@ -1320,7 +1321,7 @@ void BatchassApp::keyDown(KeyEvent event)
 		case ci::app::KeyEvent::KEY_ESCAPE:
 			mParameterBag->save();
 			//mBatchass->shutdownLoader(); // Not yet used (loading shaders in a different thread
-			ImGui::Shutdown();
+			ui::Shutdown();
 			mMidiIn0.closePort();
 			mMidiIn1.closePort();
 			mMidiIn2.closePort();

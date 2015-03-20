@@ -108,9 +108,6 @@
     <ClCompile Include="..\src\BatchassApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\blocks\Cinder-ImGui\src\imgui.cpp">
-      <Filter>Blocks\imGui\src</Filter>
-    </ClCompile>
     <ClInclude Include="..\..\..\blocks\Cinder-KCB\src\Kinect.h">
       <Filter>Blocks\Kinect Common Bridge\src</Filter>
     </ClInclude>
@@ -414,6 +411,9 @@
     <ClCompile Include="..\..\..\blocks\Cinder-ImGui\src\CinderImGui.cpp">
       <Filter>Blocks\imGui\src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui.cpp">
+      <Filter>Blocks\imGui\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Resources.h">
@@ -437,13 +437,13 @@
     <ClInclude Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.h">
       <Filter>Blocks\Cinder-MeshHelper</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\blocks\Cinder-ImGui\include\imgui.h">
-      <Filter>Blocks\imGui\src</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\UI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\blocks\Cinder-ImGui\include\CinderImGui.h">
+      <Filter>Blocks\imGui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui.h">
       <Filter>Blocks\imGui\src</Filter>
     </ClInclude>
   </ItemGroup>

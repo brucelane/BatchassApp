@@ -122,7 +122,7 @@ rem xcopy /y "..\..\..\blocks\Cinder-Spout\lib\SpoutPanel.exe" "$(OutDir)"</Com
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\blocks\Cinder-ImGui\include\CinderImGui.h" />
-    <ClInclude Include="..\..\..\blocks\Cinder-ImGui\include\imgui.h" />
+    <ClInclude Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui.h" />
     <ClInclude Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.h" />
     <ClInclude Include="..\include\BatchassApp.h" />
     <ClInclude Include="..\include\Meshes.h" />
@@ -187,10 +187,10 @@ rem xcopy /y "..\..\..\blocks\Cinder-Spout\lib\SpoutPanel.exe" "$(OutDir)"</Com
     <ClInclude Include="..\include\WindowMngr.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-ImGui\src\CinderImGui.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.cpp" />
     <ClCompile Include="..\src\BatchassApp.cpp" />
-    <ClCompile Include="..\..\..\blocks\Cinder-ImGui\src\imgui.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-KCB\src\Kinect.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-MIDI2\src\MidiHub.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-MIDI2\src\MidiIn.cpp" />
