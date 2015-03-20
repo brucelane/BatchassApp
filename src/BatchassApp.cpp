@@ -296,7 +296,7 @@ void BatchassApp::drawMain()
 	//imgui
 	static float f = 0.0f;
 
-	static bool showTest = false, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
+	static bool showTextures = true, showTest = false, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
 	//ui::NewFrame();
 	// our theme variables
 	static float WindowPadding[2] = { 4, 2 };
@@ -630,10 +630,10 @@ void BatchassApp::drawMain()
 
 	if (showFbos)
 	{
-		ui::Begin("fbos", NULL, ImVec2(300, 300));
+		ui::Begin("fbos", NULL, ImVec2(300, 150));
 		{
 
-			ui::BeginChild("fbo", ImVec2(0, 450), true);
+			ui::BeginChild("fbo", ImVec2(0, 150), true);
 			ui::Columns(2, "data", true);
 
 			for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
@@ -660,6 +660,39 @@ void BatchassApp::drawMain()
 	}
 
 #pragma endregion fbos
+#pragma region textures
+
+	if (showTextures)
+	{
+		ui::Begin("textures", NULL, ImVec2(300, 150));
+		{
+			ui::BeginChild("texture", ImVec2(0, 150), true);
+			ui::Columns(2, "data", true);
+
+			for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
+			{
+				char buf[32];
+				sprintf_s(buf, "texture %d", i);
+				if (ui::Button(buf))
+				{
+					mParameterBag->iChannels[0] = i;
+				}
+				ui::NextColumn();
+				sprintf_s(buf, "F%d", i);
+				if (ui::Button(buf))
+				{
+					mBatchass->getTexturesRef()->flipTexture(i);
+				}
+				ui::NextColumn();
+				//ui::Separator();
+			}
+			ui::EndChild();
+			ui::Columns(1);
+		}
+		ui::End();
+	}
+
+#pragma endregion textures
 #pragma region MIDI
 
 	// MIDI window

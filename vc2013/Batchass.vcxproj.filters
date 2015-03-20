@@ -97,6 +97,9 @@
     <Filter Include="Blocks\Cinder-MeshHelper">
       <UniqueIdentifier>{d947c661-c93a-4c0e-9b94-fbe51e96be62}</UniqueIdentifier>
     </Filter>
+    <Filter Include="assets">
+      <UniqueIdentifier>{3e45864a-66d1-4947-ac6c-7db2d27842ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\BatchassApp.cpp">
@@ -451,5 +454,10 @@
     <ResourceCompile Include="Resources.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\assets\mix.frag">
+      <Filter>assets</Filter>
+    </None>
   </ItemGroup>
 </Project>

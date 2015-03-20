@@ -52,7 +52,7 @@ void UI::setup()
 }
 void UI::setupMiniControl()
 {
-	mMiniControl = UIController::create("{ \"depth\":100, \"width\":1052, \"height\":200, \"fboNumSamples\":0, \"panelColor\":\"0x44282828\", \"defaultBackgroundColor\":\"0xFF0d0d0d\", \"defaultNameColor\":\"0xFF90a5b6\", \"defaultStrokeColor\":\"0xFF282828\", \"activeStrokeColor\":\"0xFF919ea7\" }");
+	mMiniControl = UIController::create("{ \"depth\":100, \"width\":1400, \"height\":200, \"fboNumSamples\":0, \"panelColor\":\"0x44282828\", \"defaultBackgroundColor\":\"0xFF0d0d0d\", \"defaultNameColor\":\"0xFF90a5b6\", \"defaultStrokeColor\":\"0xFF282828\", \"activeStrokeColor\":\"0xFF919ea7\" }");
 	mMiniControl->DEFAULT_UPDATE_FREQUENCY = 12;
 	mMiniControl->setFont("label", mParameterBag->mLabelFont);
 	mMiniControl->setFont("smallLabel", mParameterBag->mSmallLabelFont);
@@ -69,14 +69,7 @@ void UI::setupMiniControl()
 	{
 		mMiniControl->addButton(toString(i), std::bind(&UI::setTimeFactor, this, i, std::placeholders::_1), "{ \"clear\":false, \"width\":9, \"stateless\":false, \"group\":\"timefactor\", \"exclusive\":true }");
 	}
-	mMiniControl->addButton("time\ntempo", std::bind(&UI::toggleUseTimeWithTempo, this, std::placeholders::_1), "{ \"width\":56, \"stateless\":false}");
-
-	// Textures select/layers
-	// Button Group
-	for (int i = 0; i < mTextures->getTextureCount(); i++)
-	{
-		buttonLayer[i] = mMiniControl->addButton(toString(i), std::bind(&UI::setLayer, this, i, std::placeholders::_1), "{ \"clear\":false, \"width\":48, \"stateless\":false, \"group\":\"layer\", \"exclusive\":true }");
-	}
+	mMiniControl->addButton("time\ntempo", std::bind(&UI::toggleUseTimeWithTempo, this, std::placeholders::_1), "{ \"clear\":false, \"width\":56, \"stateless\":false}");
 
 	// Color Sliders
 	mMiniControl->addLabel("Draw color", "{ \"clear\":false }");
@@ -115,14 +108,25 @@ void UI::setupMiniControl()
 	//ba
 	sliderBackgroundAlpha = mMiniControl->addToggleSlider("A", &mParameterBag->controlValues[8], "a", std::bind(&UI::lockBA, this, std::placeholders::_1), "{ \"width\":36, \"clear\":false, \"handleVisible\":false, \"vertical\":true, \"nameColor\":\"0xFFFFFFFF\" }", "{ \"width\":9, \"stateless\":false, \"group\":\"ba\", \"exclusive\":true, \"clear\":false }");
 	mMiniControl->addButton("t", std::bind(&UI::tempoBA, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"ba\", \"exclusive\":true, \"clear\":false }");
-	mMiniControl->addButton("x", std::bind(&UI::resetBA, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"ba\", \"exclusive\":true, \"pressed\":true, \"clear\":false }");
+	mMiniControl->addButton("x", std::bind(&UI::resetBA, this, std::placeholders::_1), "{ \"width\":9, \"stateless\":false, \"group\":\"ba\", \"exclusive\":true, \"pressed\":true }");
 
+
+
+	// Textures select/layers
+	// Button Group
+	for (int i = 0; i < mTextures->getTextureCount(); i++)
+	{
+		buttonLayer[i] = mMiniControl->addButton(toString(i), std::bind(&UI::setLayer, this, i, std::placeholders::_1), "{ \"clear\":false, \"width\":48, \"stateless\":false, \"group\":\"layer\", \"exclusive\":true }");
+	}
 	mMiniControl->addButton("Black", std::bind(&UI::InstantBlack, this, std::placeholders::_1), "{ \"width\":72 }");
-
 	// 2D Sliders
+	sliderLeftRenderXY = mMiniControl->addSlider2D("LeftXY", &mParameterBag->mLeftRenderXY, "{ \"clear\":false, \"minX\":-0.5, \"maxX\":0.5, \"minY\":-0.5, \"maxY\":0.5, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
+	sliderRightRenderXY = mMiniControl->addSlider2D("RightXY", &mParameterBag->mRightRenderXY, "{ \"clear\":false, \"minX\":-0.5, \"maxX\":0.5, \"minY\":-0.5, \"maxY\":0.5, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
+	sliderMixRenderXY = mMiniControl->addSlider2D("MixXY", &mParameterBag->mPreviewRenderXY, "{ \"clear\":false, \"minX\":-0.5, \"maxX\":0.5, \"minY\":-0.5, \"maxY\":0.5, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
+	sliderPreviewRenderXY = mMiniControl->addSlider2D("PreviewFragXY", &mParameterBag->mPreviewFragXY, "{ \"clear\":false, \"minX\":-0.5, \"maxX\":0.5, \"minY\":-0.5, \"maxY\":0.5, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
 	//gParams->addSlider2D( "leftRenderXY", &mParameterBag->mLeftRenderXY, "{ \"clear\":false, \"minX\":-2.0, \"maxX\":2.0, \"minY\":-2.0, \"maxY\":2.0, \"width\":" + toString( mParameterBag->mPreviewWidth ) +" }" );
-	labelXY = mMiniControl->addLabel("MiddleXY", "{ \"clear\":false, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
-	labelPosXY = mMiniControl->addLabel("MiddlePosXY", "{ \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
+	//labelXY = mMiniControl->addLabel("MiddleXY", "{ \"clear\":false, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
+	//labelPosXY = mMiniControl->addLabel("MiddlePosXY", "{ \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
 
 	sliderRenderXY = mMiniControl->addSlider2D("renderXY", &mParameterBag->mRenderXY, "{ \"clear\":false, \"minX\":-2.0, \"maxX\":2.0, \"minY\":-2.0, \"maxY\":2.0, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
 
@@ -230,8 +234,8 @@ void UI::update()
 			sliderBackgroundAlpha->setBackgroundColor(ColorA(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8]));
 
 			// other sliders
-			labelXY->setName(toString(int(mParameterBag->mRenderXY.x * 100) / 100) + "x" + toString(int(mParameterBag->mRenderXY.y * 100) / 100));
-			labelPosXY->setName("mouse " + toString(floor(mParameterBag->mRenderPosXY.x)) + "x" + toString(floor(mParameterBag->mRenderPosXY.y)));
+			//labelXY->setName(toString(int(mParameterBag->mRenderXY.x * 100) / 100) + "x" + toString(int(mParameterBag->mRenderXY.y * 100) / 100));
+			//labelPosXY->setName("mouse " + toString(floor(mParameterBag->mRenderPosXY.x)) + "x" + toString(floor(mParameterBag->mRenderPosXY.y)));
 
 			// fps
 			fpsMvg->setName(toString(floor(mParameterBag->iFps)) + " fps");
@@ -245,6 +249,13 @@ void UI::update()
 			{
 				buttonLayer[i]->setBackgroundTexture(mTextures->getTexture(i));
 			}
+			sliderLeftRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mLeftFboIndex));
+			sliderRightRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mRightFboIndex));
+			sliderMixRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mMixFboIndex));
+			sliderPreviewRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mCurrentPreviewFboIndex));
+			sliderRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mAudioFboIndex));
+			sliderRenderPosXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mMixFboIndex));
+
 		}
 	}
 }

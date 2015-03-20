@@ -73,8 +73,9 @@ namespace Reymenta
 
 		MinimalUI::UIElementRef				sliderRed, sliderGreen, sliderBlue, sliderAlpha;
 		MinimalUI::UIElementRef				sliderBackgroundRed, sliderBackgroundGreen, sliderBackgroundBlue, sliderBackgroundAlpha;
-		MinimalUI::UIElementRef				labelXY, labelPosXY;
+		//MinimalUI::UIElementRef				labelXY, labelPosXY;
 		MinimalUI::UIElementRef				sliderRenderXY, sliderRenderPosXY, sliderXSpeed, sliderYSpeed;
+		MinimalUI::UIElementRef				sliderLeftRenderXY, sliderRightRenderXY, sliderMixRenderXY, sliderPreviewRenderXY;
 
 		MinimalUI::UIElementRef				labelLayer;
 		MinimalUI::UIElementRef				buttonLayer[8];
