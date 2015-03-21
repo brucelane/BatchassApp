@@ -37,7 +37,9 @@ namespace Reymenta
 		{
 			return shared_ptr<WarpWrapper>(new WarpWrapper( aParameterBag, aTexturesRef, aShadersRef));
 		}
-		void						save();
+		void						load();
+		void						loadWarps(const std::string &filename);
+		void						save(const std::string &filename = "warps.xml");
 		void						resize();
 		void						mouseMove( MouseEvent event );
 		void						mouseDown( MouseEvent event );

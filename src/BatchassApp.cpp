@@ -296,7 +296,7 @@ void BatchassApp::drawMain()
 	//imgui
 	static float f = 0.0f;
 
-	static bool showTextures = true, showTest = false, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
+	static bool showTextures = true, showTest = false, showRouting = false, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
 	//ui::NewFrame();
 	// our theme variables
 	static float WindowPadding[2] = { 4, 2 };
@@ -338,6 +338,8 @@ void BatchassApp::drawMain()
 			ui::Checkbox("Shada", &showShaders);
 			ui::SameLine();
 			ui::Checkbox("FPS", &showFps);
+			ui::SameLine();
+			ui::Checkbox("Routing", &showRouting);
 			ui::Checkbox("OSC", &showOSC);
 			ui::SameLine();
 			ui::Checkbox("MIDI", &showMidi);
@@ -345,7 +347,13 @@ void BatchassApp::drawMain()
 			ui::Checkbox("Test", &showTest);
 			ui::SameLine();
 			ui::Checkbox("Editor", &showTheme);
-			if (ui::Button("Save Params")) { mParameterBag->save(); }
+			if (ui::Button("Save Params")) 
+			{ 
+				// save warp settings
+				mWarpings->save("warps1.xml");
+				// save params
+				mParameterBag->save();
+			}
 
 		}
 		if (ui::CollapsingHeader("Mode", NULL, true, true))
@@ -370,7 +378,7 @@ void BatchassApp::drawMain()
 		}
 		if (ui::CollapsingHeader("Effects", NULL, true, true))
 		{
-			if (ui::Button("chromatic")) { mParameterBag->controlValues[15] = !mParameterBag->controlValues[15]; }
+			if (ui::Button("chromatic")) { mParameterBag->controlValues[20] = !mParameterBag->controlValues[20]; }
 			ui::SameLine();
 			if (ui::Button("origin up left")) { mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft; }
 			ui::SameLine();
@@ -473,7 +481,7 @@ void BatchassApp::drawMain()
 				mParameterBag->controlValues[ctrl] = rotationSpeed;
 			}
 			// blend modes
-			ctrl = 15;
+			ctrl = 20;
 			static float blendmode = mParameterBag->controlValues[ctrl];
 			if (ui::SliderFloat("blendmode", &blendmode, 0.0f, 27.0f))
 			{
@@ -489,7 +497,7 @@ void BatchassApp::drawMain()
 				mParameterBag->controlValues[ctrl] = steps;
 			}
 			// pixelate
-			ctrl = 20;
+			ctrl = 15;
 			static float pixelate = mParameterBag->controlValues[ctrl];
 			if (ui::SliderFloat("pixelate", &pixelate, 0.01f, 1.0f))
 			{
@@ -506,11 +514,10 @@ void BatchassApp::drawMain()
 			}
 			// crossfade
 			ctrl = 18;
-			static float crossfade = mParameterBag->controlValues[ctrl];
-			if (ui::SliderFloat("crossfade", &crossfade, 0.01f, 1.0f))
+			//static float crossfade = mParameterBag->controlValues[ctrl];
+			if (ui::SliderFloat("crossfade", &mParameterBag->controlValues[ctrl], 0.01f, 1.0f))
 			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << crossfade << "}";
-				mParameterBag->controlValues[ctrl] = crossfade;
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 
 			aParams << "]}";
@@ -876,29 +883,32 @@ void BatchassApp::drawMain()
 	}
 #pragma endregion WebSockets
 #pragma region Routing
-
-	ui::Begin("Routing", NULL, ImVec2(300, 300));
+	if (showRouting)
 	{
-		ui::BeginChild("Warps routing", ImVec2(0, 300), true);
-		ui::Text("Selected warp: %d", mParameterBag->selectedWarp);
-		ui::Columns(4);
-		ui::Text("ID"); ui::NextColumn();
-		ui::Text("texIndex"); ui::NextColumn();
-		ui::Text("texMode"); ui::NextColumn();
-		ui::Text("active"); ui::NextColumn();
-		ui::Separator();
-		for (int i = 0; i < mParameterBag->MAX; i++)
-		{
-			ui::Text("%d", i); ui::NextColumn();
-			ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
-			ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
-			ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
 
+		ui::Begin("Routing", NULL, ImVec2(300, 300));
+		{
+			ui::BeginChild("Warps routing", ImVec2(0, 300), true);
+			ui::Text("Selected warp: %d", mParameterBag->selectedWarp);
+			ui::Columns(4);
+			ui::Text("ID"); ui::NextColumn();
+			ui::Text("texIndex"); ui::NextColumn();
+			ui::Text("texMode"); ui::NextColumn();
+			ui::Text("active"); ui::NextColumn();
+			ui::Separator();
+			for (int i = 0; i < mParameterBag->MAX; i++)
+			{
+				ui::Text("%d", i); ui::NextColumn();
+				ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
+				ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
+				ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
+
+			}
+			ui::Columns(1);
+			ui::EndChild();
 		}
-		ui::Columns(1);
-		ui::EndChild();
+		ui::End();
 	}
-	ui::End();
 #pragma endregion Routing
 #pragma region Audio
 
@@ -1042,7 +1052,6 @@ void BatchassApp::keyUp(KeyEvent event)
 
 void BatchassApp::fileDrop(FileDropEvent event)
 {
-	bool loaded = false;
 	string ext = "";
 	// use the last of the dropped files
 	boost::filesystem::path mPath = event.getFile(event.getNumFiles() - 1);
@@ -1053,35 +1062,15 @@ void BatchassApp::fileDrop(FileDropEvent event)
 
 	if (ext == "wav" || ext == "mp3")
 	{
-		//do not try to load by other ways
-		loaded = true;
 		mAudio->loadWaveFile(mFile);
-
 	}
-	if (ext == "png" || ext == "jpg")
+	else if (ext == "png" || ext == "jpg")
 	{
-		//do not try to load by other ways
-		loaded = true;
 		//mTextures->loadImageFile(mParameterBag->currentSelectedIndex, mFile);
 		mBatchass->getTexturesRef()->loadImageFile(1, mFile);
 	}
-	/*if (!loaded && ext == "frag")
+	else if ( ext == "glsl")
 	{
-	//do not try to load by other ways
-	loaded = true;
-	//mShaders->incrementPreviewIndex();
-
-	if (mShaders->loadPixelFrag(mFile))
-	{
-	mParameterBag->controlValues[13] = 1.0f;
-	timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ save(); });
-	}
-	if (mCodeEditor) mCodeEditor->fileDrop(event);
-	}*/
-	if (!loaded && ext == "glsl")
-	{
-		//do not try to load by other ways
-		loaded = true;
 		//mShaders->incrementPreviewIndex();
 		//mUserInterface->mLibraryPanel->addShader(mFile);
 		int rtn = mBatchass->getShadersRef()->loadPixelFragmentShader(mFile);
@@ -1102,18 +1091,18 @@ void BatchassApp::fileDrop(FileDropEvent event)
 			timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ saveThumb(); });
 		}
 	}
-	if (!loaded && ext == "fs")
+	else if (ext == "fs")
 	{
-		//do not try to load by other ways
-		loaded = true;
 		//mShaders->incrementPreviewIndex();
 		mBatchass->getShadersRef()->loadFragmentShader(mPath);
 	}
-	if (!loaded && ext == "patchjson")
+	else if (ext == "xml")
+	{
+		mWarpings->loadWarps(mFile);
+	}
+	else if (ext == "patchjson")
 	{
 		// try loading patch
-		//do not try to load by other ways
-		loaded = true;
 		try
 		{
 			JsonTree patchjson;
@@ -1148,25 +1137,32 @@ void BatchassApp::fileDrop(FileDropEvent event)
 			mBatchass->log("patchjson parsing error: " + mFile);
 		}
 	}
-	if (!loaded && ext == "txt")
+	else if (ext == "txt")
 	{
-		//do not try to load by other ways
-		loaded = true;
 		// try loading shader parts
 		if (mBatchass->getShadersRef()->loadTextFile(mFile))
 		{
 
 		}
 	}
-
-	if (!loaded && ext == "")
+	else if (ext == "")
 	{
-		//do not try to load by other ways
-		loaded = true;
 		// try loading image sequence from dir
 		//mTextures->createFromDir(mFile + "/");
 
 	}
+	/*if (!loaded && ext == "frag")
+	{
+
+	//mShaders->incrementPreviewIndex();
+
+	if (mShaders->loadPixelFrag(mFile))
+	{
+	mParameterBag->controlValues[13] = 1.0f;
+	timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ save(); });
+	}
+	if (mCodeEditor) mCodeEditor->fileDrop(event);
+	}*/
 	mParameterBag->isUIDirty = true;
 }
 
@@ -1313,7 +1309,17 @@ void BatchassApp::keyDown(KeyEvent event)
 			changeMode(MODE_AUDIO);
 			break;
 		case ci::app::KeyEvent::KEY_s:
-			changeMode(MODE_SPHERE);
+			if (event.isControlDown())
+			{
+				// save warp settings
+				mWarpings->save("warps2.xml");
+				// save params
+				mParameterBag->save();
+			}
+			else
+			{
+				changeMode(MODE_SPHERE);
+			}
 			break;
 		case ci::app::KeyEvent::KEY_w:
 			changeMode(MODE_WARP);
@@ -1353,7 +1359,7 @@ void BatchassApp::keyDown(KeyEvent event)
 			break;
 		case ci::app::KeyEvent::KEY_ESCAPE:
 			mParameterBag->save();
-			//mBatchass->shutdownLoader(); // Not yet used (loading shaders in a different thread
+			//mBatchass->shutdownLoader(); // Not used yet(loading shaders in a different thread
 			ui::Shutdown();
 			mMidiIn0.closePort();
 			mMidiIn1.closePort();

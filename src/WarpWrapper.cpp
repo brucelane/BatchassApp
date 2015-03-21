@@ -13,17 +13,17 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 
 	mUseBeginEnd = false;
 	// initialize warps
-	/*fs::path settings = getAssetPath("") / "warps.xml";
+	fs::path settings = getAssetPath("") / "warps.xml";
 	if (fs::exists(settings))
 	{
 		// load warp settings from file if one exists
 		mWarps = Warp::readSettings(loadFile(settings));
 	}
 	else
-	{*/
+	{
 		// otherwise create a warp from scratch
 		mWarps.push_back(WarpPerspectiveBilinear::create());
-	//}
+	}
 	log->logTimedString("Warps size" + mWarps.size());
 	mSrcArea = mTextures->getTexture(1).getBounds();
 	/*for (int i = mWarps.size(); i < mTextures->getTextureCount(); i++)
@@ -36,11 +36,26 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 	gl::enableDepthRead();
 	gl::enableDepthWrite();
 }
-void WarpWrapper::save()
+void WarpWrapper::load()
 {
-	//fs::path settings = getAssetPath("") / "warps.xml";
-	//Warp::writeSettings(mWarps, writeFile(settings));
+	fs::path settings = getAssetPath("") / "warps.xml";
+	Warp::writeSettings(mWarps, writeFile(settings));
 }
+void WarpWrapper::loadWarps(const std::string &filename)
+{
+	fs::path settings = filename;
+	if (fs::exists(settings))
+	{
+		// load warp settings from file if one exists
+		mWarps = Warp::readSettings(loadFile(settings));
+	}
+}
+void WarpWrapper::save(const std::string &filename)
+{
+	fs::path settings = getAssetPath("") / filename;
+	Warp::writeSettings(mWarps, writeFile(settings));
+}
+
 void WarpWrapper::resize()
 {
 	// tell the warps our window has been resized, so they properly scale up or down
