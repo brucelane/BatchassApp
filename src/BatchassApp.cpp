@@ -270,7 +270,7 @@ void BatchassApp::drawMain()
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
 	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);
-	if (!removeUI) mUI->draw();
+	//if (!removeUI) mUI->draw();
 
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
@@ -282,12 +282,13 @@ void BatchassApp::drawMain()
 
 	//imgui
 	static float f = 0.0f;
+	char buf[32];
 
 	static bool showTextures = true, showTest = false, showRouting = false, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
 
 	// our theme variables
 	static float WindowPadding[2] = { 4, 2 };
-	static float WindowMinSize[2] = { 160, 80 };
+	static float WindowMinSize[2] = { mParameterBag->mPreviewFboWidth*2, mParameterBag->mPreviewFboHeight };
 	static float FramePadding[2] = { 4, 4 };
 	static float ItemSpacing[2] = { 10, 5 };
 	static float ItemInnerSpacing[2] = { 5, 5 };
@@ -343,7 +344,6 @@ void BatchassApp::drawMain()
 
 	ui::ShowStyleEditor();
 
-
 	if (showTest) ui::ShowTestWindow();
 #pragma region FPS
 	// fps window
@@ -371,8 +371,6 @@ void BatchassApp::drawMain()
 		ui::End();
 	}
 #pragma endregion FPS
-
-
 #pragma region Global
 
 	// start a new window
@@ -624,87 +622,6 @@ void BatchassApp::drawMain()
 	}
 	ui::End();
 #pragma endregion Global
-#pragma region shaders
-
-	if (showShaders)
-	{
-		ui::Begin("shaders", NULL, ImVec2(300, 300));
-		{
-
-			ui::BeginChild("shadas", ImVec2(0, 450), true);
-			ui::Columns(4, "data", true);
-
-			for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
-			{
-				//char buf[32];
-				//sprintf_s(buf, "s %d", i);
-				if (ui::Button(mBatchass->getShadersRef()->getShaderName(i).c_str()))
-				{
-					//setCurrentFbo mParameterBag->mCurrentFboLibraryIndex = aIndex;
-				}
-				ui::NextColumn();
-				char buf[32];
-				sprintf_s(buf, "L%d", i);
-				if (ui::Button(buf))
-				{
-					mParameterBag->mLeftFragIndex = i;
-				}
-				ui::NextColumn();
-				sprintf_s(buf, "R%d", i);
-				if (ui::Button(buf))
-				{
-					mParameterBag->mRightFragIndex = i;
-				}
-				ui::NextColumn();
-				sprintf_s(buf, "P%d", i);
-				if (ui::Button(buf))
-				{
-					mParameterBag->mPreviewFragIndex = i;
-				}
-				ui::NextColumn();
-				//ui::Separator();
-			}
-			ui::EndChild();
-			ui::Columns(1);
-		}
-		ui::End();
-	}
-
-#pragma endregion shaders
-
-#pragma region textures
-
-	if (showTextures)
-	{
-		ui::Begin("textures", NULL, ImVec2(300, 150));
-		{
-			ui::BeginChild("texture", ImVec2(0, 150), true);
-			ui::Columns(2, "data", true);
-
-			for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
-			{
-				char buf[32];
-				sprintf_s(buf, "texture %d", i);
-				if (ui::Button(buf))
-				{
-					mParameterBag->iChannels[0] = i;
-				}
-				ui::NextColumn();
-				sprintf_s(buf, "F%d", i);
-				if (ui::Button(buf))
-				{
-					mBatchass->getTexturesRef()->flipTexture(i);
-				}
-				ui::NextColumn();
-				//ui::Separator();
-			}
-			ui::EndChild();
-			ui::Columns(1);
-		}
-		ui::End();
-	}
-
-#pragma endregion textures
 #pragma region MIDI
 
 	// MIDI window
@@ -963,26 +880,85 @@ void BatchassApp::drawMain()
 		ui::End();
 	}
 #pragma endregion Audio
-
-#pragma region fbos
-	char buf[32];
-	if (showFbos)
+#pragma region textures
+	if (showTextures)
 	{
-		for (int i = 0; i < 7; i++)
+		for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
 		{
-			sprintf_s(buf, "Fbo %d", i);
+			sprintf_s(buf, "Texture %d", i);
 			ui::Begin(buf, NULL, ImVec2(mParameterBag->mPreviewFboWidth + margin, 200));
 			{
-				ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), 100));
-				if (i > 0) ui::SameLine();
+				ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), margin));
+				//if (i > 0) ui::SameLine();
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getTexture(i).getId(), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+				sprintf_s(buf, "Flip %d", i);
+				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipTexture(i);
+				ui::PopStyleColor(3);
+				ui::PopID();
+			}
+			ui::End();
+		}
+	}
+#pragma endregion textures
+#pragma region shaders
+	if (showShaders)
+	{
+		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
+		{
+			sprintf_s(buf, "Shada %d", i);
+			ui::Begin(buf, NULL, ImVec2(150, 150));
+			{
+				ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), mParameterBag->mPreviewFboHeight + 150));
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+				ui::Columns(4, "data", true);
+
+				if (ui::Button(mBatchass->getShadersRef()->getShaderName(i).c_str())) {}
+				ui::NextColumn();
+				char buf[32];
+				sprintf_s(buf, "L%d", i);
+				if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
+				ui::NextColumn();
+				sprintf_s(buf, "R%d", i);
+				if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
+				ui::NextColumn();
+				sprintf_s(buf, "P%d", i);
+				if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
+				ui::NextColumn();
+
+				ui::PopStyleColor(3);
+				ui::PopID();
+
+				ui::Columns(1);
+			}
+			ui::End();
+		}
+	}
+
+#pragma endregion shaders
+#pragma region fbos
+	if (showFbos)
+	{
+		for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
+		{
+			sprintf_s(buf, "Fbo %d", i);
+			ui::Begin(buf, NULL, ImVec2(mParameterBag->mPreviewFboWidth + margin, 150));
+			{
+				ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), mParameterBag->mPreviewFboHeight + 300));
+				//if (i > 0) ui::SameLine();
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				ui::Button("Click");
-				ui::SameLine();
-				ui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Pink");
+
 				sprintf_s(buf, "Flip %d", i);
 				if (ui::Button(buf))
 				{
@@ -999,7 +975,7 @@ void BatchassApp::drawMain()
 		}
 	}
 #pragma endregion fbos
-	//ui::Render();
+
 
 	gl::disableAlphaBlending();
 }
