@@ -131,6 +131,7 @@ private:
 	// misc
 	int							mSeconds;
 	int							margin;
+	int							inBetween;
 	// windows
 	WindowRef					mMainWindow;
 	//void						windowManagement();

@@ -274,22 +274,9 @@ void BatchassApp::drawMain()
 
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
+	margin = 10;
+	inBetween = 5;
 
-	// draw textures and fbos 		
-	/*margin = 10;
-	int texY = 10;
-	int fboY = 10 + mParameterBag->mPreviewFboHeight;
-
-	// previews
-	//gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);
-	for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
-	{
-	gl::draw(mBatchass->getTexturesRef()->getTexture(i), Rectf(i* mParameterBag->mPreviewFboWidth, texY, (i + 1) * mParameterBag->mPreviewFboWidth + margin, texY + mParameterBag->mPreviewFboHeight));
-	}
-	for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
-	{
-	gl::draw(mBatchass->getTexturesRef()->getFboTexture(i), Rectf(i* mParameterBag->mPreviewFboWidth, fboY, (i + 1) * mParameterBag->mPreviewFboWidth + margin, fboY + mParameterBag->mPreviewFboHeight));
-	}*/
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
 
@@ -297,7 +284,7 @@ void BatchassApp::drawMain()
 	static float f = 0.0f;
 
 	static bool showTextures = true, showTest = false, showRouting = false, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
-	//ui::NewFrame();
+
 	// our theme variables
 	static float WindowPadding[2] = { 4, 2 };
 	static float WindowMinSize[2] = { 160, 80 };
@@ -312,16 +299,79 @@ void BatchassApp::drawMain()
 	static float ScrollBarWidth = 12;
 
 	ui::GetStyle().FramePadding = ImVec2(2, 2);
-	/*ImVec4 color0 = ImVec4(0.431373, 0.160784, 0.372549, 1);
-	ImVec4 color1 = ImVec4(0.2, 0.0392157, 0.0392157, 1);
-	ImVec4 color2 = ImVec4(0.317647, 0.184314, 0.2, 1);
-	ImVec4 color3 = ImVec4(1, 0.647059, 1, 1);
-	ImVec4 color4 = ImVec4(0.741176, 0.0941176, 1, 1);
-	ui::setThemeColor(color0, color1, color2, color3, color4);
-	\"panelColor\":\"0x44282828\",  \"defaultBackgroundColor\":\"0xFF0d0d0d\", \"defaultNameColor\":\"0xFF90a5b6\", \"defaultStrokeColor\":\"0xFF282828\", \"activeStrokeColor\":\"0xFF919ea7\" }");
-	*/
+
+	ImGuiStyle& style = ui::GetStyle();
+	style.Alpha = 0.6f;
+	style.Colors[ImGuiCol_Text] = ImVec4(0.89f, 0.92f, 0.94f, 1.00f);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
+	style.Colors[ImGuiCol_Border] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
+	style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.38f);
+	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
+	style.Colors[ImGuiCol_TitleBg] = ImVec4(0.4f, 0.21f, 0.21f, 1.00f);
+	style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
+	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
+	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	style.Colors[ImGuiCol_ComboBg] = ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
+	style.Colors[ImGuiCol_CheckHovered] = ImVec4(0.27f, 0.27f, 0.27f, 1.00f);
+	style.Colors[ImGuiCol_CheckActive] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
+	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.99f, 0.22f, 0.22f, 0.50f);
+	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
+	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.8f, 0.35f, 0.35f, 1.00f);
+	style.Colors[ImGuiCol_Button] = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
+	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.27f, 0.27f, 0.27f, 1.00f);
+	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
+	style.Colors[ImGuiCol_Header] = ImVec4(0.11f, 0.11f, 0.11f, 1.00f);
+	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.27f, 0.27f, 0.27f, 1.00f);
+	style.Colors[ImGuiCol_Column] = ImVec4(0.04f, 0.04f, 0.04f, 0.22f);
+	style.Colors[ImGuiCol_ColumnHovered] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	style.Colors[ImGuiCol_ColumnActive] = ImVec4(0.27f, 0.27f, 0.27f, 1.00f);
+	style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
+	style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.8f, 0.35f, 0.35f, 1.00f);
+	style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.9f, 0.45f, 0.45f, 1.00f);
+	style.Colors[ImGuiCol_CloseButton] = ImVec4(0.28f, 0.28f, 0.28f, 1.00f);
+	style.Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	style.Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.49f, 0.49f, 0.49f, 1.00f);
+	style.Colors[ImGuiCol_PlotLines] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
+	style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.8f, 0.35f, 0.35f, 1.00f);
+	style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
+	style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.8f, 0.35f, 0.35f, 1.00f);
+	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.24f, 0.24f, 0.24f, 1.00f);
+	style.Colors[ImGuiCol_TooltipBg] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
+
+	ui::ShowStyleEditor();
+
 
 	if (showTest) ui::ShowTestWindow();
+#pragma region FPS
+	// fps window
+	if (showFps)
+	{
+		ui::Begin("Fps", NULL, ImVec2(100, 100), 0.3f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+		{
+			ui::SetWindowPos(ImVec2(1000, 10));
+			static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
+			static int values_offset = 0;
+			static float refresh_time = -1.0f;
+			if (ui::GetTime() > refresh_time + 1.0f / 6.0f)
+			{
+				refresh_time = ui::GetTime();
+				values[values_offset] = mParameterBag->iFps;
+				values_offset = (values_offset + 1) % values.size();
+			}
+			if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+			ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
+			if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
+			ui::Text("Mouse Position: (%.1f,%.1f)", ui::GetIO().MousePos.x, ui::GetIO().MousePos.y);
+			ui::Text("Mouse %d", ui::GetIO().MouseDown[0]);
+
+		}
+		ui::End();
+	}
+#pragma endregion FPS
+
 
 #pragma region Global
 
@@ -347,38 +397,12 @@ void BatchassApp::drawMain()
 			ui::Checkbox("Test", &showTest);
 			ui::SameLine();
 			ui::Checkbox("Editor", &showTheme);
-			if (ui::Button("Save Params")) 
-			{ 
+			if (ui::Button("Save Params"))
+			{
 				// save warp settings
 				mWarpings->save("warps1.xml");
 				// save params
 				mParameterBag->save();
-			}
-			ui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Pink");
-			for (int i = 0; i < 7; i++)
-			{
-				if (i > 0) ui::SameLine();
-				ui::PushID(i);
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				ui::Button("Click");
-				ui::PopStyleColor(3);
-				ui::PopID();
-			}
-			ui::Text("Hover over me");
-			if (ui::IsItemHovered())
-				ui::SetTooltip("I am a tooltip");
-
-			ui::SameLine();
-			ui::Text("- or me");
-			if (ui::IsItemHovered())
-			{
-				ui::BeginTooltip();
-				ui::Text("I am a fancy tooltip");
-				static float arr[] = { 0.6f, 0.1f, 1.0f, 0.5f, 0.92f, 0.1f, 0.2f };
-				ui::PlotLines("Curve", arr, IM_ARRAYSIZE(arr));
-				ui::EndTooltip();
 			}
 
 		}
@@ -433,10 +457,7 @@ void BatchassApp::drawMain()
 			int ctrl;
 			stringstream aParams;
 			aParams << "{\"anim\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
-//void Image(const ci::gl::TextureRef &texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col) {
-			//ui::Image(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex).getId(), Vec2i(100, 50));// mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex).getSize()
 
-			ui::Image(&mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mLeftFboIndex), Vec2i(320,240) );// mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex).getSize()
 			// ratio
 			ctrl = 11;
 			if (ui::Button("a##ratio")) { mBatchass->lockRatio(); }
@@ -463,9 +484,9 @@ void BatchassApp::drawMain()
 			}
 			// zoom
 			ctrl = 13;
-			if (ui::Button("a##zoom")) 
-			{ 
-				mBatchass->lockZoom(); 
+			if (ui::Button("a##zoom"))
+			{
+				mBatchass->lockZoom();
 			}
 			ui::SameLine();
 			if (ui::Button("t##zoom")) { mBatchass->tempoZoom(); }
@@ -545,7 +566,7 @@ void BatchassApp::drawMain()
 			stringstream sParams;
 			sParams << "{\"colors\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
 			// foreground color
-			color[0] = mParameterBag->controlValues[1];		
+			color[0] = mParameterBag->controlValues[1];
 			color[1] = mParameterBag->controlValues[2];
 			color[2] = mParameterBag->controlValues[3];
 			color[3] = mParameterBag->controlValues[4];
@@ -586,7 +607,7 @@ void BatchassApp::drawMain()
 				}
 
 			}
-			
+
 
 			//ui::SameLine();
 			//ui::TextColored(ImVec4(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8]), "bg color");
@@ -650,40 +671,7 @@ void BatchassApp::drawMain()
 	}
 
 #pragma endregion shaders
-#pragma region fbos
 
-	if (showFbos)
-	{
-		ui::Begin("fbos", NULL, ImVec2(300, 150));
-		{
-
-			ui::BeginChild("fbo", ImVec2(0, 150), true);
-			ui::Columns(2, "data", true);
-
-			for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
-			{
-				char buf[32];
-				sprintf_s(buf, "fbo %d", i);
-				if (ui::Button(buf))
-				{
-					//setCurrentFbo 
-				}
-				ui::NextColumn();
-				sprintf_s(buf, "F%d", i);
-				if (ui::Button(buf))
-				{
-					mBatchass->getTexturesRef()->flipFbo(i);
-				}
-				ui::NextColumn();
-				//ui::Separator();
-			}
-			ui::EndChild();
-			ui::Columns(1);
-		}
-		ui::End();
-	}
-
-#pragma endregion fbos
 #pragma region textures
 
 	if (showTextures)
@@ -975,33 +963,42 @@ void BatchassApp::drawMain()
 		ui::End();
 	}
 #pragma endregion Audio
-#pragma region FPS
-	// fps window
-	if (showFps)
+
+#pragma region fbos
+	char buf[32];
+	if (showFbos)
 	{
-		ui::Begin("Fps", NULL, ImVec2(100, 100));
+		for (int i = 0; i < 7; i++)
 		{
-			static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
-			static int values_offset = 0;
-			static float refresh_time = -1.0f;
-			if (ui::GetTime() > refresh_time + 1.0f / 6.0f)
+			sprintf_s(buf, "Fbo %d", i);
+			ui::Begin(buf, NULL, ImVec2(mParameterBag->mPreviewFboWidth + margin, 200));
 			{
-				refresh_time = ui::GetTime();
-				values[values_offset] = mParameterBag->iFps;
-				values_offset = (values_offset + 1) % values.size();
+				ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), 100));
+				if (i > 0) ui::SameLine();
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+				ui::Button("Click");
+				ui::SameLine();
+				ui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Pink");
+				sprintf_s(buf, "Flip %d", i);
+				if (ui::Button(buf))
+				{
+					mBatchass->getTexturesRef()->flipFbo(i);
+				}
+
+				ui::Text("Hover over me");
+				if (ui::IsItemHovered())
+					ui::SetTooltip("I am a tooltip");
+				ui::PopStyleColor(3);
+				ui::PopID();
 			}
-			if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
-			ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
-			if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
-			ui::Text("mouse %d", ui::GetIO().MouseDown[0]);
-
+			ui::End();
 		}
-
-		ui::End();
-
 	}
-#pragma endregion FPS
-
+#pragma endregion fbos
 	//ui::Render();
 
 	gl::disableAlphaBlending();
@@ -1086,7 +1083,7 @@ void BatchassApp::fileDrop(FileDropEvent event)
 		//mTextures->loadImageFile(mParameterBag->currentSelectedIndex, mFile);
 		mBatchass->getTexturesRef()->loadImageFile(1, mFile);
 	}
-	else if ( ext == "glsl")
+	else if (ext == "glsl")
 	{
 		//mShaders->incrementPreviewIndex();
 		//mUserInterface->mLibraryPanel->addShader(mFile);
@@ -1283,7 +1280,6 @@ void BatchassApp::resize()
 void BatchassApp::mouseMove(MouseEvent event)
 {
 	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseMove(event);
-
 }
 
 void BatchassApp::mouseDown(MouseEvent event)
@@ -1291,7 +1287,6 @@ void BatchassApp::mouseDown(MouseEvent event)
 	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseDown(event);
 	if (mParameterBag->mMode == MODE_MESH) mMeshes->mouseDown(event);
 	if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseDown(event);
-	
 }
 
 void BatchassApp::mouseDrag(MouseEvent event)
@@ -1305,7 +1300,6 @@ void BatchassApp::mouseUp(MouseEvent event)
 {
 	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseUp(event);
 	if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseUp(event);
-
 }
 
 void BatchassApp::keyDown(KeyEvent event)
