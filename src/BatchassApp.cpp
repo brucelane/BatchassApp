@@ -354,6 +354,32 @@ void BatchassApp::drawMain()
 				// save params
 				mParameterBag->save();
 			}
+			ui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Pink");
+			for (int i = 0; i < 7; i++)
+			{
+				if (i > 0) ui::SameLine();
+				ui::PushID(i);
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+				ui::Button("Click");
+				ui::PopStyleColor(3);
+				ui::PopID();
+			}
+			ui::Text("Hover over me");
+			if (ui::IsItemHovered())
+				ui::SetTooltip("I am a tooltip");
+
+			ui::SameLine();
+			ui::Text("- or me");
+			if (ui::IsItemHovered())
+			{
+				ui::BeginTooltip();
+				ui::Text("I am a fancy tooltip");
+				static float arr[] = { 0.6f, 0.1f, 1.0f, 0.5f, 0.92f, 0.1f, 0.2f };
+				ui::PlotLines("Curve", arr, IM_ARRAYSIZE(arr));
+				ui::EndTooltip();
+			}
 
 		}
 		if (ui::CollapsingHeader("Mode", NULL, true, true))
@@ -407,110 +433,97 @@ void BatchassApp::drawMain()
 			int ctrl;
 			stringstream aParams;
 			aParams << "{\"anim\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
+//void Image(const ci::gl::TextureRef &texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col) {
+			//ui::Image(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex).getId(), Vec2i(100, 50));// mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex).getSize()
 
+			ui::Image(&mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mLeftFboIndex), Vec2i(320,240) );// mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex).getSize()
 			// ratio
 			ctrl = 11;
-			if (ui::Button("a")) { mBatchass->lockRatio(); }
+			if (ui::Button("a##ratio")) { mBatchass->lockRatio(); }
 			ui::SameLine();
-			if (ui::Button("t")) { mBatchass->tempoRatio(); }
+			if (ui::Button("t##ratio")) { mBatchass->tempoRatio(); }
 			ui::SameLine();
-			if (ui::Button("x")) { mBatchass->resetRatio(); }
+			if (ui::Button("x##ratio")) { mBatchass->resetRatio(); }
 			ui::SameLine();
-
-			static float ratio = mParameterBag->controlValues[ctrl];
-			if (ui::SliderFloat("ratio/min/max", &ratio, mBatchass->minRatio, mBatchass->maxRatio))
+			if (ui::SliderFloat("ratio/min/max", &mParameterBag->controlValues[ctrl], mBatchass->minRatio, mBatchass->maxRatio))
 			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << ratio << "}";
-				mParameterBag->controlValues[ctrl] = ratio;
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// exposure
 			ctrl = 14;
-			if (ui::Button("a")) { mBatchass->lockExposure(); }
+			if (ui::Button("a##exposure")) { mBatchass->lockExposure(); }
 			ui::SameLine();
-			if (ui::Button("t")) { mBatchass->tempoExposure(); }
+			if (ui::Button("t##exposure")) { mBatchass->tempoExposure(); }
 			ui::SameLine();
-			if (ui::Button("x")) { mBatchass->resetExposure(); }
+			if (ui::Button("x##exposure")) { mBatchass->resetExposure(); }
 			ui::SameLine();
-			static float exposure = mParameterBag->controlValues[ctrl];
-			if (ui::SliderFloat("exposure", &exposure, mBatchass->minExposure, mBatchass->maxExposure))
+			if (ui::SliderFloat("exposure", &mParameterBag->controlValues[ctrl], mBatchass->minExposure, mBatchass->maxExposure))
 			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << exposure << "}";
-				mParameterBag->controlValues[ctrl] = exposure;
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// zoom
 			ctrl = 13;
-			if (ui::Button("a")) { mBatchass->lockZoom(); }
+			if (ui::Button("a##zoom")) 
+			{ 
+				mBatchass->lockZoom(); 
+			}
 			ui::SameLine();
-			if (ui::Button("t")) { mBatchass->tempoZoom(); }
+			if (ui::Button("t##zoom")) { mBatchass->tempoZoom(); }
 			ui::SameLine();
-			if (ui::Button("x")) { mBatchass->resetZoom(); }
+			if (ui::Button("x##zoom")) { mBatchass->resetZoom(); }
 			ui::SameLine();
-			static float zoom = mParameterBag->controlValues[ctrl];
-			if (ui::SliderFloat("zoom", &zoom, mBatchass->minZoom, mBatchass->maxZoom))
+			if (ui::SliderFloat("zoom", &mParameterBag->controlValues[ctrl], mBatchass->minZoom, mBatchass->maxZoom))
 			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << zoom << "}";
-				mParameterBag->controlValues[ctrl] = zoom;
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// z position
 			ctrl = 9;
-			if (ui::Button("a")) { mBatchass->lockZPos(); }
+			if (ui::Button("a##zpos")) { mBatchass->lockZPos(); }
 			ui::SameLine();
-			if (ui::Button("t")) { mBatchass->tempoZPos(); }
+			if (ui::Button("t##zpos")) { mBatchass->tempoZPos(); }
 			ui::SameLine();
-			if (ui::Button("x")) { mBatchass->resetZPos(); }
+			if (ui::Button("x##zpos")) { mBatchass->resetZPos(); }
 			ui::SameLine();
-			static float zPosition = mParameterBag->controlValues[ctrl];
-			if (ui::SliderFloat("zPosition", &zPosition, mBatchass->minZPos, mBatchass->maxZPos))
+			if (ui::SliderFloat("zPosition", &mParameterBag->controlValues[ctrl], mBatchass->minZPos, mBatchass->maxZPos))
 			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << zPosition << "}";
-				mParameterBag->controlValues[ctrl] = zPosition;
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 
 			// rotation speed
 			ctrl = 19;
-			if (ui::Button("a")) { mBatchass->lockRotationSpeed(); }
+			if (ui::Button("a##rotationspeed")) { mBatchass->lockRotationSpeed(); }
 			ui::SameLine();
-			if (ui::Button("t")) { mBatchass->tempoRotationSpeed(); }
+			if (ui::Button("t##rotationspeed")) { mBatchass->tempoRotationSpeed(); }
 			ui::SameLine();
-			if (ui::Button("x")) { mBatchass->resetRotationSpeed(); }
+			if (ui::Button("x##rotationspeed")) { mBatchass->resetRotationSpeed(); }
 			ui::SameLine();
-			static float rotationSpeed = mParameterBag->controlValues[ctrl];
-			if (ui::SliderFloat("rotationSpeed", &rotationSpeed, mBatchass->minRotationSpeed, mBatchass->maxRotationSpeed))
+			if (ui::SliderFloat("rotationSpeed", &mParameterBag->controlValues[ctrl], mBatchass->minRotationSpeed, mBatchass->maxRotationSpeed))
 			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << rotationSpeed << "}";
-				mParameterBag->controlValues[ctrl] = rotationSpeed;
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// blend modes
 			ctrl = 20;
-			static float blendmode = mParameterBag->controlValues[ctrl];
-			if (ui::SliderFloat("blendmode", &blendmode, 0.0f, 27.0f))
+			if (ui::SliderFloat("blendmode", &mParameterBag->controlValues[ctrl], 0.0f, 27.0f))
 			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << blendmode << "}";
-				mParameterBag->controlValues[ctrl] = blendmode;
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// steps
 			ctrl = 16;
-			static float steps = mParameterBag->controlValues[ctrl];
-			if (ui::SliderFloat("steps", &steps, 1.0f, 128.0f))
+			if (ui::SliderFloat("steps", &mParameterBag->controlValues[ctrl], 1.0f, 128.0f))
 			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << steps << "}";
-				mParameterBag->controlValues[ctrl] = steps;
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// pixelate
 			ctrl = 15;
-			static float pixelate = mParameterBag->controlValues[ctrl];
-			if (ui::SliderFloat("pixelate", &pixelate, 0.01f, 1.0f))
+			if (ui::SliderFloat("pixelate", &mParameterBag->controlValues[ctrl], 0.01f, 1.0f))
 			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << pixelate << "}";
-				mParameterBag->controlValues[ctrl] = pixelate;
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// iPreviewCrossfade
 			ctrl = 17;
-			static float previewCrossfade = mParameterBag->controlValues[ctrl];
-			if (ui::SliderFloat("previewCrossfade", &previewCrossfade, 0.01f, 1.0f))
+			if (ui::SliderFloat("previewCrossfade", &mParameterBag->controlValues[ctrl], 0.01f, 1.0f))
 			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << previewCrossfade << "}";
-				mParameterBag->controlValues[ctrl] = previewCrossfade;
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// crossfade
 			ctrl = 18;
@@ -532,7 +545,10 @@ void BatchassApp::drawMain()
 			stringstream sParams;
 			sParams << "{\"colors\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
 			// foreground color
-			static float color[4] = { mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4] };
+			color[0] = mParameterBag->controlValues[1];		
+			color[1] = mParameterBag->controlValues[2];
+			color[2] = mParameterBag->controlValues[3];
+			color[3] = mParameterBag->controlValues[4];
 			ui::ColorEdit4("f", color);
 
 			for (int i = 0; i < 4; i++)
@@ -549,17 +565,17 @@ void BatchassApp::drawMain()
 					if (i == 1) mOSC->sendOSCColorMessage("/fg", mParameterBag->controlValues[2]);
 					if (i == 2) mOSC->sendOSCColorMessage("/fb", mParameterBag->controlValues[3]);
 					if (i == 3) mOSC->sendOSCColorMessage("/fa", mParameterBag->controlValues[4]);
-
-
 				}
-
 			}
-
 			//ui::SameLine();
 			//ui::TextColored(ImVec4(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4]), "fg color");
 
 			// background color
-			static float backcolor[4] = { mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8] };
+			backcolor[0] = mParameterBag->controlValues[5];
+			backcolor[1] = mParameterBag->controlValues[6];
+			backcolor[2] = mParameterBag->controlValues[7];
+			backcolor[3] = mParameterBag->controlValues[8];
+			//backcolor[4] = { mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8] };
 			ui::ColorEdit4("g", backcolor);
 			for (int i = 0; i < 4; i++)
 			{
@@ -570,6 +586,7 @@ void BatchassApp::drawMain()
 				}
 
 			}
+			
 
 			//ui::SameLine();
 			//ui::TextColored(ImVec4(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8]), "bg color");

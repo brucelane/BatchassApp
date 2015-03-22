@@ -157,5 +157,6 @@ private:
 	static const int			RENDER_DELETE = 5;
 	static const int			MIDI_IN = 6;
 
-
+	float color[4];
+	float backcolor[4];
 };
