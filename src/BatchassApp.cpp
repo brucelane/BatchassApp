@@ -71,7 +71,7 @@ void BatchassApp::setup()
 	// set ui window and io events callbacks
 	//ui::setWindow(getWindow());
 	// set ui window and io events callbacks
-	//ui::connectWindow(getWindow());
+	ui::connectWindow(getWindow());
 	//ui::initialize();
 	ui::initialize();
 
