@@ -71,7 +71,7 @@ void BatchassApp::setup()
 	// set ui window and io events callbacks
 	//ui::setWindow(getWindow());
 	// set ui window and io events callbacks
-	ui::connectWindow(getWindow());
+	//ui::connectWindow(getWindow());
 	//ui::initialize();
 	ui::initialize();
 
@@ -886,9 +886,11 @@ void BatchassApp::drawMain()
 		for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
 		{
 			sprintf_s(buf, "Texture %d", i);
+			ui::SetNextWindowSize(ImVec2(mParameterBag->mPreviewFboWidth + margin, 200));
+			ui::SetNextWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), margin));
 			ui::Begin(buf, NULL, ImVec2(mParameterBag->mPreviewFboWidth + margin, 200));
 			{
-				ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), margin));
+				//ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), margin));
 				//if (i > 0) ui::SameLine();
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getTexture(i).getId(), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
@@ -1251,6 +1253,7 @@ void BatchassApp::update()
 void BatchassApp::resize()
 {
 	mWarpings->resize();
+	ui::initialize();
 }
 
 void BatchassApp::mouseMove(MouseEvent event)
