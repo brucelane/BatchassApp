@@ -348,6 +348,109 @@ void BatchassApp::drawMain()
 	ui::ShowStyleEditor();
 
 	if (showTest) ui::ShowTestWindow();
+// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
+	int w = mParameterBag->mPreviewFboWidth + margin;
+	int h = mParameterBag->mPreviewFboHeight * 2;
+	int yPos = margin;
+#pragma region textures
+	if (showTextures)
+	{
+		for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
+		{
+			sprintf_s(buf, "Texture %d", i);
+			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::Begin(buf);
+			{
+				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getTexture(i).getId(), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+				sprintf_s(buf, "Flip %d", i);
+				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipTexture(i);
+				ui::PopStyleColor(3);
+				ui::PopID();
+			}
+			ui::End();
+		}
+	}
+	yPos += h + margin;
+#pragma endregion textures
+#pragma region shaders
+	if (showShaders)
+	{
+		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
+		{
+			sprintf_s(buf, "Shada %d", i);
+			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::Begin(buf);
+			{
+				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+				ui::Columns(4, "data", true);
+
+				if (ui::Button(mBatchass->getShadersRef()->getShaderName(i).c_str())) {}
+				ui::NextColumn();
+				char buf[32];
+				sprintf_s(buf, "L%d", i);
+				if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
+				ui::NextColumn();
+				sprintf_s(buf, "R%d", i);
+				if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
+				ui::NextColumn();
+				sprintf_s(buf, "P%d", i);
+				if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
+				ui::NextColumn();
+
+				ui::PopStyleColor(3);
+				ui::PopID();
+
+				ui::Columns(1);
+			}
+			ui::End();
+		}
+	}
+	yPos += h + margin;
+
+#pragma endregion shaders
+#pragma region fbos
+	if (showFbos)
+	{
+		for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
+		{
+			sprintf_s(buf, "Fbo %d", i);
+			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::Begin(buf);
+			{
+				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+				//if (i > 0) ui::SameLine();
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+
+				sprintf_s(buf, "Flip %d", i);
+				if (ui::Button(buf))
+				{
+					mBatchass->getTexturesRef()->flipFbo(i);
+				}
+
+				ui::Text("Hover over me");
+				if (ui::IsItemHovered())
+					ui::SetTooltip("I am a tooltip");
+				ui::PopStyleColor(3);
+				ui::PopID();
+			}
+			ui::End();
+		}
+	}
+#pragma endregion fbos
 #pragma region FPS
 	// fps window
 	if (showFps)
@@ -565,6 +668,7 @@ void BatchassApp::drawMain()
 		if (ui::CollapsingHeader("Colors", NULL, true, true))
 		{
 			stringstream sParams;
+			bool colorChanged = false;
 			sParams << "{\"colors\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
 			// foreground color
 			color[0] = mParameterBag->controlValues[1];
@@ -587,7 +691,19 @@ void BatchassApp::drawMain()
 					if (i == 1) mOSC->sendOSCColorMessage("/fg", mParameterBag->controlValues[2]);
 					if (i == 2) mOSC->sendOSCColorMessage("/fb", mParameterBag->controlValues[3]);
 					if (i == 3) mOSC->sendOSCColorMessage("/fa", mParameterBag->controlValues[4]);
+					colorChanged = true;
 				}
+			}
+			if (colorChanged)
+			{
+				stringstream s; 
+				s << "{ delay: 2000, type : \"action\", action : \"FC\", parameter : \"#";
+				s << std::hex << mParameterBag->controlValues[1];
+				s << std::hex << mParameterBag->controlValues[2];
+				s << std::hex << mParameterBag->controlValues[3];
+				s << "\"}";
+				string strColor = s.str();
+				mWebSockets->write(strColor);
 			}
 			//ui::SameLine();
 			//ui::TextColored(ImVec4(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4]), "fg color");
@@ -883,106 +999,7 @@ void BatchassApp::drawMain()
 		ui::End();
 	}
 #pragma endregion Audio
-	int w = mParameterBag->mPreviewFboWidth + margin;
-	int h = mParameterBag->mPreviewFboHeight * 3;
-#pragma region textures
-			//ui::SetNextWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin ), margin));
-			//ui::Begin(buf, NULL, ImVec2(mParameterBag->mPreviewFboWidth + margin, 200));
-	if (showTextures)
-	{
-		for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
-		{
-			sprintf_s(buf, "Texture %d", i);
-			//ui::SetNextWindowSize(ImVec2(100, 120));
-			ui::Begin(buf, NULL, ImVec2(w, h));
-			{
-				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, margin));
-				//if (i > 0) ui::SameLine();
-				ui::PushID(i);
-				ui::Image((void*)mBatchass->getTexturesRef()->getTexture(i).getId(), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				sprintf_s(buf, "Flip %d", i);
-				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipTexture(i);
-				ui::PopStyleColor(3);
-				ui::PopID();
-			}
-			ui::End();
-		}
-	}
-#pragma endregion textures
-#pragma region shaders
-	if (showShaders)
-	{
-		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
-		{
-			sprintf_s(buf, "Shada %d", i);
-			ui::Begin(buf, NULL, ImVec2(w, h));
-			{
-				ui::SetWindowPos(ImVec2(i * (w + inBetween), mParameterBag->mPreviewFboHeight + 150));
-				ui::PushID(i);
-				ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				ui::Columns(4, "data", true);
 
-				if (ui::Button(mBatchass->getShadersRef()->getShaderName(i).c_str())) {}
-				ui::NextColumn();
-				char buf[32];
-				sprintf_s(buf, "L%d", i);
-				if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
-				ui::NextColumn();
-				sprintf_s(buf, "R%d", i);
-				if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
-				ui::NextColumn();
-				sprintf_s(buf, "P%d", i);
-				if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
-				ui::NextColumn();
-
-				ui::PopStyleColor(3);
-				ui::PopID();
-
-				ui::Columns(1);
-			}
-			ui::End();
-		}
-	}
-
-#pragma endregion shaders
-#pragma region fbos
-	if (showFbos)
-	{
-		for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
-		{
-			sprintf_s(buf, "Fbo %d", i);
-			ui::Begin(buf, NULL, ImVec2(w, h));
-			{
-				ui::SetWindowPos(ImVec2(i * (w + inBetween), mParameterBag->mPreviewFboHeight + 320));
-				//if (i > 0) ui::SameLine();
-				ui::PushID(i);
-				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-
-				sprintf_s(buf, "Flip %d", i);
-				if (ui::Button(buf))
-				{
-					mBatchass->getTexturesRef()->flipFbo(i);
-				}
-
-				ui::Text("Hover over me");
-				if (ui::IsItemHovered())
-					ui::SetTooltip("I am a tooltip");
-				ui::PopStyleColor(3);
-				ui::PopID();
-			}
-			ui::End();
-		}
-	}
-#pragma endregion fbos
 
 
 	gl::disableAlphaBlending();
@@ -1050,12 +1067,13 @@ void BatchassApp::keyUp(KeyEvent event)
 
 void BatchassApp::fileDrop(FileDropEvent event)
 {
+	int index;
 	string ext = "";
 	// use the last of the dropped files
 	boost::filesystem::path mPath = event.getFile(event.getNumFiles() - 1);
 	string mFile = mPath.string();
 	if (mFile.find_last_of(".") != std::string::npos) ext = mFile.substr(mFile.find_last_of(".") + 1);
-	//mParameterBag->currentSelectedIndex = (int)(event.getX() / 80);//76+margin mParameterBag->mPreviewWidth);
+	index = (int)(event.getX() / (margin + mParameterBag->mPreviewWidth + inBetween)) + 1;
 	mBatchass->log(mFile + " dropped, currentSelectedIndex:" + toString(mParameterBag->currentSelectedIndex) + " x: " + toString(event.getX()) + " mPreviewWidth: " + toString(mParameterBag->mPreviewWidth));
 
 	if (ext == "wav" || ext == "mp3")
@@ -1065,13 +1083,13 @@ void BatchassApp::fileDrop(FileDropEvent event)
 	else if (ext == "png" || ext == "jpg")
 	{
 		//mTextures->loadImageFile(mParameterBag->currentSelectedIndex, mFile);
-		mBatchass->getTexturesRef()->loadImageFile(1, mFile);
+		mBatchass->getTexturesRef()->loadImageFile(index, mFile);
 	}
 	else if (ext == "glsl")
 	{
 		//mShaders->incrementPreviewIndex();
 		//mUserInterface->mLibraryPanel->addShader(mFile);
-		int rtn = mBatchass->getShadersRef()->loadPixelFragmentShader(mFile);
+		int rtn = mBatchass->getShadersRef()->loadPixelFragmentShaderAtIndex(mFile, index);
 		if (rtn > -1 && rtn < mBatchass->getShadersRef()->getCount())
 		{
 			mParameterBag->controlValues[13] = 1.0f;
