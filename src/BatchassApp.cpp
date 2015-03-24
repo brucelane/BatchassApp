@@ -275,7 +275,7 @@ void BatchassApp::drawMain()
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
 	margin = 10;
-	inBetween = 75;
+	inBetween = 15;
 
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
@@ -287,7 +287,7 @@ void BatchassApp::drawMain()
 	static bool showTextures = true, showTest = false, showRouting = false, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
 
 	// our theme variables
-	static float WindowPadding[2] = { 4, 2 };
+	/*static float WindowPadding[2] = { 4, 2 };
 	static float WindowMinSize[2] = { mParameterBag->mPreviewFboWidth*2, mParameterBag->mPreviewFboHeight };
 	static float FramePadding[2] = { 4, 4 };
 	static float ItemSpacing[2] = { 10, 5 };
@@ -297,11 +297,14 @@ void BatchassApp::drawMain()
 	static float WindowRounding = 7;
 	static float TreeNodeSpacing = 22;
 	static float ColumnsMinSpacing = 50;
-	static float ScrollBarWidth = 12;
+	static float ScrollBarWidth = 12;*/
 
 	ui::GetStyle().FramePadding = ImVec2(2, 2);
 
 	ImGuiStyle& style = ui::GetStyle();
+	style.WindowRounding = 4;
+	style.WindowMinSize = ImVec2(100, 80);
+	style.ItemInnerSpacing = { 5, 5 };
 	style.Alpha = 0.6f;
 	style.Colors[ImGuiCol_Text] = ImVec4(0.89f, 0.92f, 0.94f, 1.00f);
 	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
@@ -880,19 +883,20 @@ void BatchassApp::drawMain()
 		ui::End();
 	}
 #pragma endregion Audio
+	int w = mParameterBag->mPreviewFboWidth + margin;
+	int h = mParameterBag->mPreviewFboHeight * 3;
 #pragma region textures
+			//ui::SetNextWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin ), margin));
+			//ui::Begin(buf, NULL, ImVec2(mParameterBag->mPreviewFboWidth + margin, 200));
 	if (showTextures)
 	{
 		for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
 		{
 			sprintf_s(buf, "Texture %d", i);
-			ui::SetNextWindowSize(ImVec2(100, 120));
-			//ui::SetNextWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin ), margin));
-			//ui::Begin(buf, NULL, ImVec2(mParameterBag->mPreviewFboWidth + margin, 200));
-			ui::Begin(buf, NULL, ImVec2(0, 0));
+			//ui::SetNextWindowSize(ImVec2(100, 120));
+			ui::Begin(buf, NULL, ImVec2(w, h));
 			{
-				int j = mParameterBag->mPreviewFboWidth + margin + inBetween;
-				ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), margin));
+				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, margin));
 				//if (i > 0) ui::SameLine();
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getTexture(i).getId(), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
@@ -914,9 +918,9 @@ void BatchassApp::drawMain()
 		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
 		{
 			sprintf_s(buf, "Shada %d", i);
-			ui::Begin(buf, NULL, ImVec2(150, 150));
+			ui::Begin(buf, NULL, ImVec2(w, h));
 			{
-				ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), mParameterBag->mPreviewFboHeight + 150));
+				ui::SetWindowPos(ImVec2(i * (w + inBetween), mParameterBag->mPreviewFboHeight + 150));
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
@@ -953,9 +957,9 @@ void BatchassApp::drawMain()
 		for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
 		{
 			sprintf_s(buf, "Fbo %d", i);
-			ui::Begin(buf, NULL, ImVec2(mParameterBag->mPreviewFboWidth + margin, 150));
+			ui::Begin(buf, NULL, ImVec2(w, h));
 			{
-				ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), mParameterBag->mPreviewFboHeight + 300));
+				ui::SetWindowPos(ImVec2(i * (w + inBetween), mParameterBag->mPreviewFboHeight + 320));
 				//if (i > 0) ui::SameLine();
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
