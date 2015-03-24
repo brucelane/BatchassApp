@@ -275,7 +275,7 @@ void BatchassApp::drawMain()
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
 	margin = 10;
-	inBetween = 5;
+	inBetween = 75;
 
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
@@ -886,11 +886,13 @@ void BatchassApp::drawMain()
 		for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
 		{
 			sprintf_s(buf, "Texture %d", i);
-			ui::SetNextWindowSize(ImVec2(mParameterBag->mPreviewFboWidth + margin, 200));
-			ui::SetNextWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), margin));
-			ui::Begin(buf, NULL, ImVec2(mParameterBag->mPreviewFboWidth + margin, 200));
+			ui::SetNextWindowSize(ImVec2(100, 120));
+			//ui::SetNextWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin ), margin));
+			//ui::Begin(buf, NULL, ImVec2(mParameterBag->mPreviewFboWidth + margin, 200));
+			ui::Begin(buf, NULL, ImVec2(0, 0));
 			{
-				//ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), margin));
+				int j = mParameterBag->mPreviewFboWidth + margin + inBetween;
+				ui::SetWindowPos(ImVec2(i * (mParameterBag->mPreviewFboWidth + margin + inBetween), margin));
 				//if (i > 0) ui::SameLine();
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getTexture(i).getId(), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
