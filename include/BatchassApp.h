@@ -55,7 +55,7 @@ along with Cinder-MIDI.  If not, see <http://www.gnu.org/licenses/>.
 // spout
 #include "SpoutWrapper.h"
 // UI
-#include "UI.h"
+//#include "UI.h"
 // Utils
 #include "Batchass.h"
 
@@ -63,7 +63,7 @@ using namespace ci;
 using namespace ci::app;
 using namespace std;
 using namespace Reymenta;
-using namespace MinimalUI;
+//using namespace MinimalUI;
 
 #define IM_ARRAYSIZE(_ARR)			((int)(sizeof(_ARR)/sizeof(*_ARR)))
 
@@ -113,7 +113,7 @@ private:
 	// utils
 	BatchassRef					mBatchass;
 	// minimalUI
-	UIRef						mUI;
+	//UIRef						mUI;
 	// timeline
 	Anim<float>					mTimer;
 	// midi

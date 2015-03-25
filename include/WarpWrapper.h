@@ -48,7 +48,7 @@ namespace Reymenta
 		void						keyDown( KeyEvent event );
 		void						keyUp( KeyEvent event );
 		void						draw();
-
+		int							getWarpsCount() { return mWarps.size(); };
 	private:
 		// Logger
 		LoggerRef					log;	

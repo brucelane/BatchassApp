@@ -74,11 +74,11 @@
       <IgnoreSpecificDefaultLibraries>LIBCMT;LIBCPMT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>rem xcopy /y "..\..\..\blocks\Cinder-KCB\lib\x86\dll\Release\KinectCommonBridge.dll" "$(OutDir)"
-rem xcopy /y "$(KINECT_TOOLKIT_DIR)Redist\x86\FaceTrackLib.dll" "$(OutDir)"
-rem xcopy /y "$(KINECT_TOOLKIT_DIR)Redist\x86\FaceTrackData.dll" "$(OutDir)"
-rem xcopy /y "..\..\..\blocks\Cinder-Spout\lib\Spout.dll" "$(OutDir)"
-rem xcopy /y "..\..\..\blocks\Cinder-Spout\lib\SpoutPanel.exe" "$(OutDir)"</Command>
+      <Command>xcopy /y "..\..\..\blocks\Cinder-KCB\lib\x86\dll\Release\KinectCommonBridge.dll" "$(OutDir)"
+xcopy /y "$(KINECT_TOOLKIT_DIR)Redist\x86\FaceTrackLib.dll" "$(OutDir)"
+xcopy /y "$(KINECT_TOOLKIT_DIR)Redist\x86\FaceTrackData.dll" "$(OutDir)"
+xcopy /y "..\..\..\blocks\Cinder-Spout\lib\Spout.dll" "$(OutDir)"
+xcopy /y "..\..\..\blocks\Cinder-Spout\lib\SpoutPanel.exe" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
