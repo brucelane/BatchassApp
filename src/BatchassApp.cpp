@@ -18,11 +18,21 @@ void BatchassApp::prepareSettings(Settings* settings)
 	settings->setWindowPos(Vec2i(mParameterBag->mMainWindowX, mParameterBag->mMainWindowY));
 
 #ifdef _DEBUG
-	settings->setResizable(true);
+	settings->setResizable(false);
+	settings->setBorderless();
 #else
 	settings->setBorderless();
 	settings->setResizable(false);
 #endif  // _DEBUG
+	// if mStandalone, put on the 2nd screen
+	if (mParameterBag->mStandalone)
+	{
+		settings->setWindowSize(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
+		settings->setWindowPos(Vec2i(mParameterBag->mRenderX, mParameterBag->mRenderY));
+		settings->setBorderless();
+		settings->setResizable(false);
+		
+	}
 }
 
 void BatchassApp::setup()
@@ -49,6 +59,7 @@ void BatchassApp::setup()
 	mMainWindow->setTitle("Batchass");
 	mMainWindow->connectDraw(&BatchassApp::drawMain, this);
 	mMainWindow->connectClose(&BatchassApp::shutdown, this);
+
 	// instanciate the audio class
 	mAudio = AudioWrapper::create(mParameterBag, mBatchass->getTexturesRef());
 	// instanciate the warp wrapper class
@@ -67,21 +78,15 @@ void BatchassApp::setup()
 	// Setup the MinimalUI user interface
 	//mUI = UI::create(mParameterBag, mBatchass->getShadersRef(), mBatchass->getTexturesRef(), mMainWindow);
 	//mUI->setup();
-	// set ui window and io events callbacks
-	//ui::setWindow(getWindow());
+
 	// set ui window and io events callbacks
 	ui::connectWindow(getWindow());
-	//ui::initialize();
 	ui::initialize();
-
+	
 	// midi
 	setupMidi();
 	mSeconds = 0;
-	// if AutoLayout, create render window on the 2nd screen
-	if (mParameterBag->mAutoLayout)
-	{
-		createRenderWindow();
-	}
+
 	mBatchass->tapTempo();
 }
 void BatchassApp::setupMidi()
@@ -172,6 +177,7 @@ void BatchassApp::midiListener(midi::Message msg){
 }
 void BatchassApp::createRenderWindow()
 {
+	removeUI = true;
 	deleteRenderWindows();
 	mBatchass->getWindowsResolution();
 
@@ -195,7 +201,8 @@ void BatchassApp::createRenderWindow()
 	mRenderWindow->connectDraw(&BatchassApp::drawRender, this);
 	mParameterBag->mRenderPosXY = Vec2i(mParameterBag->mRenderX, mParameterBag->mRenderY);//20141214 was 0
 	mRenderWindow->setPos(mParameterBag->mRenderX, mParameterBag->mRenderY);
-	ui::initialize();
+
+
 }
 void BatchassApp::deleteRenderWindows()
 {
@@ -204,6 +211,7 @@ void BatchassApp::deleteRenderWindows()
 }
 void BatchassApp::drawMain()
 {
+	
 	// must be first to avoid gl matrices to change
 	// draw from Spout receivers
 	mSpout->draw();
@@ -271,21 +279,27 @@ void BatchassApp::drawMain()
 	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);
 	//if (!removeUI) mUI->draw();
 
+	//imgui
+	if (removeUI)
+	{
+		//error
+		//return;
+	}
+	else
+	{
+
+	}
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
 	margin = 4;
 	inBetween = 6;
 
-	gl::setViewport(getWindowBounds());
-	gl::setMatricesWindow(getWindowSize());
-
-	//imgui
-	ui::initialize(); //to avoid resize and fullscreen null error for window
+	//ui::initialize(); //to avoid resize and fullscreen null error for window
 
 	static float f = 0.0f;
 	char buf[32];
 
-	static bool showSlidas = true, showWarps = true, showTextures = true, showTest = false, showRouting = false, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = true;
+	static bool showGlobal = true, showSlidas = false, showWarps = false, showTextures = false, showTest = true, showRouting = false, showMidi = false, showFbos = false, showTheme = false, showAudio = false, showShaders = false, showOSC = false, showFps = false, showWS = false;
 
 #pragma region style
 	// our theme variables
@@ -300,12 +314,13 @@ void BatchassApp::drawMain()
 	static float TreeNodeSpacing = 22;
 	static float ColumnsMinSpacing = 50;
 	static float ScrollBarWidth = 12;*/
+	ImGui::GetWindowPos();
 
 	ui::GetStyle().FramePadding = ImVec2(2, 2);
 
 	ImGuiStyle& style = ui::GetStyle();
 	style.WindowRounding = 4;
-	style.WindowMinSize = ImVec2(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
+	//style.WindowMinSize = ImVec2(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
 	style.ItemInnerSpacing = { 5, 5 };
 	style.Alpha = 0.6f;
 	style.Colors[ImGuiCol_Text] = ImVec4(0.89f, 0.92f, 0.94f, 1.00f);
@@ -367,9 +382,10 @@ void BatchassApp::drawMain()
 		{
 			sprintf_s(buf, "Texture %d", i);
 			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::SetNextWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
 			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 			{
-				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+				//ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getTexture(i).getId(), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
@@ -490,77 +506,83 @@ void BatchassApp::drawMain()
 
 
 #pragma region Global
-
-	// start a new window
-	ui::Begin("Global", NULL, ImVec2(largeW, h));
+	if (showGlobal)
 	{
-		ui::SetNextWindowSize(ImVec2(w, h));
-		ui::SetWindowPos(ImVec2(xPos, yPos));
-		if (ui::CollapsingHeader("Panels", "11", true, true))
+		// start a new window
+		ui::Begin("Global", NULL, ImVec2(largeW, h));
 		{
-			// Checkbox
-			ui::Checkbox("Audio", &showAudio);
-			ui::SameLine();
-			ui::Checkbox("WebSockets", &showWS);
-			ui::SameLine();
-			ui::Checkbox("Shada", &showShaders);
-			ui::SameLine();
-			ui::Checkbox("WarpS", &showWarps);
-			ui::SameLine();
-			ui::Checkbox("Routing", &showRouting);
-			ui::Checkbox("OSC", &showOSC);
-			ui::SameLine();
-			ui::Checkbox("MIDI", &showMidi);
-			ui::SameLine();
-			ui::Checkbox("Sliders", &showSlidas);
-			ui::SameLine();
-			ui::Checkbox("Test", &showTest);
-			ui::SameLine();
-			ui::Checkbox("FPS", &showFps);
-			ui::SameLine();
-			ui::Checkbox("Editor", &showTheme);
-			if (ui::Button("Save Params"))
+			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::SetWindowPos(ImVec2(xPos, yPos));
+			if (ui::CollapsingHeader("Panels", "11", true, true))
 			{
-				// save warp settings
-				mWarpings->save("warps1.xml");
-				// save params
-				mParameterBag->save();
+				// Checkbox
+				ui::Checkbox("Textures", &showTextures);
+				ui::SameLine();
+				ui::Checkbox("Fbos", &showFbos);
+				ui::SameLine();
+				ui::Checkbox("Shada", &showShaders);
+				ui::SameLine();
+				ui::Checkbox("WarpS", &showWarps);
+				ui::SameLine();
+				ui::Checkbox("Audio", &showAudio);
+				ui::SameLine();
+				ui::Checkbox("WebSockets", &showWS);
+				ui::SameLine();
+				ui::Checkbox("Routing", &showRouting);
+				ui::Checkbox("OSC", &showOSC);
+				ui::SameLine();
+				ui::Checkbox("MIDI", &showMidi);
+				ui::SameLine();
+				ui::Checkbox("Sliders", &showSlidas);
+				ui::SameLine();
+				ui::Checkbox("Test", &showTest);
+				ui::SameLine();
+				ui::Checkbox("FPS", &showFps);
+				ui::SameLine();
+				ui::Checkbox("Editor", &showTheme);
+				if (ui::Button("Save Params"))
+				{
+					// save warp settings
+					mWarpings->save("warps1.xml");
+					// save params
+					mParameterBag->save();
+				}
+
+			}
+			if (ui::CollapsingHeader("Mode", NULL, true, true))
+			{
+				static int mode = mParameterBag->mMode;
+				ui::RadioButton("Mix", &mode, MODE_MIX); ui::SameLine();
+				ui::RadioButton("Audio", &mode, MODE_AUDIO); ui::SameLine();
+				ui::RadioButton("Sphere", &mode, MODE_SPHERE); ui::SameLine();
+				ui::RadioButton("Warp", &mode, MODE_WARP); ui::SameLine();
+				ui::RadioButton("Mesh", &mode, MODE_MESH);
+				if (mParameterBag->mMode != mode) changeMode(mode);
+			}
+			if (ui::CollapsingHeader("Render Window", NULL, true, true))
+			{
+				if (ui::Button("Create")) { createRenderWindow(); }
+				ui::SameLine();
+				if (ui::Button("Delete")) { deleteRenderWindows(); }
+				ui::SameLine();
+				//if (ui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
+				mParameterBag->mPreviewEnabled ^= ui::Button("Preview");
+				ui::SameLine();
+				if (ui::Button("Debug")) { mParameterBag->iDebug = !mParameterBag->iDebug; }
 			}
 
 		}
-		if (ui::CollapsingHeader("Mode", NULL, true, true))
-		{
-			static int mode = mParameterBag->mMode;
-			ui::RadioButton("Mix", &mode, MODE_MIX); ui::SameLine();
-			ui::RadioButton("Audio", &mode, MODE_AUDIO); ui::SameLine();
-			ui::RadioButton("Sphere", &mode, MODE_SPHERE); ui::SameLine();
-			ui::RadioButton("Warp", &mode, MODE_WARP); ui::SameLine();
-			ui::RadioButton("Mesh", &mode, MODE_MESH);
-			if (mParameterBag->mMode != mode) changeMode(mode);
-		}
-		if (ui::CollapsingHeader("Render Window", NULL, true, true))
-		{
-			if (ui::Button("Create")) { createRenderWindow(); }
-			ui::SameLine();
-			if (ui::Button("Delete")) { deleteRenderWindows(); }
-			ui::SameLine();
-			if (ui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
-			ui::SameLine();
-			if (ui::Button("Debug")) { mParameterBag->iDebug = !mParameterBag->iDebug; }
-		}
-
+		xPos += largeW + margin;
+		ui::End();
 	}
-	xPos += largeW + margin;
-	ui::End();
 #pragma endregion Global
 #pragma region slidas
 	if (showSlidas)
 	{
-		sprintf_s(buf, "Warps %d", i);
-		ui::SetNextWindowSize(ImVec2(w, h));
-		ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+		ui::SetNextWindowSize(ImVec2(largeW, h));
+		ui::Begin("Animation", NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 		{
-			ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+			ui::SetWindowPos(ImVec2(xPos, yPos));
 			if (ui::CollapsingHeader("Effects", NULL, true, true))
 			{
 				if (ui::Button("chromatic")) { mParameterBag->controlValues[20] = !mParameterBag->controlValues[20]; }
@@ -770,737 +792,739 @@ void BatchassApp::drawMain()
 			}
 			ui::End();
 			xPos += largeW + margin;
-
 		}
+	}
 #pragma endregion slidas
 #pragma region FPS
-		// fps window
-		if (showFps)
+	// fps window
+	if (showFps)
+	{
+		ui::SetNextWindowSize(ImVec2(largeW, h));
+		ui::Begin("Fps", NULL, ImVec2(100, 100), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 		{
-			ui::SetNextWindowSize(ImVec2(largeW, h));
-			ui::Begin("Fps", NULL, ImVec2(100, 100), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+			ui::SetWindowPos(ImVec2(xPos, yPos));
+			static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
+			static int values_offset = 0;
+			static float refresh_time = -1.0f;
+			if (ui::GetTime() > refresh_time + 1.0f / 6.0f)
 			{
-				ui::SetWindowPos(ImVec2(xPos, yPos));
-				static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
-				static int values_offset = 0;
-				static float refresh_time = -1.0f;
-				if (ui::GetTime() > refresh_time + 1.0f / 6.0f)
-				{
-					refresh_time = ui::GetTime();
-					values[values_offset] = mParameterBag->iFps;
-					values_offset = (values_offset + 1) % values.size();
-				}
-				if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
-				ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
-				if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
-				ui::Text("Mouse Position: (%.1f,%.1f)", ui::GetIO().MousePos.x, ui::GetIO().MousePos.y);
-				ui::Text("Mouse %d", ui::GetIO().MouseDown[0]);
-
+				refresh_time = ui::GetTime();
+				values[values_offset] = mParameterBag->iFps;
+				values_offset = (values_offset + 1) % values.size();
 			}
-			ui::End();
-			xPos += largeW + margin;
+			if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+			ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
+			if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
+			ui::Text("Mouse Position: (%.1f,%.1f)", ui::GetIO().MousePos.x, ui::GetIO().MousePos.y);
+			ui::Text("Mouse %d", ui::GetIO().MouseDown[0]);
+
 		}
+		ui::End();
+		xPos += largeW + margin;
+	}
 #pragma endregion FPS
 #pragma region MIDI
 
-		// MIDI window
-		if (showMidi)
+	// MIDI window
+	if (showMidi)
+	{
+		ui::SetNextWindowSize(ImVec2(largeW, h));
+		ui::Begin("MIDI", NULL, ImVec2(0, 0));
 		{
-			ui::SetNextWindowSize(ImVec2(largeW, h));
-			ui::Begin("MIDI", NULL, ImVec2(0, 0));
+			ui::SetWindowPos(ImVec2(xPos, yPos));
+			if (ui::CollapsingHeader("MidiIn", "20", true, true))
 			{
-				ui::SetWindowPos(ImVec2(xPos, yPos));
-				if (ui::CollapsingHeader("MidiIn", "20", true, true))
-				{
-					ui::Columns(2, "data", true);
-					ui::Text("Name"); ui::NextColumn();
-					ui::Text("Connect"); ui::NextColumn();
-					ui::Separator();
+				ui::Columns(2, "data", true);
+				ui::Text("Name"); ui::NextColumn();
+				ui::Text("Connect"); ui::NextColumn();
+				ui::Separator();
 
-					for (int i = 0; i < mMidiInputs.size(); i++)
+				for (int i = 0; i < mMidiInputs.size(); i++)
+				{
+					ui::Text(mMidiInputs[i].portName.c_str()); ui::NextColumn();
+					char buf[32];
+					if (mMidiInputs[i].isConnected)
 					{
-						ui::Text(mMidiInputs[i].portName.c_str()); ui::NextColumn();
-						char buf[32];
+						sprintf_s(buf, "Disconnect %d", i);
+					}
+					else
+					{
+						sprintf_s(buf, "Connect %d", i);
+					}
+
+					if (ui::Button(buf))
+					{
+						stringstream ss;
 						if (mMidiInputs[i].isConnected)
 						{
-							sprintf_s(buf, "Disconnect %d", i);
+							if (i == 0)
+							{
+								mMidiIn0.closePort();
+							}
+							if (i == 1)
+							{
+								mMidiIn1.closePort();
+							}
+							if (i == 2)
+							{
+								mMidiIn2.closePort();
+							}
+							mMidiInputs[i].isConnected = false;
 						}
 						else
 						{
-							sprintf_s(buf, "Connect %d", i);
-						}
-
-						if (ui::Button(buf))
-						{
-							stringstream ss;
-							if (mMidiInputs[i].isConnected)
+							if (i == 0)
 							{
-								if (i == 0)
-								{
-									mMidiIn0.closePort();
-								}
-								if (i == 1)
-								{
-									mMidiIn1.closePort();
-								}
-								if (i == 2)
-								{
-									mMidiIn2.closePort();
-								}
-								mMidiInputs[i].isConnected = false;
+								mMidiIn0.openPort(i);
+								mMidiIn0.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
 							}
-							else
+							if (i == 1)
 							{
-								if (i == 0)
-								{
-									mMidiIn0.openPort(i);
-									mMidiIn0.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-								}
-								if (i == 1)
-								{
-									mMidiIn1.openPort(i);
-									mMidiIn1.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-								}
-								if (i == 2)
-								{
-									mMidiIn2.openPort(i);
-									mMidiIn2.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-								}
-								mMidiInputs[i].isConnected = true;
-								ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName << std::endl;
+								mMidiIn1.openPort(i);
+								mMidiIn1.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
 							}
-							mLogMsg = ss.str();
+							if (i == 2)
+							{
+								mMidiIn2.openPort(i);
+								mMidiIn2.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
+							}
+							mMidiInputs[i].isConnected = true;
+							ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName << std::endl;
 						}
-						ui::NextColumn();
-						ui::Separator();
+						mLogMsg = ss.str();
 					}
-					ui::Columns(1);
-
+					ui::NextColumn();
+					ui::Separator();
 				}
-				if (ui::CollapsingHeader("Log", "21", true, true))
-				{
-					static ImGuiTextBuffer log;
-					static int lines = 0;
-					ui::Text("Buffer contents: %d lines, %d bytes", lines, log.size());
-					if (ui::Button("Clear")) { log.clear(); lines = 0; }
-					//ui::SameLine();
+				ui::Columns(1);
 
-					if (newLogMsg)
-					{
-						newLogMsg = false;
-						log.append(mLogMsg.c_str());
-						lines++;
-						if (lines > 5) { log.clear(); lines = 0; }
-					}
-					ui::BeginChild("Log");
-					ui::TextUnformatted(log.begin(), log.end());
-					ui::EndChild();
-				}
 			}
-			ui::End();
-			xPos += largeW + margin;
+			if (ui::CollapsingHeader("Log", "21", true, true))
+			{
+				static ImGuiTextBuffer log;
+				static int lines = 0;
+				ui::Text("Buffer contents: %d lines, %d bytes", lines, log.size());
+				if (ui::Button("Clear")) { log.clear(); lines = 0; }
+				//ui::SameLine();
+
+				if (newLogMsg)
+				{
+					newLogMsg = false;
+					log.append(mLogMsg.c_str());
+					lines++;
+					if (lines > 5) { log.clear(); lines = 0; }
+				}
+				ui::BeginChild("Log");
+				ui::TextUnformatted(log.begin(), log.end());
+				ui::EndChild();
+			}
 		}
+		ui::End();
+		xPos += largeW + margin;
+	}
 #pragma endregion MIDI
 #pragma region OSC
 
-		if (showOSC)
+	if (showOSC)
+	{
+		ui::SetNextWindowSize(ImVec2(largeW, h));
+		ui::Begin("OSC router", NULL, ImVec2(0, 0));
 		{
-			ui::SetNextWindowSize(ImVec2(largeW, h));
-			ui::Begin("OSC router", NULL, ImVec2(0, 0));
+			ui::SetWindowPos(ImVec2(xPos, yPos));
+			ui::Text("Sending to host %s", mParameterBag->mOSCDestinationHost.c_str());
+			ui::SameLine();
+			ui::Text(" on port %d", mParameterBag->mOSCDestinationPort);
+			ui::Text("Sending to 2nd host %s", mParameterBag->mOSCDestinationHost2.c_str());
+			ui::SameLine();
+			ui::Text(" on port %d", mParameterBag->mOSCDestinationPort2);
+			ui::Text(" Receiving on port %d", mParameterBag->mOSCReceiverPort);
+
+			static char str0[128] = "/live/play";
+			static int i0 = 0;
+			static float f0 = 0.0f;
+			ui::InputText("address", str0, IM_ARRAYSIZE(str0));
+			ui::InputInt("track", &i0);
+			ui::InputFloat("clip", &f0, 0.01f, 1.0f);
+			if (ui::Button("Send")) { mOSC->sendOSCIntMessage(str0, i0); }
+
+			static ImGuiTextBuffer OSClog;
+			static int lines = 0;
+			if (ui::Button("Clear")) { OSClog.clear(); lines = 0; }
+			ui::SameLine();
+			ui::Text("Buffer contents: %d lines, %d bytes", lines, OSClog.size());
+
+			if (mParameterBag->newOSCMsg)
 			{
-				ui::SetWindowPos(ImVec2(xPos, yPos));
-				ui::Text("Sending to host %s", mParameterBag->mOSCDestinationHost.c_str());
-				ui::SameLine();
-				ui::Text(" on port %d", mParameterBag->mOSCDestinationPort);
-				ui::Text("Sending to 2nd host %s", mParameterBag->mOSCDestinationHost2.c_str());
-				ui::SameLine();
-				ui::Text(" on port %d", mParameterBag->mOSCDestinationPort2);
-				ui::Text(" Receiving on port %d", mParameterBag->mOSCReceiverPort);
-
-				static char str0[128] = "/live/play";
-				static int i0 = 0;
-				static float f0 = 0.0f;
-				ui::InputText("address", str0, IM_ARRAYSIZE(str0));
-				ui::InputInt("track", &i0);
-				ui::InputFloat("clip", &f0, 0.01f, 1.0f);
-				if (ui::Button("Send")) { mOSC->sendOSCIntMessage(str0, i0); }
-
-				static ImGuiTextBuffer OSClog;
-				static int lines = 0;
-				if (ui::Button("Clear")) { OSClog.clear(); lines = 0; }
-				ui::SameLine();
-				ui::Text("Buffer contents: %d lines, %d bytes", lines, OSClog.size());
-
-				if (mParameterBag->newOSCMsg)
-				{
-					mParameterBag->newOSCMsg = false;
-					OSClog.append(mParameterBag->OSCMsg.c_str());
-					lines++;
-					if (lines > 5) { OSClog.clear(); lines = 0; }
-				}
-				ui::BeginChild("OSClog");
-				ui::TextUnformatted(OSClog.begin(), OSClog.end());
-				ui::EndChild();
+				mParameterBag->newOSCMsg = false;
+				OSClog.append(mParameterBag->OSCMsg.c_str());
+				lines++;
+				if (lines > 5) { OSClog.clear(); lines = 0; }
 			}
-			ui::End();
-			xPos += largeW + margin;
+			ui::BeginChild("OSClog");
+			ui::TextUnformatted(OSClog.begin(), OSClog.end());
+			ui::EndChild();
 		}
+		ui::End();
+		xPos += largeW + margin;
+	}
 #pragma endregion OSC
 #pragma region WebSockets
-		if (showWS)
+	if (showWS)
+	{
+		ui::SetNextWindowSize(ImVec2(largeW, h));
+		ui::Begin("WebSockets", NULL, ImVec2(300, 300));
 		{
-			ui::SetNextWindowSize(ImVec2(largeW, h));
-			ui::Begin("WebSockets", NULL, ImVec2(300, 300));
+			ui::SetWindowPos(ImVec2(xPos, yPos));
+			if (mParameterBag->mIsWebSocketsServer)
 			{
-				ui::SetWindowPos(ImVec2(xPos, yPos));
-				if (mParameterBag->mIsWebSocketsServer)
-				{
-					ui::Text("Server %s", mParameterBag->mWebSocketsHost.c_str());
-					ui::SameLine();
-				}
-				else
-				{
-					ui::Text("Client %s", mParameterBag->mWebSocketsHost.c_str());
-					ui::SameLine();
-				}
-				ui::Text(" on port %d", mParameterBag->mWebSocketsPort);
-				if (ui::Button("Send"))
-				{
-					mSeconds = (int)getElapsedSeconds();
-					stringstream s;
-					s << mSeconds;
-					mWebSockets->write(s.str());
-				}
-				static ImGuiTextBuffer WSlog;
-				static int lines = 0;
-				if (ui::Button("Clear")) { WSlog.clear(); lines = 0; }
+				ui::Text("Server %s", mParameterBag->mWebSocketsHost.c_str());
 				ui::SameLine();
-				ui::Text("Buffer contents: %d lines, %d bytes", lines, WSlog.size());
-
-				if (mParameterBag->newWSMsg)
-				{
-					mParameterBag->newWSMsg = false;
-					WSlog.append(mParameterBag->WSMsg.c_str());
-					lines++;
-					if (lines > 5) { WSlog.clear(); lines = 0; }
-				}
-				ui::BeginChild("WSlog");
-				ui::TextUnformatted(WSlog.begin(), WSlog.end());
-				ui::EndChild();
 			}
-			ui::End();
-			xPos += largeW + margin;
+			else
+			{
+				ui::Text("Client %s", mParameterBag->mWebSocketsHost.c_str());
+				ui::SameLine();
+			}
+			ui::Text(" on port %d", mParameterBag->mWebSocketsPort);
+			if (ui::Button("Send"))
+			{
+				mSeconds = (int)getElapsedSeconds();
+				stringstream s;
+				s << mSeconds;
+				mWebSockets->write(s.str());
+			}
+			static ImGuiTextBuffer WSlog;
+			static int lines = 0;
+			if (ui::Button("Clear")) { WSlog.clear(); lines = 0; }
+			ui::SameLine();
+			ui::Text("Buffer contents: %d lines, %d bytes", lines, WSlog.size());
+
+			if (mParameterBag->newWSMsg)
+			{
+				mParameterBag->newWSMsg = false;
+				WSlog.append(mParameterBag->WSMsg.c_str());
+				lines++;
+				if (lines > 5) { WSlog.clear(); lines = 0; }
+			}
+			ui::BeginChild("WSlog");
+			ui::TextUnformatted(WSlog.begin(), WSlog.end());
+			ui::EndChild();
 		}
+		ui::End();
+		xPos += largeW + margin;
+	}
 #pragma endregion WebSockets
 #pragma region Routing
-		if (showRouting)
+	if (showRouting)
+	{
+		ui::SetNextWindowSize(ImVec2(largeW, h));
+		ui::Begin("Routing", NULL, ImVec2(300, 300));
 		{
-			ui::SetNextWindowSize(ImVec2(largeW, h));
-			ui::Begin("Routing", NULL, ImVec2(300, 300));
+			ui::SetWindowPos(ImVec2(xPos, yPos));
+			ui::BeginChild("Warps routing", ImVec2(0, 300), true);
+			ui::Text("Selected warp: %d", mParameterBag->selectedWarp);
+			ui::Columns(4);
+			ui::Text("ID"); ui::NextColumn();
+			ui::Text("texIndex"); ui::NextColumn();
+			ui::Text("texMode"); ui::NextColumn();
+			ui::Text("active"); ui::NextColumn();
+			ui::Separator();
+			for (int i = 0; i < mParameterBag->MAX; i++)
 			{
-				ui::SetWindowPos(ImVec2(xPos, yPos));
-				ui::BeginChild("Warps routing", ImVec2(0, 300), true);
-				ui::Text("Selected warp: %d", mParameterBag->selectedWarp);
-				ui::Columns(4);
-				ui::Text("ID"); ui::NextColumn();
-				ui::Text("texIndex"); ui::NextColumn();
-				ui::Text("texMode"); ui::NextColumn();
-				ui::Text("active"); ui::NextColumn();
-				ui::Separator();
-				for (int i = 0; i < mParameterBag->MAX; i++)
-				{
-					ui::Text("%d", i); ui::NextColumn();
-					ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
-					ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
-					ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
+				ui::Text("%d", i); ui::NextColumn();
+				ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
+				ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
+				ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
 
-				}
-				ui::Columns(1);
-				ui::EndChild();
 			}
-			ui::End();
-			xPos += largeW + margin;
+			ui::Columns(1);
+			ui::EndChild();
 		}
+		ui::End();
+		xPos += largeW + margin;
+	}
 #pragma endregion Routing
 #pragma region Audio
 
-		// audio window
-		if (showAudio)
+	// audio window
+	if (showAudio)
+	{
+		ui::SetNextWindowSize(ImVec2(largeW, h));
+		ui::Begin("Audio", NULL, ImVec2(200, 100));
 		{
-			ui::SetNextWindowSize(ImVec2(largeW, h));
-			ui::Begin("Audio", NULL, ImVec2(200, 100));
+			ui::SetWindowPos(ImVec2(xPos, yPos));
+			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
+			ui::SameLine();
+			ui::Text("Beat %d", mParameterBag->mBeat);
+			ui::SameLine();
+			ui::Text("Tempo %.2f", mParameterBag->mTempo);
+			if (ui::Button("Tap tempo")) { mBatchass->tapTempo(); }
+			ui::SameLine();
+			if (ui::Button("Use time with tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
+
+			//void Batchass::setTimeFactor(const int &aTimeFactor)
+			ImGui::SliderFloat("time factor", &mParameterBag->iTimeFactor, 0.0001f, 32.0f, "%.1f");
+
+			static ImVector<float> values; if (values.empty()) { values.resize(40); memset(&values.front(), 0, values.size()*sizeof(float)); }
+			static int values_offset = 0;
+			// audio maxVolume
+			static float refresh_time = -1.0f;
+			if (ui::GetTime() > refresh_time + 1.0f / 20.0f)
 			{
-				ui::SetWindowPos(ImVec2(xPos, yPos));
-				ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
-				ui::SameLine();
-				ui::Text("Beat %d", mParameterBag->mBeat);
-				ui::SameLine();
-				ui::Text("Tempo %.2f", mParameterBag->mTempo);
-				if (ui::Button("Tap tempo")) { mBatchass->tapTempo(); }
-				ui::SameLine();
-				if (ui::Button("Use time with tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
-
-				//void Batchass::setTimeFactor(const int &aTimeFactor)
-				ImGui::SliderFloat("time factor", &mParameterBag->iTimeFactor, 0.0001f, 32.0f, "%.1f");
-
-				static ImVector<float> values; if (values.empty()) { values.resize(40); memset(&values.front(), 0, values.size()*sizeof(float)); }
-				static int values_offset = 0;
-				// audio maxVolume
-				static float refresh_time = -1.0f;
-				if (ui::GetTime() > refresh_time + 1.0f / 20.0f)
-				{
-					refresh_time = ui::GetTime();
-					values[values_offset] = mParameterBag->maxVolume;
-					values_offset = (values_offset + 1) % values.size();
-				}
-				if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
-				ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
-				if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
-
-				ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
-
-				/*static int fftSize = mAudio->getFftSize();
-				if (ui::SliderInt("fft size", &fftSize, 1, 1024))
-				{
-				mAudio->setFftSize(fftSize);
-				}
-				static int windowSize = mAudio->getWindowSize();
-				if (ui::SliderInt("window size", &windowSize, 1, 1024))
-				{
-				mAudio->setWindowSize(windowSize);
-				}
-				for (int a = 0; a < MAX; a++)
-				{
-				if (mOSC->tracks[a] != "default.glsl") ui::Button(mOSC->tracks[a].c_str());
-				}*/
-
+				refresh_time = ui::GetTime();
+				values[values_offset] = mParameterBag->maxVolume;
+				values_offset = (values_offset + 1) % values.size();
 			}
-			ui::End();
-			xPos += largeW + margin;
+			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+			ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
+			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
+
+			ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
+
+			/*static int fftSize = mAudio->getFftSize();
+			if (ui::SliderInt("fft size", &fftSize, 1, 1024))
+			{
+			mAudio->setFftSize(fftSize);
+			}
+			static int windowSize = mAudio->getWindowSize();
+			if (ui::SliderInt("window size", &windowSize, 1, 1024))
+			{
+			mAudio->setWindowSize(windowSize);
+			}
+			for (int a = 0; a < MAX; a++)
+			{
+			if (mOSC->tracks[a] != "default.glsl") ui::Button(mOSC->tracks[a].c_str());
+			}*/
 
 		}
+		ui::End();
+		xPos += largeW + margin;
+
+	}
 #pragma endregion Audio
 
 
 
-		gl::disableAlphaBlending();
-	}
-	void BatchassApp::drawRender()
+	gl::disableAlphaBlending();
+}
+void BatchassApp::drawRender()
+{
+	// clear
+	gl::clear();
+	// shaders			
+	gl::setViewport(getWindowBounds());
+	gl::enableAlphaBlending();
+	//20140703 gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);//NEW 20140620, needed?
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);// , false);
+	switch (mParameterBag->mMode)
 	{
-		// clear
-		gl::clear();
-		// shaders			
-		gl::setViewport(getWindowBounds());
-		gl::enableAlphaBlending();
-		//20140703 gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);//NEW 20140620, needed?
-		gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);// , false);
-		switch (mParameterBag->mMode)
-		{
-		case MODE_AUDIO:
-			gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mAudioFboIndex));
-			break;
-		case MODE_WARP:
-			mWarpings->draw();
-			break;
-		case MODE_SPHERE:
-			gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mSphereFboIndex));
-			break;
-		case MODE_MESH:
-			gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMeshFboIndex));
-			break;
-		default:
-			gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
-			break;
-		}
+	case MODE_AUDIO:
+		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mAudioFboIndex));
+		break;
+	case MODE_WARP:
+		mWarpings->draw();
+		break;
+	case MODE_SPHERE:
+		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mSphereFboIndex));
+		break;
+	case MODE_MESH:
+		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMeshFboIndex));
+		break;
+	default:
+		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
+		break;
+	}
 
-		gl::disableAlphaBlending();
-	}
-	void BatchassApp::saveThumb()
+	gl::disableAlphaBlending();
+}
+void BatchassApp::saveThumb()
+{
+	string filename;
+	//string fpsFilename = ci::toString((int)getAverageFps()) + "-fps-" + mShaders->getMiddleFragFileName() + ".json";
+	try
 	{
-		string filename;
-		//string fpsFilename = ci::toString((int)getAverageFps()) + "-fps-" + mShaders->getMiddleFragFileName() + ".json";
+		/*if (mParameterBag->iDebug)
+		{
+		JsonTree node = JsonTree();
+		node.pushBack(JsonTree("RenderResolution width", mParameterBag->mRenderResolution.x));
+		node.pushBack(JsonTree("RenderResolution height", mParameterBag->mRenderResolution.y));
+		fs::path localFile = getAssetPath("") / "fps" / fpsFilename;
+		node.write(localFile);
+		log->logTimedString("saved:" + fpsFilename);
+		Area area = Area(0, mParameterBag->mMainWindowHeight, mParameterBag->mPreviewWidth, mParameterBag->mMainWindowHeight - mParameterBag->mPreviewHeight);
+		writeImage(getAssetPath("") / "thumbs" / filename, copyWindowSurface(area));*/
+		filename = mBatchass->getShadersRef()->getFragFileName() + ".png";
+		writeImage(getAssetPath("") / "thumbs" / filename, mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mCurrentPreviewFboIndex));
+		mBatchass->log("saved:" + filename);
+
+	}
+	catch (const std::exception &e)
+	{
+		mBatchass->log("unable to save:" + filename + string(e.what()));
+	}
+}
+void BatchassApp::keyUp(KeyEvent event)
+{
+	if (mParameterBag->mMode == MODE_WARP) mWarpings->keyUp(event);
+}
+
+void BatchassApp::fileDrop(FileDropEvent event)
+{
+	int index;
+	string ext = "";
+	// use the last of the dropped files
+	boost::filesystem::path mPath = event.getFile(event.getNumFiles() - 1);
+	string mFile = mPath.string();
+	if (mFile.find_last_of(".") != std::string::npos) ext = mFile.substr(mFile.find_last_of(".") + 1);
+	index = (int)(event.getX() / (margin + mParameterBag->mPreviewWidth + inBetween)) + 1;
+	mBatchass->log(mFile + " dropped, currentSelectedIndex:" + toString(mParameterBag->currentSelectedIndex) + " x: " + toString(event.getX()) + " mPreviewWidth: " + toString(mParameterBag->mPreviewWidth));
+
+	if (ext == "wav" || ext == "mp3")
+	{
+		mAudio->loadWaveFile(mFile);
+	}
+	else if (ext == "png" || ext == "jpg")
+	{
+		//mTextures->loadImageFile(mParameterBag->currentSelectedIndex, mFile);
+		mBatchass->getTexturesRef()->loadImageFile(index, mFile);
+	}
+	else if (ext == "glsl")
+	{
+		//mShaders->incrementPreviewIndex();
+		//mUserInterface->mLibraryPanel->addShader(mFile);
+		int rtn = mBatchass->getShadersRef()->loadPixelFragmentShaderAtIndex(mFile, index);
+		if (rtn > -1 && rtn < mBatchass->getShadersRef()->getCount())
+		{
+			mParameterBag->controlValues[13] = 1.0f;
+			// send content via OSC
+			/*fs::path fr = mFile;
+			string name = "unknown";
+			if (mFile.find_last_of("\\") != std::string::npos) name = mFile.substr(mFile.find_last_of("\\") + 1);
+			if (fs::exists(fr))
+			{
+
+			std::string fs = loadString(loadFile(mFile));
+			mOSC->sendOSCStringMessage("/fs", 0, fs, name);
+			}*/
+			// save thumb
+			timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ saveThumb(); });
+		}
+	}
+	else if (ext == "fs")
+	{
+		//mShaders->incrementPreviewIndex();
+		mBatchass->getShadersRef()->loadFragmentShader(mPath);
+	}
+	else if (ext == "xml")
+	{
+		mWarpings->loadWarps(mFile);
+	}
+	else if (ext == "patchjson")
+	{
+		// try loading patch
 		try
 		{
-			/*if (mParameterBag->iDebug)
-			{
-			JsonTree node = JsonTree();
-			node.pushBack(JsonTree("RenderResolution width", mParameterBag->mRenderResolution.x));
-			node.pushBack(JsonTree("RenderResolution height", mParameterBag->mRenderResolution.y));
-			fs::path localFile = getAssetPath("") / "fps" / fpsFilename;
-			node.write(localFile);
-			log->logTimedString("saved:" + fpsFilename);
-			Area area = Area(0, mParameterBag->mMainWindowHeight, mParameterBag->mPreviewWidth, mParameterBag->mMainWindowHeight - mParameterBag->mPreviewHeight);
-			writeImage(getAssetPath("") / "thumbs" / filename, copyWindowSurface(area));*/
-			filename = mBatchass->getShadersRef()->getFragFileName() + ".png";
-			writeImage(getAssetPath("") / "thumbs" / filename, mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mCurrentPreviewFboIndex));
-			mBatchass->log("saved:" + filename);
-
-		}
-		catch (const std::exception &e)
-		{
-			mBatchass->log("unable to save:" + filename + string(e.what()));
-		}
-	}
-	void BatchassApp::keyUp(KeyEvent event)
-	{
-		if (mParameterBag->mMode == MODE_WARP) mWarpings->keyUp(event);
-	}
-
-	void BatchassApp::fileDrop(FileDropEvent event)
-	{
-		int index;
-		string ext = "";
-		// use the last of the dropped files
-		boost::filesystem::path mPath = event.getFile(event.getNumFiles() - 1);
-		string mFile = mPath.string();
-		if (mFile.find_last_of(".") != std::string::npos) ext = mFile.substr(mFile.find_last_of(".") + 1);
-		index = (int)(event.getX() / (margin + mParameterBag->mPreviewWidth + inBetween)) + 1;
-		mBatchass->log(mFile + " dropped, currentSelectedIndex:" + toString(mParameterBag->currentSelectedIndex) + " x: " + toString(event.getX()) + " mPreviewWidth: " + toString(mParameterBag->mPreviewWidth));
-
-		if (ext == "wav" || ext == "mp3")
-		{
-			mAudio->loadWaveFile(mFile);
-		}
-		else if (ext == "png" || ext == "jpg")
-		{
-			//mTextures->loadImageFile(mParameterBag->currentSelectedIndex, mFile);
-			mBatchass->getTexturesRef()->loadImageFile(index, mFile);
-		}
-		else if (ext == "glsl")
-		{
-			//mShaders->incrementPreviewIndex();
-			//mUserInterface->mLibraryPanel->addShader(mFile);
-			int rtn = mBatchass->getShadersRef()->loadPixelFragmentShaderAtIndex(mFile, index);
-			if (rtn > -1 && rtn < mBatchass->getShadersRef()->getCount())
-			{
-				mParameterBag->controlValues[13] = 1.0f;
-				// send content via OSC
-				/*fs::path fr = mFile;
-				string name = "unknown";
-				if (mFile.find_last_of("\\") != std::string::npos) name = mFile.substr(mFile.find_last_of("\\") + 1);
-				if (fs::exists(fr))
-				{
-
-				std::string fs = loadString(loadFile(mFile));
-				mOSC->sendOSCStringMessage("/fs", 0, fs, name);
-				}*/
-				// save thumb
-				timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ saveThumb(); });
-			}
-		}
-		else if (ext == "fs")
-		{
-			//mShaders->incrementPreviewIndex();
-			mBatchass->getShadersRef()->loadFragmentShader(mPath);
-		}
-		else if (ext == "xml")
-		{
-			mWarpings->loadWarps(mFile);
-		}
-		else if (ext == "patchjson")
-		{
-			// try loading patch
+			JsonTree patchjson;
 			try
 			{
-				JsonTree patchjson;
-				try
-				{
-					patchjson = JsonTree(loadFile(mFile));
-					mParameterBag->mCurrentFilePath = mFile;
-				}
-				catch (cinder::JsonTree::Exception exception)
-				{
-					mBatchass->log("patchjsonparser exception " + mFile + ": " + exception.what());
-
-				}
-				//Assets
-				int i = 1; // 0 is audio
-				JsonTree jsons = patchjson.getChild("assets");
-				for (JsonTree::ConstIter jsonElement = jsons.begin(); jsonElement != jsons.end(); ++jsonElement)
-				{
-					string jsonFileName = jsonElement->getChild("filename").getValue<string>();
-					int channel = jsonElement->getChild("channel").getValue<int>();
-					if (channel < mBatchass->getTexturesRef()->getTextureCount())
-					{
-						mBatchass->log("asset filename: " + jsonFileName);
-						mBatchass->getTexturesRef()->setTexture(channel, jsonFileName);
-					}
-					i++;
-				}
-
+				patchjson = JsonTree(loadFile(mFile));
+				mParameterBag->mCurrentFilePath = mFile;
 			}
-			catch (...)
+			catch (cinder::JsonTree::Exception exception)
 			{
-				mBatchass->log("patchjson parsing error: " + mFile);
+				mBatchass->log("patchjsonparser exception " + mFile + ": " + exception.what());
+
 			}
-		}
-		else if (ext == "txt")
-		{
-			// try loading shader parts
-			if (mBatchass->getShadersRef()->loadTextFile(mFile))
+			//Assets
+			int i = 1; // 0 is audio
+			JsonTree jsons = patchjson.getChild("assets");
+			for (JsonTree::ConstIter jsonElement = jsons.begin(); jsonElement != jsons.end(); ++jsonElement)
 			{
-
+				string jsonFileName = jsonElement->getChild("filename").getValue<string>();
+				int channel = jsonElement->getChild("channel").getValue<int>();
+				if (channel < mBatchass->getTexturesRef()->getTextureCount())
+				{
+					mBatchass->log("asset filename: " + jsonFileName);
+					mBatchass->getTexturesRef()->setTexture(channel, jsonFileName);
+				}
+				i++;
 			}
-		}
-		else if (ext == "")
-		{
-			// try loading image sequence from dir
-			//mTextures->createFromDir(mFile + "/");
 
 		}
-		/*if (!loaded && ext == "frag")
+		catch (...)
 		{
-
-		//mShaders->incrementPreviewIndex();
-
-		if (mShaders->loadPixelFrag(mFile))
-		{
-		mParameterBag->controlValues[13] = 1.0f;
-		timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ save(); });
+			mBatchass->log("patchjson parsing error: " + mFile);
 		}
-		if (mCodeEditor) mCodeEditor->fileDrop(event);
-		}*/
-		mParameterBag->isUIDirty = true;
+	}
+	else if (ext == "txt")
+	{
+		// try loading shader parts
+		if (mBatchass->getShadersRef()->loadTextFile(mFile))
+		{
+
+		}
+	}
+	else if (ext == "")
+	{
+		// try loading image sequence from dir
+		//mTextures->createFromDir(mFile + "/");
+
+	}
+	/*if (!loaded && ext == "frag")
+	{
+
+	//mShaders->incrementPreviewIndex();
+
+	if (mShaders->loadPixelFrag(mFile))
+	{
+	mParameterBag->controlValues[13] = 1.0f;
+	timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ save(); });
+	}
+	if (mCodeEditor) mCodeEditor->fileDrop(event);
+	}*/
+	mParameterBag->isUIDirty = true;
+}
+
+void BatchassApp::shutdown()
+{
+	if (!mIsShutDown)
+	{
+		mIsShutDown = true;
+		mBatchass->log("shutdown");
+		deleteRenderWindows();
+		// save warp settings
+		mWarpings->save();
+		// save params
+		mParameterBag->save();
+		ui::Shutdown();
+		if (mMeshes->isSetup()) mMeshes->shutdown();
+		// not implemented mShaders->shutdownLoader();
+		// close spout
+		mSpout->shutdown();
+		quit();
+	}
+}
+
+void BatchassApp::update()
+{
+
+	mWebSockets->update();
+	mOSC->update();
+	mParameterBag->iFps = getAverageFps();
+	mParameterBag->sFps = toString(floor(mParameterBag->iFps));
+	getWindow()->setTitle("(" + mParameterBag->sFps + " fps) Batchass");
+	if (mParameterBag->iGreyScale)
+	{
+		mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3];
+		mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7];
 	}
 
-	void BatchassApp::shutdown()
+	mParameterBag->iChannelTime[0] = getElapsedSeconds();
+	mParameterBag->iChannelTime[1] = getElapsedSeconds() - 1;
+	mParameterBag->iChannelTime[3] = getElapsedSeconds() - 2;
+	mParameterBag->iChannelTime[4] = getElapsedSeconds() - 3;
+	//
+	if (mParameterBag->mUseTimeWithTempo)
 	{
-		if (!mIsShutDown)
+		mParameterBag->iGlobalTime = mParameterBag->iTempoTime*mParameterBag->iTimeFactor;
+	}
+	else
+	{
+		mParameterBag->iGlobalTime = getElapsedSeconds();
+	}
+
+	switch (mParameterBag->mMode)
+	{
+	case MODE_SPHERE:
+		mSphere->update();
+		break;
+	case MODE_MESH:
+		if (mMeshes->isSetup()) mMeshes->update();
+		break;
+	default:
+		break;
+	}
+	mSpout->update();
+	mBatchass->update();
+	mWebSockets->update();
+	mOSC->update();
+	mAudio->update();
+	//mUI->update();
+	if (mParameterBag->mWindowToCreate > 0)
+	{
+		// try to create the window only once
+		int windowToCreate = mParameterBag->mWindowToCreate;
+		mParameterBag->mWindowToCreate = NONE;
+		switch (windowToCreate)
 		{
-			mIsShutDown = true;
-			mBatchass->log("shutdown");
+		case RENDER_1:
+			createRenderWindow();
+			break;
+		case RENDER_DELETE:
 			deleteRenderWindows();
-			// save warp settings
-			mWarpings->save();
-			// save params
-			mParameterBag->save();
-			ui::Shutdown();
-			if (mMeshes->isSetup()) mMeshes->shutdown();
-			// not implemented mShaders->shutdownLoader();
-			// close spout
-			mSpout->shutdown();
-			quit();
+			break;
+			/*case MIDI_IN:
+				setupMidi();
+				break;*/
 		}
 	}
+	/*if (mSeconds != (int)getElapsedSeconds())
+	{
+	mSeconds = (int)getElapsedSeconds();
+	stringstream s;
+	s << mSeconds;
+	mWebSockets->write(s.str());
+	}*/
+}
 
-	void BatchassApp::update()
+void BatchassApp::resize()
+{
+	mWarpings->resize();
+	/*ui::disconnectWindow(mMainWindow);
+	ui::connectWindow(mMainWindow);
+	ui::initialize();*/
+}
+
+void BatchassApp::mouseMove(MouseEvent event)
+{
+	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseMove(event);
+}
+
+void BatchassApp::mouseDown(MouseEvent event)
+{
+	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseDown(event);
+	if (mParameterBag->mMode == MODE_MESH) mMeshes->mouseDown(event);
+	if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseDown(event);
+}
+
+void BatchassApp::mouseDrag(MouseEvent event)
+{
+	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseDrag(event);
+	if (mParameterBag->mMode == MODE_MESH) mMeshes->mouseDrag(event);
+	if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseDrag(event);
+}
+
+void BatchassApp::mouseUp(MouseEvent event)
+{
+	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseUp(event);
+	if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseUp(event);
+}
+
+void BatchassApp::keyDown(KeyEvent event)
+{
+	if (mParameterBag->mMode == MODE_WARP)
+	{
+		mWarpings->keyDown(event);
+	}
+	else
 	{
 
-		mWebSockets->update();
-		mOSC->update();
-		mParameterBag->iFps = getAverageFps();
-		mParameterBag->sFps = toString(floor(mParameterBag->iFps));
-		getWindow()->setTitle("(" + mParameterBag->sFps + " fps) Batchass");
-		if (mParameterBag->iGreyScale)
+		switch (event.getCode())
 		{
-			mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3];
-			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7];
-		}
-
-		mParameterBag->iChannelTime[0] = getElapsedSeconds();
-		mParameterBag->iChannelTime[1] = getElapsedSeconds() - 1;
-		mParameterBag->iChannelTime[3] = getElapsedSeconds() - 2;
-		mParameterBag->iChannelTime[4] = getElapsedSeconds() - 3;
-		//
-		if (mParameterBag->mUseTimeWithTempo)
-		{
-			mParameterBag->iGlobalTime = mParameterBag->iTempoTime*mParameterBag->iTimeFactor;
-		}
-		else
-		{
-			mParameterBag->iGlobalTime = getElapsedSeconds();
-		}
-
-		switch (mParameterBag->mMode)
-		{
-		case MODE_SPHERE:
-			mSphere->update();
+		case ci::app::KeyEvent::KEY_n:
+			changeMode(MODE_MIX);
 			break;
-		case MODE_MESH:
-			if (mMeshes->isSetup()) mMeshes->update();
+		case ci::app::KeyEvent::KEY_a:
+			changeMode(MODE_AUDIO);
 			break;
+		case ci::app::KeyEvent::KEY_s:
+			if (event.isControlDown())
+			{
+				// save warp settings
+				mWarpings->save("warps2.xml");
+				// save params
+				mParameterBag->save();
+			}
+			else
+			{
+				changeMode(MODE_SPHERE);
+			}
+			break;
+		case ci::app::KeyEvent::KEY_w:
+			changeMode(MODE_WARP);
+			break;
+		case ci::app::KeyEvent::KEY_m:
+			changeMode(MODE_MESH);
+			break;
+		case ci::app::KeyEvent::KEY_o:
+			mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft;
+			break;
+		case ci::app::KeyEvent::KEY_g:
+			mParameterBag->iGreyScale = !mParameterBag->iGreyScale;
+			break;
+		case ci::app::KeyEvent::KEY_p:
+			mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled;
+			break;
+		case ci::app::KeyEvent::KEY_v:
+			mParameterBag->controlValues[48] = !mParameterBag->controlValues[48];
+			break;
+		case ci::app::KeyEvent::KEY_f:
+			if (allRenderWindows.size() > 0) allRenderWindows[0].mWRef->setFullScreen(!allRenderWindows[0].mWRef->isFullScreen());
+			break;
+		case ci::app::KeyEvent::KEY_x:
+			removeUI = !removeUI;
+			//mUI->toggleVisibility();
+			break;
+		case ci::app::KeyEvent::KEY_c:
+			if (mParameterBag->mCursorVisible)
+			{
+				hideCursor();
+			}
+			else
+			{
+				showCursor();
+			}
+			mParameterBag->mCursorVisible = !mParameterBag->mCursorVisible;
+			break;
+		case ci::app::KeyEvent::KEY_ESCAPE:
+			mParameterBag->save();
+			//mBatchass->shutdownLoader(); // Not used yet(loading shaders in a different thread
+			ui::Shutdown();
+			mMidiIn0.closePort();
+			mMidiIn1.closePort();
+			mMidiIn2.closePort();
+			quit();
+			break;
+
 		default:
 			break;
 		}
-		mSpout->update();
-		mBatchass->update();
-		mWebSockets->update();
-		mOSC->update();
-		mAudio->update();
-		//mUI->update();
-		if (mParameterBag->mWindowToCreate > 0)
+	}
+	//mWebSockets->write("yo");
+}
+void BatchassApp::changeMode(int newMode)
+{
+	if (mParameterBag->mMode != newMode)
+	{
+		mParameterBag->controlValues[4] = 1.0f;
+		mParameterBag->controlValues[8] = 1.0f;
+
+		mParameterBag->mPreviousMode = mParameterBag->mMode;
+		switch (mParameterBag->mPreviousMode)
 		{
-			// try to create the window only once
-			int windowToCreate = mParameterBag->mWindowToCreate;
-			mParameterBag->mWindowToCreate = NONE;
-			switch (windowToCreate)
-			{
-			case RENDER_1:
-				createRenderWindow();
-				break;
-			case RENDER_DELETE:
-				deleteRenderWindows();
-				break;
-				/*case MIDI_IN:
-					setupMidi();
-					break;*/
-			}
+		case 5: //mesh
+			mParameterBag->iLight = false;
+			mParameterBag->controlValues[19] = 0.0; //reset rotation
+			break;
 		}
-		/*if (mSeconds != (int)getElapsedSeconds())
+		mParameterBag->mMode = newMode;
+		switch (newMode)
 		{
-		mSeconds = (int)getElapsedSeconds();
-		stringstream s;
-		s << mSeconds;
-		mWebSockets->write(s.str());
-		}*/
-	}
-
-	void BatchassApp::resize()
-	{
-		mWarpings->resize();
-		ui::initialize();
-	}
-
-	void BatchassApp::mouseMove(MouseEvent event)
-	{
-		if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseMove(event);
-	}
-
-	void BatchassApp::mouseDown(MouseEvent event)
-	{
-		if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseDown(event);
-		if (mParameterBag->mMode == MODE_MESH) mMeshes->mouseDown(event);
-		if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseDown(event);
-	}
-
-	void BatchassApp::mouseDrag(MouseEvent event)
-	{
-		if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseDrag(event);
-		if (mParameterBag->mMode == MODE_MESH) mMeshes->mouseDrag(event);
-		if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseDrag(event);
-	}
-
-	void BatchassApp::mouseUp(MouseEvent event)
-	{
-		if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseUp(event);
-		if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseUp(event);
-	}
-
-	void BatchassApp::keyDown(KeyEvent event)
-	{
-		if (mParameterBag->mMode == MODE_WARP)
-		{
-			mWarpings->keyDown(event);
-		}
-		else
-		{
-
-			switch (event.getCode())
-			{
-			case ci::app::KeyEvent::KEY_n:
-				changeMode(MODE_MIX);
-				break;
-			case ci::app::KeyEvent::KEY_a:
-				changeMode(MODE_AUDIO);
-				break;
-			case ci::app::KeyEvent::KEY_s:
-				if (event.isControlDown())
-				{
-					// save warp settings
-					mWarpings->save("warps2.xml");
-					// save params
-					mParameterBag->save();
-				}
-				else
-				{
-					changeMode(MODE_SPHERE);
-				}
-				break;
-			case ci::app::KeyEvent::KEY_w:
-				changeMode(MODE_WARP);
-				break;
-			case ci::app::KeyEvent::KEY_m:
-				changeMode(MODE_MESH);
-				break;
-			case ci::app::KeyEvent::KEY_o:
-				mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft;
-				break;
-			case ci::app::KeyEvent::KEY_g:
-				mParameterBag->iGreyScale = !mParameterBag->iGreyScale;
-				break;
-			case ci::app::KeyEvent::KEY_p:
-				mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled;
-				break;
-			case ci::app::KeyEvent::KEY_v:
-				mParameterBag->controlValues[48] = !mParameterBag->controlValues[48];
-				break;
-			case ci::app::KeyEvent::KEY_f:
-				if (allRenderWindows.size() > 0) allRenderWindows[0].mWRef->setFullScreen(!allRenderWindows[0].mWRef->isFullScreen());
-				break;
-			case ci::app::KeyEvent::KEY_x:
-				removeUI = !removeUI;
-				//mUI->toggleVisibility();
-				break;
-			case ci::app::KeyEvent::KEY_c:
-				if (mParameterBag->mCursorVisible)
-				{
-					hideCursor();
-				}
-				else
-				{
-					showCursor();
-				}
-				mParameterBag->mCursorVisible = !mParameterBag->mCursorVisible;
-				break;
-			case ci::app::KeyEvent::KEY_ESCAPE:
-				mParameterBag->save();
-				//mBatchass->shutdownLoader(); // Not used yet(loading shaders in a different thread
-				ui::Shutdown();
-				mMidiIn0.closePort();
-				mMidiIn1.closePort();
-				mMidiIn2.closePort();
-				quit();
-				break;
-
-			default:
-				break;
-			}
-		}
-		//mWebSockets->write("yo");
-	}
-	void BatchassApp::changeMode(int newMode)
-	{
-		if (mParameterBag->mMode != newMode)
-		{
-			mParameterBag->controlValues[4] = 1.0f;
-			mParameterBag->controlValues[8] = 1.0f;
-
-			mParameterBag->mPreviousMode = mParameterBag->mMode;
-			switch (mParameterBag->mPreviousMode)
-			{
-			case 5: //mesh
-				mParameterBag->iLight = false;
-				mParameterBag->controlValues[19] = 0.0; //reset rotation
-				break;
-			}
-			mParameterBag->mMode = newMode;
-			switch (newMode)
-			{
-			case 4: //sphere
-				mParameterBag->mCamPosXY = Vec2f(-155.6, -87.3);
-				mParameterBag->mCamEyePointZ = -436.f;
-				mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
-				break;
-			case 5: //mesh
-				mParameterBag->controlValues[19] = 1.0; //reset rotation
-				mParameterBag->mRenderPosXY = Vec2f(0.0, 0.0);
-				mParameterBag->mCamEyePointZ = -56.f;
-				mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
-				mParameterBag->currentSelectedIndex = 5;
-				mParameterBag->iLight = true;
-				break;
-			}
+		case 4: //sphere
+			mParameterBag->mCamPosXY = Vec2f(-155.6, -87.3);
+			mParameterBag->mCamEyePointZ = -436.f;
+			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
+			break;
+		case 5: //mesh
+			mParameterBag->controlValues[19] = 1.0; //reset rotation
+			mParameterBag->mRenderPosXY = Vec2f(0.0, 0.0);
+			mParameterBag->mCamEyePointZ = -56.f;
+			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
+			mParameterBag->currentSelectedIndex = 5;
+			mParameterBag->iLight = true;
+			break;
 		}
 	}
+}
 
-	CINDER_APP_BASIC(BatchassApp, RendererGl)
+CINDER_APP_BASIC(BatchassApp, RendererGl)
