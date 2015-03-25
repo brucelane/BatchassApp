@@ -36,12 +36,12 @@ namespace Reymenta
 		void update();
 		void resize();
 
-		void InstantBlack(const bool &pressed);
+		//void InstantBlack(const bool &pressed);
 		void toggleUseTimeWithTempo(const bool &pressed);
 
-		void channelsSelector(const bool &pressed);
+		//void channelsSelector(const bool &pressed);
 		void setTimeFactor(const int &aTimeFactor, const bool &pressed);
-		void setLayer(const int &aLayer, const bool &pressed);
+		//void setLayer(const int &aLayer, const bool &pressed);
 
 		void lockFR(const bool &pressed) { mParameterBag->mLockFR = pressed; };
 		void lockFG(const bool &pressed) { mParameterBag->mLockFG = pressed; };
@@ -68,19 +68,19 @@ namespace Reymenta
 		void tempoBA(const bool &pressed);
 		void resetBA(const bool &pressed);
 		// tempo
-		void tapTempo(const bool &pressed);
-		void calculateTempo();
+		//void tapTempo(const bool &pressed);
+		//void calculateTempo();
 
 		MinimalUI::UIElementRef				sliderRed, sliderGreen, sliderBlue, sliderAlpha;
 		MinimalUI::UIElementRef				sliderBackgroundRed, sliderBackgroundGreen, sliderBackgroundBlue, sliderBackgroundAlpha;
 		//MinimalUI::UIElementRef				labelXY, labelPosXY;
-		MinimalUI::UIElementRef				sliderRenderXY, sliderRenderPosXY, sliderXSpeed, sliderYSpeed;
-		MinimalUI::UIElementRef				sliderLeftRenderXY, sliderRightRenderXY, sliderMixRenderXY, sliderPreviewRenderXY;
+		//MinimalUI::UIElementRef				sliderRenderXY, sliderRenderPosXY, sliderXSpeed, sliderYSpeed;
+		//MinimalUI::UIElementRef				sliderLeftRenderXY, sliderRightRenderXY, sliderMixRenderXY, sliderPreviewRenderXY;
 
-		MinimalUI::UIElementRef				labelLayer;
-		MinimalUI::UIElementRef				buttonLayer[8];
-		MinimalUI::UIElementRef				fpsMvg, tempoMvg;
-		MinimalUI::UIElementRef				sliderTimeFactor;
+		//MinimalUI::UIElementRef				labelLayer;
+		//MinimalUI::UIElementRef				buttonLayer[8];
+		//MinimalUI::UIElementRef				fpsMvg, tempoMvg;
+		//MinimalUI::UIElementRef				sliderTimeFactor;
 		void toggleVisibility() { mVisible ? hide() : show(); }
 
 		void show();

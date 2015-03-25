@@ -52,7 +52,7 @@ void UI::setup()
 }
 void UI::setupMiniControl()
 {
-	mMiniControl = UIController::create("{ \"depth\":100, \"width\":1400, \"height\":200, \"fboNumSamples\":0, \"panelColor\":\"0x44282828\", \"defaultBackgroundColor\":\"0xFF0d0d0d\", \"defaultNameColor\":\"0xFF90a5b6\", \"defaultStrokeColor\":\"0xFF282828\", \"activeStrokeColor\":\"0xFF919ea7\" }");
+	mMiniControl = UIController::create("{ \"depth\":100, \"width\":1400, \"height\":50, \"fboNumSamples\":0, \"panelColor\":\"0x44282828\", \"defaultBackgroundColor\":\"0xFF0d0d0d\", \"defaultNameColor\":\"0xFF90a5b6\", \"defaultStrokeColor\":\"0xFF282828\", \"activeStrokeColor\":\"0xFF919ea7\" }");
 	mMiniControl->DEFAULT_UPDATE_FREQUENCY = 12;
 	mMiniControl->setFont("label", mParameterBag->mLabelFont);
 	mMiniControl->setFont("smallLabel", mParameterBag->mSmallLabelFont);
@@ -63,14 +63,14 @@ void UI::setupMiniControl()
 	mPanels.push_back(mMiniControl);
 
 	// tempo
-	tempoMvg = mMiniControl->addMovingGraphButton("tempo", &mParameterBag->iTempoTime, std::bind(&UI::tapTempo, this, std::placeholders::_1), "{ \"clear\":false,\"width\":76, \"min\":0.0, \"max\":2.001 }");
+	/*tempoMvg = mMiniControl->addMovingGraphButton("tempo", &mParameterBag->iTempoTime, std::bind(&UI::tapTempo, this, std::placeholders::_1), "{ \"clear\":false,\"width\":76, \"min\":0.0, \"max\":2.001 }");
 	sliderTimeFactor = mMiniControl->addSlider("time", &mParameterBag->iTimeFactor, "{ \"min\":0.01, \"max\":32.0, \"clear\":false }");
 	for (int i = 0; i < 8; i++)
 	{
 		mMiniControl->addButton(toString(i), std::bind(&UI::setTimeFactor, this, i, std::placeholders::_1), "{ \"clear\":false, \"width\":9, \"stateless\":false, \"group\":\"timefactor\", \"exclusive\":true }");
 	}
 	mMiniControl->addButton("time\ntempo", std::bind(&UI::toggleUseTimeWithTempo, this, std::placeholders::_1), "{ \"clear\":false, \"width\":56, \"stateless\":false}");
-
+	*/
 	// Color Sliders
 	mMiniControl->addLabel("Draw color", "{ \"clear\":false }");
 
@@ -114,7 +114,7 @@ void UI::setupMiniControl()
 
 	// Textures select/layers
 	// Button Group
-	for (int i = 0; i < mTextures->getTextureCount(); i++)
+	/*for (int i = 0; i < mTextures->getTextureCount(); i++)
 	{
 		buttonLayer[i] = mMiniControl->addButton(toString(i), std::bind(&UI::setLayer, this, i, std::placeholders::_1), "{ \"clear\":false, \"width\":48, \"stateless\":false, \"group\":\"layer\", \"exclusive\":true }");
 	}
@@ -124,15 +124,11 @@ void UI::setupMiniControl()
 	sliderRightRenderXY = mMiniControl->addSlider2D("RightXY", &mParameterBag->mRightRenderXY, "{ \"clear\":false, \"minX\":-0.5, \"maxX\":0.5, \"minY\":-0.5, \"maxY\":0.5, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
 	sliderMixRenderXY = mMiniControl->addSlider2D("MixXY", &mParameterBag->mPreviewRenderXY, "{ \"clear\":false, \"minX\":-0.5, \"maxX\":0.5, \"minY\":-0.5, \"maxY\":0.5, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
 	sliderPreviewRenderXY = mMiniControl->addSlider2D("PreviewFragXY", &mParameterBag->mPreviewFragXY, "{ \"clear\":false, \"minX\":-0.5, \"maxX\":0.5, \"minY\":-0.5, \"maxY\":0.5, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
-	//gParams->addSlider2D( "leftRenderXY", &mParameterBag->mLeftRenderXY, "{ \"clear\":false, \"minX\":-2.0, \"maxX\":2.0, \"minY\":-2.0, \"maxY\":2.0, \"width\":" + toString( mParameterBag->mPreviewWidth ) +" }" );
-	//labelXY = mMiniControl->addLabel("MiddleXY", "{ \"clear\":false, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
-	//labelPosXY = mMiniControl->addLabel("MiddlePosXY", "{ \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
 
 	sliderRenderXY = mMiniControl->addSlider2D("renderXY", &mParameterBag->mRenderXY, "{ \"clear\":false, \"minX\":-2.0, \"maxX\":2.0, \"minY\":-2.0, \"maxY\":2.0, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }");
 
-	//string posXY = toString(mParameterBag->mRenderWidth) + ", \"minY\":" + toString(mParameterBag->mRenderHeight) + ", \"maxY\":0.0, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }";
 	string posXY = toString(mParameterBag->mFboWidth) + ", \"minY\":" + toString(mParameterBag->mFboHeight) + ", \"maxY\":0.0, \"width\":" + toString(mParameterBag->mPreviewWidth) + " }";
-	sliderRenderPosXY = mMiniControl->addSlider2D("renderPosXY", &mParameterBag->mRenderPosXY, "{ \"minX\":0.0, \"maxX\":" + posXY);
+	sliderRenderPosXY = mMiniControl->addSlider2D("renderPosXY", &mParameterBag->mRenderPosXY, "{ \"minX\":0.0, \"maxX\":" + posXY);*/
 }
 
 void UI::setTimeFactor(const int &aTimeFactor, const bool &pressed)
@@ -176,7 +172,7 @@ void UI::setTimeFactor(const int &aTimeFactor, const bool &pressed)
 	}
 }
 
-void UI::setLayer(const int &aLayer, const bool &pressed)
+/*void UI::setLayer(const int &aLayer, const bool &pressed)
 {
 	if (pressed)
 	{
@@ -184,7 +180,7 @@ void UI::setLayer(const int &aLayer, const bool &pressed)
 		mParameterBag->iChannels[0] = aLayer;
 		mParameterBag->isUIDirty = true;
 	}
-}
+}*/
 
 void UI::draw()
 {
@@ -214,12 +210,12 @@ void UI::update()
 	{
 		if (mVisible)
 		{
-			if (!mParameterBag->mOptimizeUI)
+			/*if (!mParameterBag->mOptimizeUI)
 			{
 				tempoMvg->setName(toString(floor(mParameterBag->mTempo)) + "bpm\n" + toString(floor(mParameterBag->iDeltaTime * 1000)) + "ms " + formatNumber(mParameterBag->iTempoTime));
 				
 				sliderTimeFactor->setName(formatNumber(mParameterBag->iTimeFactor));
-			}
+			}*/
 			if (mParameterBag->controlValues[12] == 0.0) mParameterBag->controlValues[12] = 0.01;
 
 			// iColor slider
@@ -238,9 +234,9 @@ void UI::update()
 			//labelPosXY->setName("mouse " + toString(floor(mParameterBag->mRenderPosXY.x)) + "x" + toString(floor(mParameterBag->mRenderPosXY.y)));
 
 			// fps
-			fpsMvg->setName(toString(floor(mParameterBag->iFps)) + " fps");
+			//fpsMvg->setName(toString(floor(mParameterBag->iFps)) + " fps");
 
-			if (mParameterBag->isUIDirty)
+			/*if (mParameterBag->isUIDirty)
 			{
 				// do this once
 				mParameterBag->isUIDirty = false;
@@ -254,7 +250,7 @@ void UI::update()
 			sliderMixRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mMixFboIndex));
 			sliderPreviewRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mCurrentPreviewFboIndex));
 			sliderRenderXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mAudioFboIndex));
-			sliderRenderPosXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mMixFboIndex));
+			sliderRenderPosXY->setBackgroundTexture(mTextures->getFboTexture(mParameterBag->mMixFboIndex));*/
 
 		}
 	}
@@ -363,12 +359,12 @@ void UI::hide()
 	mVisible = false;
 	//AppBasic::get()->hideCursor();
 }
-void UI::InstantBlack(const bool &pressed)
+/*void UI::InstantBlack(const bool &pressed)
 {
 	mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3] = mParameterBag->controlValues[4] = 0.0;
 	mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = mParameterBag->controlValues[8] = 0.0;
 
-}
+}*/
 
 void UI::toggleUseTimeWithTempo(const bool &pressed)
 {
@@ -376,7 +372,7 @@ void UI::toggleUseTimeWithTempo(const bool &pressed)
 }
 
 // tempo
-void UI::tapTempo(const bool &pressed)
+/*void UI::tapTempo(const bool &pressed)
 {
 	startTime = currentTime = timer.getSeconds();
 
@@ -408,4 +404,4 @@ void UI::calculateTempo()
 	averageTime = (double)(tAverage / buffer.size());
 	mParameterBag->iDeltaTime = averageTime;
 	mParameterBag->mTempo = 60 / averageTime;
-}
+}*/

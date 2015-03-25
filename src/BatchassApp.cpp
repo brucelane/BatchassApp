@@ -83,7 +83,7 @@ void BatchassApp::setup()
 	{
 		createRenderWindow();
 	}
-	mBatchass->tapTempo(true);
+	mBatchass->tapTempo();
 }
 void BatchassApp::setupMidi()
 {
@@ -270,7 +270,7 @@ void BatchassApp::drawMain()
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
 	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);
-	//if (!removeUI) mUI->draw();
+	if (!removeUI) mUI->draw();
 
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
@@ -963,6 +963,10 @@ void BatchassApp::drawMain()
 			ui::Text("Beat %d", mParameterBag->mBeat);
 			ui::SameLine();
 			ui::Text("Tempo %.2f", mParameterBag->mTempo);
+			if (ui::Button("Tap tempo")) { mBatchass->tapTempo(); }
+			ui::SameLine();
+			if (ui::Button("Use time with tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
+
 
 			static ImVector<float> values; if (values.empty()) { values.resize(40); memset(&values.front(), 0, values.size()*sizeof(float)); }
 			static int values_offset = 0;
@@ -980,7 +984,7 @@ void BatchassApp::drawMain()
 
 			ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
 
-			static int fftSize = mAudio->getFftSize();
+			/*static int fftSize = mAudio->getFftSize();
 			if (ui::SliderInt("fft size", &fftSize, 1, 1024))
 			{
 				mAudio->setFftSize(fftSize);
@@ -990,7 +994,7 @@ void BatchassApp::drawMain()
 			{
 				mAudio->setWindowSize(windowSize);
 			}
-			/*for (int a = 0; a < MAX; a++)
+			for (int a = 0; a < MAX; a++)
 			{
 			if (mOSC->tracks[a] != "default.glsl") ui::Button(mOSC->tracks[a].c_str());
 			}*/
