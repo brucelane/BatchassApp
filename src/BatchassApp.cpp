@@ -196,7 +196,7 @@ void BatchassApp::createRenderWindow()
 	mRenderWindow->connectDraw(&BatchassApp::drawRender, this);
 	mParameterBag->mRenderPosXY = Vec2i(mParameterBag->mRenderX, mParameterBag->mRenderY);//20141214 was 0
 	mRenderWindow->setPos(mParameterBag->mRenderX, mParameterBag->mRenderY);
-
+	ui::initialize();
 }
 void BatchassApp::deleteRenderWindows()
 {
@@ -967,6 +967,8 @@ void BatchassApp::drawMain()
 			ui::SameLine();
 			if (ui::Button("Use time with tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
 
+			//void Batchass::setTimeFactor(const int &aTimeFactor)
+			ImGui::SliderFloat("time factor", &mParameterBag->iTimeFactor, 0.0001f, 32.0f, "%.1f"); 
 
 			static ImVector<float> values; if (values.empty()) { values.resize(40); memset(&values.front(), 0, values.size()*sizeof(float)); }
 			static int values_offset = 0;
