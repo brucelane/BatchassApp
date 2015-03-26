@@ -1,3 +1,97 @@
+/*
+TODO
+* ANIMATED TITLE
+if (ImGui::TreeNode("Vertical Sliders"))
+{
+ImGui::Unindent();
+const float spacing = 4;
+ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(spacing, spacing));
+
+static int int_value = 0;
+ImGui::VSliderInt("##int", ImVec2(18,160), &int_value, 0, 5);
+ImGui::SameLine();
+
+static float values[7] = { 0.0f, 0.60f, 0.35f, 0.9f, 0.70f, 0.20f, 0.0f };
+ImGui::PushID("set1");
+for (int i = 0; i < 7; i++)
+{
+if (i > 0) ImGui::SameLine();
+ImGui::PushID(i);
+ImGui::PushStyleColor(ImGuiCol_FrameBg, ImColor::HSV(i/7.0f, 0.5f, 0.5f));
+ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImColor::HSV(i/7.0f, 0.9f, 0.9f));
+ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImColor::HSV(i/7.0f, 1.0f, 1.0f));
+ImGui::VSliderFloat("##v", ImVec2(18,160), &values[i], 0.0f, 1.0f, "");
+if (ImGui::IsItemActive() || ImGui::IsItemHovered())
+ImGui::SetTooltip("%.3f", values[i]);
+ImGui::PopStyleColor(3);
+ImGui::PopID();
+}
+ImGui::PopID();
+
+ImGui::SameLine();
+ImGui::PushID("set2");
+static float values2[4] = { 0.20f, 0.80f, 0.40f, 0.25f };
+const int rows = 3;
+const ImVec2 small_slider_size(18, (160.0f-(rows-1)*spacing)/rows);
+for (int nx = 0; nx < 4; nx++)
+{
+if (nx > 0) ImGui::SameLine();
+ImGui::BeginGroup();
+for (int ny = 0; ny < rows; ny++)
+{
+ImGui::PushID(nx*rows+ny);
+ImGui::VSliderFloat("##v", small_slider_size, &values2[nx], 0.0f, 1.0f, "");
+if (ImGui::IsItemActive() || ImGui::IsItemHovered())
+ImGui::SetTooltip("%.3f", values2[nx]);
+ImGui::PopID();
+}
+ImGui::EndGroup();
+}
+ImGui::PopID();
+
+ImGui::SameLine();
+ImGui::PushID("set3");
+for (int i = 0; i < 4; i++)
+{
+if (i > 0) ImGui::SameLine();
+ImGui::PushID(i);
+ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, 40);
+ImGui::VSliderFloat("##v", ImVec2(40,160), &values[i], 0.0f, 1.0f, "%.2f");
+ImGui::PopStyleVar();
+ImGui::PopID();
+}
+ImGui::PopID();
+
+ImGui::Indent();
+ImGui::TreePop();
+}
+
+if (ImGui::TreeNode("Dragging"))
+{
+// You can use ImGui::GetItemActiveDragDelta() to query for the dragged amount on any widget.
+static ImVec2 value_raw(0.0f, 0.0f);
+static ImVec2 value_with_lock_threshold(0.0f, 0.0f);
+ImGui::Button("Drag Me");
+if (ImGui::IsItemActive())
+{
+value_raw = ImGui::GetMouseDragDelta(0, 0.0f);
+value_with_lock_threshold = ImGui::GetMouseDragDelta(0);
+//ImGui::SetTooltip("Delta: %.1f, %.1f", value.x, value.y);
+
+// Draw a line between the button and the mouse cursor
+ImDrawList* draw_list = ImGui::GetWindowDrawList();
+draw_list->PushClipRectFullScreen();
+draw_list->AddLine(ImGui::CalcItemRectClosestPoint(ImGui::GetIO().MousePos, true, -2.0f), ImGui::GetIO().MousePos, ImColor(ImGui::GetStyle().Colors[ImGuiCol_Button]), 2.0f);
+draw_list->PopClipRect();
+}
+ImGui::SameLine(); ImGui::Text("Raw (%.1f, %.1f), WithLockThresold (%.1f, %.1f)", value_raw.x, value_raw.y, value_with_lock_threshold.x, value_with_lock_threshold.y);
+ImGui::TreePop();
+}
+
+
+*/
+
+
 #include "BatchassApp.h"
 
 void BatchassApp::prepareSettings(Settings* settings)
@@ -313,7 +407,9 @@ void BatchassApp::drawMain()
 	static float WindowRounding = 7;
 	static float TreeNodeSpacing = 22;
 	static float ColumnsMinSpacing = 50;
-	static float ScrollBarWidth = 12;*/
+	static float ScrollBarWidth = 12;
+	
+	*/
 	ImGui::GetWindowPos();
 
 	ui::GetStyle().FramePadding = ImVec2(2, 2);
@@ -406,7 +502,7 @@ void BatchassApp::drawMain()
 	{
 		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
 		{
-			sprintf_s(buf, "Shada %d", i);
+			sprintf_s(buf, "%d %s", i, mBatchass->getShadersRef()->getShaderName(i).c_str());
 			ui::SetNextWindowSize(ImVec2(w, h));
 			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 			{
@@ -418,9 +514,6 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
 				ui::Columns(4, "data", true);
 
-				if (ui::Button(mBatchass->getShadersRef()->getShaderName(i).c_str())) {}
-				ui::NextColumn();
-				char buf[32];
 				sprintf_s(buf, "L%d", i);
 				if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
 				ui::NextColumn();
@@ -799,8 +892,9 @@ void BatchassApp::drawMain()
 	// fps window
 	if (showFps)
 	{
+		sprintf_s(buf, "Fps %c %d", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->maxVolume);
 		ui::SetNextWindowSize(ImVec2(largeW, h));
-		ui::Begin("Fps", NULL, ImVec2(100, 100), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+		ui::Begin(buf, NULL, ImVec2(100, 100));
 		{
 			ui::SetWindowPos(ImVec2(xPos, yPos));
 			static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
@@ -1049,8 +1143,9 @@ void BatchassApp::drawMain()
 	// audio window
 	if (showAudio)
 	{
+		sprintf_s(buf, "Audio %d", mParameterBag->maxVolume);
 		ui::SetNextWindowSize(ImVec2(largeW, h));
-		ui::Begin("Audio", NULL, ImVec2(200, 100));
+		ui::Begin(buf, NULL, ImVec2(200, 100));
 		{
 			ui::SetWindowPos(ImVec2(xPos, yPos));
 			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
