@@ -601,11 +601,10 @@ void BatchassApp::drawMain()
 #pragma region Global
 	if (showGlobal)
 	{
-		// start a new window
-		ui::Begin("Global", NULL, ImVec2(largeW, h));
+		ui::SetNextWindowSize(ImVec2(largeW, h),ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin("Global");
 		{
-			ui::SetNextWindowSize(ImVec2(w, h));
-			ui::SetWindowPos(ImVec2(xPos, yPos));
 			if (ui::CollapsingHeader("Panels", "11", true, true))
 			{
 				// Checkbox
@@ -645,11 +644,11 @@ void BatchassApp::drawMain()
 			if (ui::CollapsingHeader("Mode", NULL, true, true))
 			{
 				static int mode = mParameterBag->mMode;
-				ui::RadioButton("Mix", &mode, MODE_MIX); ui::SameLine();
-				ui::RadioButton("Audio", &mode, MODE_AUDIO); ui::SameLine();
-				ui::RadioButton("Sphere", &mode, MODE_SPHERE); ui::SameLine();
-				ui::RadioButton("Warp", &mode, MODE_WARP); ui::SameLine();
-				ui::RadioButton("Mesh", &mode, MODE_MESH);
+				ui::RadioButton("Mix##mode", &mode, MODE_MIX); ui::SameLine();
+				ui::RadioButton("Audio##mode", &mode, MODE_AUDIO); ui::SameLine();
+				ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE); ui::SameLine();
+				ui::RadioButton("Warp##mode", &mode, MODE_WARP); ui::SameLine();
+				ui::RadioButton("Mesh##mode", &mode, MODE_MESH);
 				if (mParameterBag->mMode != mode) changeMode(mode);
 			}
 			if (ui::CollapsingHeader("Render Window", NULL, true, true))
@@ -661,7 +660,7 @@ void BatchassApp::drawMain()
 				//if (ui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
 				mParameterBag->mPreviewEnabled ^= ui::Button("Preview");
 				ui::SameLine();
-				if (ui::Button("Debug")) { mParameterBag->iDebug = !mParameterBag->iDebug; }
+					mParameterBag->iDebug ^= ui::Button("Debug");
 			}
 
 		}
@@ -672,17 +671,17 @@ void BatchassApp::drawMain()
 #pragma region slidas
 	if (showSlidas)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h));
-		ui::Begin("Animation", NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin("Animation");// , NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 		{
-			ui::SetWindowPos(ImVec2(xPos, yPos));
 			if (ui::CollapsingHeader("Effects", NULL, true, true))
 			{
 				if (ui::Button("chromatic")) { mParameterBag->controlValues[20] = !mParameterBag->controlValues[20]; }
 				ui::SameLine();
-				if (ui::Button("origin up left")) { mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft; }
+				mParameterBag->mOriginUpperLeft ^= ui::Button("origin up left");
 				ui::SameLine();
-				if (ui::Button("repeat")) { mParameterBag->iRepeat = !mParameterBag->iRepeat; }
+				mParameterBag->iRepeat ^= ui::Button("repeat");
 				ui::SameLine();
 				if (ui::Button("45 glitch")) { mParameterBag->controlValues[45] = !mParameterBag->controlValues[45]; }
 
@@ -692,7 +691,7 @@ void BatchassApp::drawMain()
 				ui::SameLine();
 				if (ui::Button("48 invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
 				ui::SameLine();
-				if (ui::Button("greyscale")) { mParameterBag->iGreyScale = !mParameterBag->iGreyScale; }
+				mParameterBag->iGreyScale ^= ui::Button("greyscale"); 
 				ui::SameLine();
 				if (ui::Button("instant black"))
 				{
@@ -893,10 +892,10 @@ void BatchassApp::drawMain()
 	if (showFps)
 	{
 		sprintf_s(buf, "Fps %c %d", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->maxVolume);
-		ui::SetNextWindowSize(ImVec2(largeW, h));
-		ui::Begin(buf, NULL, ImVec2(100, 100));
+		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin(buf);
 		{
-			ui::SetWindowPos(ImVec2(xPos, yPos));
 			static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
 			static int values_offset = 0;
 			static float refresh_time = -1.0f;
@@ -922,10 +921,10 @@ void BatchassApp::drawMain()
 	// MIDI window
 	if (showMidi)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h));
-		ui::Begin("MIDI", NULL, ImVec2(0, 0));
+		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin("MIDI");
 		{
-			ui::SetWindowPos(ImVec2(xPos, yPos));
 			if (ui::CollapsingHeader("MidiIn", "20", true, true))
 			{
 				ui::Columns(2, "data", true);
@@ -1021,10 +1020,10 @@ void BatchassApp::drawMain()
 
 	if (showOSC)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h));
-		ui::Begin("OSC router", NULL, ImVec2(0, 0));
+		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin("OSC router");
 		{
-			ui::SetWindowPos(ImVec2(xPos, yPos));
 			ui::Text("Sending to host %s", mParameterBag->mOSCDestinationHost.c_str());
 			ui::SameLine();
 			ui::Text(" on port %d", mParameterBag->mOSCDestinationPort);
@@ -1065,10 +1064,10 @@ void BatchassApp::drawMain()
 #pragma region WebSockets
 	if (showWS)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h));
-		ui::Begin("WebSockets", NULL, ImVec2(300, 300));
+		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin("WebSockets");
 		{
-			ui::SetWindowPos(ImVec2(xPos, yPos));
 			if (mParameterBag->mIsWebSocketsServer)
 			{
 				ui::Text("Server %s", mParameterBag->mWebSocketsHost.c_str());
@@ -1111,8 +1110,9 @@ void BatchassApp::drawMain()
 #pragma region Routing
 	if (showRouting)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h));
-		ui::Begin("Routing", NULL, ImVec2(300, 300));
+		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin("Routing");
 		{
 			ui::SetWindowPos(ImVec2(xPos, yPos));
 			ui::BeginChild("Warps routing", ImVec2(0, 300), true);
@@ -1143,11 +1143,11 @@ void BatchassApp::drawMain()
 	// audio window
 	if (showAudio)
 	{
-		sprintf_s(buf, "Audio %d", mParameterBag->maxVolume);
-		ui::SetNextWindowSize(ImVec2(largeW, h));
-		ui::Begin(buf, NULL, ImVec2(200, 100));
+		sprintf_s(buf, "Audio %d", (int) mParameterBag->maxVolume);
+		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin(buf);
 		{
-			ui::SetWindowPos(ImVec2(xPos, yPos));
 			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
 			ui::SameLine();
 			ui::Text("Beat %d", mParameterBag->mBeat);
