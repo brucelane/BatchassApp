@@ -371,7 +371,6 @@ void BatchassApp::drawMain()
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
 	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);
-	//if (!removeUI) mUI->draw();
 
 	//imgui
 	if (removeUI)
@@ -381,43 +380,34 @@ void BatchassApp::drawMain()
 	}
 	else
 	{
-
+		// mUI->draw();
 	}
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
-	margin = 4;
-	inBetween = 6;
-
+	margin = 3;
+	inBetween = 3;
+	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
+	int w = mParameterBag->mPreviewFboWidth + margin;
+	int h = mParameterBag->mPreviewFboHeight * 2;
+	int xPos = margin;
+	int yPos = margin;
+	int largeW = (mParameterBag->mPreviewFboWidth + margin) * 3;
+	int largeH = (mParameterBag->mPreviewFboHeight + margin) * 2;
 	//ui::initialize(); //to avoid resize and fullscreen null error for window
 
 	static float f = 0.0f;
 	char buf[32];
 
-	static bool showGlobal = true, showSlidas = false, showWarps = false, showTextures = false, showTest = true, showRouting = false, showMidi = false, showFbos = false, showTheme = false, showAudio = false, showShaders = false, showOSC = false, showFps = false, showWS = false;
+	static bool showGlobal = true, showSlidas = true, showWarps = true, showTextures = true, showTest = false, showRouting = true, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = false;
 
 #pragma region style
 	// our theme variables
-	/*static float WindowPadding[2] = { 4, 2 };
-
-	static float FramePadding[2] = { 4, 4 };
-	static float ItemSpacing[2] = { 10, 5 };
-	static float ItemInnerSpacing[2] = { 5, 5 };
-
-	static float WindowFillAlphaDefault = 0.35;
-	static float WindowRounding = 7;
-	static float TreeNodeSpacing = 22;
-	static float ColumnsMinSpacing = 50;
-	static float ScrollBarWidth = 12;
-	
-	*/
-	ImGui::GetWindowPos();
-
-	ui::GetStyle().FramePadding = ImVec2(2, 2);
-
 	ImGuiStyle& style = ui::GetStyle();
 	style.WindowRounding = 4;
-	//style.WindowMinSize = ImVec2(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
-	style.ItemInnerSpacing = { 5, 5 };
+	style.FramePadding = ImVec2(2, 2);
+	style.ItemSpacing = ImVec2(3, 3);
+	style.ItemInnerSpacing = ImVec2(3, 3);
+	style.WindowMinSize = ImVec2(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
 	style.Alpha = 0.6f;
 	style.Colors[ImGuiCol_Text] = ImVec4(0.89f, 0.92f, 0.94f, 1.00f);
 	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
@@ -457,20 +447,12 @@ void BatchassApp::drawMain()
 	style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.8f, 0.35f, 0.35f, 1.00f);
 	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.24f, 0.24f, 0.24f, 1.00f);
 	style.Colors[ImGuiCol_TooltipBg] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
-
-
 #pragma endregion style
 	if (showTest)
 	{
 		ui::ShowTestWindow();
 		ui::ShowStyleEditor();
 	}
-	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
-	int w = mParameterBag->mPreviewFboWidth + margin;
-	int h = mParameterBag->mPreviewFboHeight * 2;
-	int xPos = margin;
-	int yPos = margin;
-	int largeW = (mParameterBag->mPreviewFboWidth + margin) * 3;
 #pragma region textures
 	if (showTextures)
 	{
@@ -512,15 +494,15 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				ui::Columns(4, "data", true);
+				ui::Columns(3, "data", true);
 
-				sprintf_s(buf, "L%d", i);
+				sprintf_s(buf, "L##%d", i);
 				if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
 				ui::NextColumn();
-				sprintf_s(buf, "R%d", i);
+				sprintf_s(buf, "R##%d", i);
 				if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
 				ui::NextColumn();
-				sprintf_s(buf, "P%d", i);
+				sprintf_s(buf, "P##%d", i);
 				if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
 				ui::NextColumn();
 
@@ -552,7 +534,7 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
 
-				sprintf_s(buf, "Flip %d", i);
+				sprintf_s(buf, "FlipV##%d", i);
 				if (ui::Button(buf))
 				{
 					mBatchass->getTexturesRef()->flipFbo(i);
@@ -601,7 +583,7 @@ void BatchassApp::drawMain()
 #pragma region Global
 	if (showGlobal)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h),ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("Global");
 		{
@@ -671,7 +653,7 @@ void BatchassApp::drawMain()
 #pragma region slidas
 	if (showSlidas)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("Animation");// , NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 		{
@@ -892,7 +874,7 @@ void BatchassApp::drawMain()
 	if (showFps)
 	{
 		sprintf_s(buf, "Fps %c %d", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->maxVolume);
-		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin(buf);
 		{
@@ -921,7 +903,7 @@ void BatchassApp::drawMain()
 	// MIDI window
 	if (showMidi)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("MIDI");
 		{
@@ -1020,7 +1002,7 @@ void BatchassApp::drawMain()
 
 	if (showOSC)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("OSC router");
 		{
@@ -1064,7 +1046,7 @@ void BatchassApp::drawMain()
 #pragma region WebSockets
 	if (showWS)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("WebSockets");
 		{
@@ -1110,7 +1092,7 @@ void BatchassApp::drawMain()
 #pragma region Routing
 	if (showRouting)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("Routing");
 		{
@@ -1144,7 +1126,7 @@ void BatchassApp::drawMain()
 	if (showAudio)
 	{
 		sprintf_s(buf, "Audio %d", (int) mParameterBag->maxVolume);
-		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin(buf);
 		{
@@ -1176,16 +1158,7 @@ void BatchassApp::drawMain()
 
 			ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
 
-			/*static int fftSize = mAudio->getFftSize();
-			if (ui::SliderInt("fft size", &fftSize, 1, 1024))
-			{
-			mAudio->setFftSize(fftSize);
-			}
-			static int windowSize = mAudio->getWindowSize();
-			if (ui::SliderInt("window size", &windowSize, 1, 1024))
-			{
-			mAudio->setWindowSize(windowSize);
-			}
+			/*
 			for (int a = 0; a < MAX; a++)
 			{
 			if (mOSC->tracks[a] != "default.glsl") ui::Button(mOSC->tracks[a].c_str());
