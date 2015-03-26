@@ -392,7 +392,7 @@ void BatchassApp::drawMain()
 	int xPos = margin;
 	int yPos = margin;
 	int largeW = (mParameterBag->mPreviewFboWidth + margin) * 3;
-	int largeH = (mParameterBag->mPreviewFboHeight + margin) * 2;
+	int largeH = (mParameterBag->mPreviewFboHeight + margin) * 3;
 	//ui::initialize(); //to avoid resize and fullscreen null error for window
 
 	static float f = 0.0f;
@@ -469,8 +469,9 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				sprintf_s(buf, "Flip %d", i);
+				sprintf_s(buf, "FV##t%d", i);
 				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipTexture(i);
+				if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 				ui::PopStyleColor(3);
 				ui::PopID();
 			}
@@ -496,14 +497,17 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
 				ui::Columns(3, "data", true);
 
-				sprintf_s(buf, "L##%d", i);
+				sprintf_s(buf, "L##s%d", i);
 				if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to left");
 				ui::NextColumn();
-				sprintf_s(buf, "R##%d", i);
+				sprintf_s(buf, "R##s%d", i);
 				if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to right");
 				ui::NextColumn();
-				sprintf_s(buf, "P##%d", i);
+				sprintf_s(buf, "P##s%d", i);
 				if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
 				ui::NextColumn();
 
 				ui::PopStyleColor(3);
@@ -534,11 +538,9 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
 
-				sprintf_s(buf, "FlipV##%d", i);
-				if (ui::Button(buf))
-				{
-					mBatchass->getTexturesRef()->flipFbo(i);
-				}
+				sprintf_s(buf, "FV##f%d", i);
+				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(i);
+				if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 
 				ui::PopStyleColor(3);
 				ui::PopID();
@@ -558,18 +560,12 @@ void BatchassApp::drawMain()
 			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 			{
 				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
-				//if (i > 0) ui::SameLine();
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarpFbos[i].textureIndex), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
 
-				sprintf_s(buf, "Flip %d", i);
-				if (ui::Button(buf))
-				{
-					mBatchass->getTexturesRef()->flipFbo(i);
-				}
 				ui::PopStyleColor(3);
 				ui::PopID();
 			}
@@ -873,7 +869,7 @@ void BatchassApp::drawMain()
 	// fps window
 	if (showFps)
 	{
-		sprintf_s(buf, "Fps %c %d", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->maxVolume);
+		sprintf_s(buf, "Fps %c %d", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
 		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin(buf);
@@ -1089,6 +1085,59 @@ void BatchassApp::drawMain()
 		xPos += largeW + margin;
 	}
 #pragma endregion WebSockets
+
+#pragma region Audio
+
+	// audio window
+	if (showAudio)
+	{
+		sprintf_s(buf, "Audio %d", (int) mParameterBag->maxVolume);
+		//ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
+		//ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin(buf);
+		{
+			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
+			ui::SameLine();
+			ui::Text("Beat %d", mParameterBag->mBeat);
+			ui::SameLine();
+			ui::Text("Tempo %.2f", mParameterBag->mTempo);
+			if (ui::Button("Tap tempo")) { mBatchass->tapTempo(); }
+			ui::SameLine();
+			if (ui::Button("Use time with tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
+
+			//void Batchass::setTimeFactor(const int &aTimeFactor)
+			ImGui::SliderFloat("time factor", &mParameterBag->iTimeFactor, 0.0001f, 32.0f, "%.1f");
+
+			static ImVector<float> values; if (values.empty()) { values.resize(40); memset(&values.front(), 0, values.size()*sizeof(float)); }
+			static int values_offset = 0;
+			// audio maxVolume
+			static float refresh_time = -1.0f;
+			if (ui::GetTime() > refresh_time + 1.0f / 20.0f)
+			{
+				refresh_time = ui::GetTime();
+				values[values_offset] = mParameterBag->maxVolume;
+				values_offset = (values_offset + 1) % values.size();
+			}
+
+			ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
+			ImGui::PlotHistogram("Histogram", mAudio->getSmallSpectrum(), 7, 0, NULL, 0.0f, 255.0f, ImVec2(0, 30));
+
+			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+			ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
+			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
+			/*IM_ARRAYSIZE(mAudio->getSmallSpectrum())
+			static float arr[] = { 0.6f, 0.1f, 1.0f, 0.5f, 0.92f, 0.1f, 0.2f };
+			for (int a = 0; a < MAX; a++)
+			{
+			if (mOSC->tracks[a] != "default.glsl") ui::Button(mOSC->tracks[a].c_str());
+			}*/
+
+		}
+		ui::End();
+		xPos += largeW + margin;
+	}
+#pragma endregion Audio
+
 #pragma region Routing
 	if (showRouting)
 	{
@@ -1120,58 +1169,6 @@ void BatchassApp::drawMain()
 		xPos += largeW + margin;
 	}
 #pragma endregion Routing
-#pragma region Audio
-
-	// audio window
-	if (showAudio)
-	{
-		sprintf_s(buf, "Audio %d", (int) mParameterBag->maxVolume);
-		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
-		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		ui::Begin(buf);
-		{
-			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
-			ui::SameLine();
-			ui::Text("Beat %d", mParameterBag->mBeat);
-			ui::SameLine();
-			ui::Text("Tempo %.2f", mParameterBag->mTempo);
-			if (ui::Button("Tap tempo")) { mBatchass->tapTempo(); }
-			ui::SameLine();
-			if (ui::Button("Use time with tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
-
-			//void Batchass::setTimeFactor(const int &aTimeFactor)
-			ImGui::SliderFloat("time factor", &mParameterBag->iTimeFactor, 0.0001f, 32.0f, "%.1f");
-
-			static ImVector<float> values; if (values.empty()) { values.resize(40); memset(&values.front(), 0, values.size()*sizeof(float)); }
-			static int values_offset = 0;
-			// audio maxVolume
-			static float refresh_time = -1.0f;
-			if (ui::GetTime() > refresh_time + 1.0f / 20.0f)
-			{
-				refresh_time = ui::GetTime();
-				values[values_offset] = mParameterBag->maxVolume;
-				values_offset = (values_offset + 1) % values.size();
-			}
-			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
-			ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
-			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
-
-			ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
-
-			/*
-			for (int a = 0; a < MAX; a++)
-			{
-			if (mOSC->tracks[a] != "default.glsl") ui::Button(mOSC->tracks[a].c_str());
-			}*/
-
-		}
-		ui::End();
-		xPos += largeW + margin;
-
-	}
-#pragma endregion Audio
-
-
 
 	gl::disableAlphaBlending();
 }
