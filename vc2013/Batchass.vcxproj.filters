@@ -417,6 +417,9 @@
     <ClCompile Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui.cpp">
       <Filter>Blocks\imGui\src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\AppConsole.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Resources.h">
@@ -448,6 +451,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui.h">
       <Filter>Blocks\imGui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\AppConsole.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

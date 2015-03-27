@@ -124,6 +124,7 @@ xcopy /y "..\..\..\blocks\Cinder-Spout\lib\Spout.dll" "$(OutDir)"
     <ClInclude Include="..\..\..\blocks\Cinder-ImGui\include\CinderImGui.h" />
     <ClInclude Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui.h" />
     <ClInclude Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.h" />
+    <ClInclude Include="..\include\AppConsole.h" />
     <ClInclude Include="..\include\BatchassApp.h" />
     <ClInclude Include="..\include\Meshes.h" />
     <ClInclude Include="..\include\PointSphere.h" />
@@ -190,6 +191,7 @@ xcopy /y "..\..\..\blocks\Cinder-Spout\lib\Spout.dll" "$(OutDir)"
     <ClCompile Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-ImGui\src\CinderImGui.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.cpp" />
+    <ClCompile Include="..\src\AppConsole.cpp" />
     <ClCompile Include="..\src\BatchassApp.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-KCB\src\Kinect.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-MIDI2\src\MidiHub.cpp" />

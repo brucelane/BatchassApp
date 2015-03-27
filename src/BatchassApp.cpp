@@ -164,6 +164,8 @@ void BatchassApp::setup()
 	mSphere = PointSphere::create(mParameterBag, mBatchass->getTexturesRef(), mBatchass->getShadersRef());
 	// instanciate the spout class
 	mSpout = SpoutWrapper::create(mParameterBag, mBatchass->getTexturesRef());
+	// instanciate the console class
+	mConsole = AppConsole::create(mParameterBag);
 
 	mTimer = 0.0f;
 
@@ -1599,7 +1601,6 @@ void BatchassApp::changeMode(int newMode)
 // From imgui by Omar Cornut
 void BatchassApp::ShowAppConsole(bool* opened)
 {
-	static AppConsole console;
-	console.Run("Console", opened);
+	mConsole->Run("Console", opened);
 }
 CINDER_APP_BASIC(BatchassApp, RendererGl)
