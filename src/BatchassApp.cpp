@@ -172,6 +172,19 @@ void BatchassApp::setup()
 	// Setup the MinimalUI user interface
 	//mUI = UI::create(mParameterBag, mBatchass->getShadersRef(), mBatchass->getTexturesRef(), mMainWindow);
 	//mUI->setup();
+	// imgui
+	margin = 3;
+	inBetween = 3;
+	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
+	w = mParameterBag->mPreviewFboWidth + margin;
+	h = mParameterBag->mPreviewFboHeight * 2;
+	largeW = (mParameterBag->mPreviewFboWidth + margin) * 3;
+	largeH = (mParameterBag->mPreviewFboHeight + margin) * 3;
+
+	static float f = 0.0f;
+	char buf[32];
+
+	static bool showGlobal = true, showSlidas = true, showWarps = true, showTextures = true, showTest = false, showRouting = true, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = false;
 
 	// set ui window and io events callbacks
 	ui::connectWindow(getWindow());
@@ -384,26 +397,14 @@ void BatchassApp::drawMain()
 	}
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
-	margin = 3;
-	inBetween = 3;
-	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
-	int w = mParameterBag->mPreviewFboWidth + margin;
-	int h = mParameterBag->mPreviewFboHeight * 2;
-	int xPos = margin;
-	int yPos = margin;
-	int largeW = (mParameterBag->mPreviewFboWidth + margin) * 3;
-	int largeH = (mParameterBag->mPreviewFboHeight + margin) * 3;
-	//ui::initialize(); //to avoid resize and fullscreen null error for window
-
-	static float f = 0.0f;
-	char buf[32];
-
-	static bool showGlobal = true, showSlidas = true, showWarps = true, showTextures = true, showTest = false, showRouting = true, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = false;
+	xPos = margin;
+	yPos = margin;
 
 #pragma region style
 	// our theme variables
 	ImGuiStyle& style = ui::GetStyle();
 	style.WindowRounding = 4;
+	style.WindowPadding = ImVec2(3, 3);
 	style.FramePadding = ImVec2(2, 2);
 	style.ItemSpacing = ImVec2(3, 3);
 	style.ItemInnerSpacing = ImVec2(3, 3);
@@ -1091,10 +1092,9 @@ void BatchassApp::drawMain()
 	// audio window
 	if (showAudio)
 	{
-		sprintf_s(buf, "Audio %d", (int) mParameterBag->maxVolume);
-		//ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
-		//ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		ui::Begin(buf);
+		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin("Audio##ap");
 		{
 			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
 			ui::SameLine();
@@ -1103,7 +1103,7 @@ void BatchassApp::drawMain()
 			ui::Text("Tempo %.2f", mParameterBag->mTempo);
 			if (ui::Button("Tap tempo")) { mBatchass->tapTempo(); }
 			ui::SameLine();
-			if (ui::Button("Use time with tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
+			if (ui::Button("Time with tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
 
 			//void Batchass::setTimeFactor(const int &aTimeFactor)
 			ImGui::SliderFloat("time factor", &mParameterBag->iTimeFactor, 0.0001f, 32.0f, "%.1f");
@@ -1120,7 +1120,7 @@ void BatchassApp::drawMain()
 			}
 
 			ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
-			ImGui::PlotHistogram("Histogram", mAudio->getSmallSpectrum(), 7, 0, NULL, 0.0f, 255.0f, ImVec2(0, 30));
+			ImGui::PlotHistogram("Histogram", mAudio->getSmallSpectrum(), 7, 0, NULL, 0.0f, 1.0f, ImVec2(0, 30));
 
 			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
 			ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));

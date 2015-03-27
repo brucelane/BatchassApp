@@ -130,8 +130,6 @@ private:
 	bool						newLogMsg;
 	// misc
 	int							mSeconds;
-	int							margin;
-	int							inBetween;
 	// windows
 	WindowRef					mMainWindow;
 	//void						windowManagement();
@@ -160,4 +158,20 @@ private:
 
 	float color[4];
 	float backcolor[4];
+	// imgui
+	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
+	int w;
+	int h;
+	int xPos;
+	int yPos;
+	int largeW;
+	int largeH;
+	int							margin;
+	int							inBetween;
+
+	float f = 0.0f;
+	char buf[32];
+
+	bool showGlobal, showSlidas, showWarps, showTextures, showTest, showRouting, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showFps, showWS;
+
 };
