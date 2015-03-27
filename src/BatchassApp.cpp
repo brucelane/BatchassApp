@@ -184,7 +184,8 @@ void BatchassApp::setup()
 	static float f = 0.0f;
 	char buf[32];
 
-	static bool showGlobal = true, showSlidas = true, showWarps = true, showTextures = true, showTest = false, showRouting = true, showMidi = false, showFbos = true, showTheme = false, showAudio = true, showShaders = true, showOSC = false, showFps = true, showWS = false;
+	showConsole = showGlobal = showSlidas = showWarps = showTextures = showFps = showRouting = showFbos = showAudio = showShaders = true;
+	showTest = showMidi = showTheme = showOSC = showWS = false;
 
 	// set ui window and io events callbacks
 	ui::connectWindow(getWindow());
@@ -595,18 +596,21 @@ void BatchassApp::drawMain()
 				ui::Checkbox("Shada", &showShaders);
 				ui::SameLine();
 				ui::Checkbox("WarpS", &showWarps);
-				ui::SameLine();
+
 				ui::Checkbox("Audio", &showAudio);
 				ui::SameLine();
 				ui::Checkbox("WebSockets", &showWS);
 				ui::SameLine();
 				ui::Checkbox("Routing", &showRouting);
+				ui::SameLine();
+				ui::Checkbox("Console", &showConsole);
+
 				ui::Checkbox("OSC", &showOSC);
 				ui::SameLine();
 				ui::Checkbox("MIDI", &showMidi);
 				ui::SameLine();
 				ui::Checkbox("Sliders", &showSlidas);
-				ui::SameLine();
+				
 				ui::Checkbox("Test", &showTest);
 				ui::SameLine();
 				ui::Checkbox("FPS", &showFps);
@@ -1068,7 +1072,7 @@ void BatchassApp::drawMain()
 			}
 			static ImGuiTextBuffer WSlog;
 			static int lines = 0;
-			if (ui::Button("Clear")) { WSlog.clear(); lines = 0; }
+			if (ui::Button("Clear##ws")) { WSlog.clear(); lines = 0; }
 			ui::SameLine();
 			ui::Text("Buffer contents: %d lines, %d bytes", lines, WSlog.size());
 
@@ -1121,13 +1125,12 @@ void BatchassApp::drawMain()
 			}
 
 			ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
-			ImGui::PlotHistogram("Histogram", mAudio->getSmallSpectrum(), 7, 0, NULL, 0.0f, 1.0f, ImVec2(0, 30));
+			ImGui::PlotHistogram("Histogram", mAudio->getSmallSpectrum(), 7, 0, NULL, 0.0f, 255.0f, ImVec2(0, 30));
 
 			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
 			ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
 			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
-			/*IM_ARRAYSIZE(mAudio->getSmallSpectrum())
-			static float arr[] = { 0.6f, 0.1f, 1.0f, 0.5f, 0.92f, 0.1f, 0.2f };
+			/*
 			for (int a = 0; a < MAX; a++)
 			{
 			if (mOSC->tracks[a] != "default.glsl") ui::Button(mOSC->tracks[a].c_str());
@@ -1153,7 +1156,7 @@ void BatchassApp::drawMain()
 			ui::Text("ID"); ui::NextColumn();
 			ui::Text("texIndex"); ui::NextColumn();
 			ui::Text("texMode"); ui::NextColumn();
-			ui::Text("active"); ui::NextColumn();
+			ui::Text("active"); ui::NextColumn();//if (ui::Button("Clear")) { WSlog.clear(); lines = 0; }
 			ui::Separator();
 			for (int i = 0; i < mParameterBag->MAX; i++)
 			{
@@ -1170,6 +1173,7 @@ void BatchassApp::drawMain()
 		xPos += largeW + margin;
 	}
 #pragma endregion Routing
+	if (showConsole) ShowAppConsole(&showConsole);
 
 	gl::disableAlphaBlending();
 }
@@ -1592,5 +1596,10 @@ void BatchassApp::changeMode(int newMode)
 		}
 	}
 }
-
+// From imgui by Omar Cornut
+void BatchassApp::ShowAppConsole(bool* opened)
+{
+	static AppConsole console;
+	console.Run("Console", opened);
+}
 CINDER_APP_BASIC(BatchassApp, RendererGl)
