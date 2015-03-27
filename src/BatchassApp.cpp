@@ -453,6 +453,7 @@ void BatchassApp::drawMain()
 	{
 		ui::ShowTestWindow();
 		ui::ShowStyleEditor();
+		
 	}
 #pragma region textures
 	if (showTextures)
