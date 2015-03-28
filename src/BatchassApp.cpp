@@ -814,10 +814,6 @@ void BatchassApp::drawMain()
 					{
 						sParams << ",{\"name\" : " << i + 1 << ",\"value\" : " << color[i] << "}";
 						mParameterBag->controlValues[i + 1] = color[i];
-						stringstream s;
-						s << mParameterBag->controlValues[1];// << "," << mParameterBag->controlValues[2] << "," << mParameterBag->controlValues[3] << "," << mParameterBag->controlValues[4];
-						string strColor = s.str();
-						mWebSockets->write(strColor);
 						if (i == 0) mOSC->sendOSCColorMessage("/fr", mParameterBag->controlValues[1]);
 						if (i == 1) mOSC->sendOSCColorMessage("/fg", mParameterBag->controlValues[2]);
 						if (i == 2) mOSC->sendOSCColorMessage("/fb", mParameterBag->controlValues[3]);
@@ -827,14 +823,13 @@ void BatchassApp::drawMain()
 				}
 				if (colorChanged)
 				{
-					stringstream s;
-					s << "{ delay: 2000, type : \"action\", action : \"FC\", parameter : \"#";
-					s << std::hex << mParameterBag->controlValues[1];
-					s << std::hex << mParameterBag->controlValues[2];
-					s << std::hex << mParameterBag->controlValues[3];
-					s << "\"}";
-					string strColor = s.str();
-					mWebSockets->write(strColor);
+					char col[8];
+					int r = mParameterBag->controlValues[1] * 255;
+					int g = mParameterBag->controlValues[2] * 255;
+					int b = mParameterBag->controlValues[3] * 255;
+					ui::ImFormatString(col, IM_ARRAYSIZE(col), "#%02X%02X%02X", r, g, b);
+					mWebSockets->write(col);
+
 				}
 				//ui::SameLine();
 				//ui::TextColored(ImVec4(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4]), "fg color");
@@ -877,9 +872,9 @@ void BatchassApp::drawMain()
 	// fps window
 	if (showFps)
 	{
-		sprintf_s(buf, "Fps %c %d", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
-		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
-		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
+		//ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
+		//ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin(buf);
 		{
 			static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
@@ -971,6 +966,7 @@ void BatchassApp::drawMain()
 							ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName << std::endl;
 						}
 						mLogMsg = ss.str();
+
 					}
 					ui::NextColumn();
 					ui::Separator();
@@ -1149,9 +1145,8 @@ void BatchassApp::drawMain()
 	{
 		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		ui::Begin("Routing");
+		ui::Begin("Routing###rtg");
 		{
-			ui::SetWindowPos(ImVec2(xPos, yPos));
 			ui::BeginChild("Warps routing", ImVec2(0, 300), true);
 			ui::Text("Selected warp: %d", mParameterBag->selectedWarp);
 			ui::Columns(4);
@@ -1580,14 +1575,26 @@ void BatchassApp::changeMode(int newMode)
 			break;
 		}
 		mParameterBag->mMode = newMode;
+
 		switch (newMode)
 		{
-		case 4: //sphere
+		case 1: // Mix
+			mConsole->AddLog("Mix mode");
+			break;
+		case 2: // Audio
+			mConsole->AddLog("Audio mode");
+			break;
+		case 3: // Warp
+			mConsole->AddLog("Warp mode");
+			break;
+		case 4: // sphere
+			mConsole->AddLog("Sphere mode");
 			mParameterBag->mCamPosXY = Vec2f(-155.6, -87.3);
 			mParameterBag->mCamEyePointZ = -436.f;
 			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
 			break;
-		case 5: //mesh
+		case 5: // mesh
+			mConsole->AddLog("Mesh mode");
 			mParameterBag->controlValues[19] = 1.0; //reset rotation
 			mParameterBag->mRenderPosXY = Vec2f(0.0, 0.0);
 			mParameterBag->mCamEyePointZ = -56.f;

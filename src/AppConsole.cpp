@@ -10,7 +10,7 @@ AppConsole::AppConsole(ParameterBagRef aParameterBag)
 	Commands.push_back("HELP");
 	Commands.push_back("HISTORY");
 	Commands.push_back("CLEAR");
-	Commands.push_back("CLASSIFY");  // "classify" is here to provide an example of "C"+[tab] completing to "CL" and displaying matches.
+	Commands.push_back("DEBUG");  
 
 }
 void AppConsole::ClearLog()
@@ -40,7 +40,6 @@ void AppConsole::Run(const char* title, bool* opened)
 		return;
 	}
 
-	ImGui::TextWrapped("This example implements a console with basic coloring, completion and history. A more elaborate implementation may want to store entries along with extra data such as timestamp, emitter, etc.");
 	ImGui::TextWrapped("Enter 'HELP' for help, press TAB to use text completion.");
 
 	// TODO: display from bottom
@@ -130,6 +129,10 @@ void AppConsole::ExecCommand(const char* command_line)
 	{
 		for (size_t i = History.size() >= 10 ? History.size() - 10 : 0; i < History.size(); i++)
 			AddLog("%3d: %s\n", i, History[i]);
+	}
+	else if (ui::ImStricmp(command_line, "DEBUG") == 0)
+	{
+		mParameterBag->iDebug = !mParameterBag->iDebug;
 	}
 	else if (ui::ImStricmp(command_line, "MODEAUDIO") == 0)
 	{
