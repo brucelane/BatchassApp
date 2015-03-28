@@ -396,9 +396,6 @@
     <ClCompile Include="..\..\..\blocks\OSC\src\ip\win32\UdpSocket.cpp">
       <Filter>Blocks\OSC\src\ip\win32</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\WarpWrapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Meshes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -423,15 +420,15 @@
     <ClCompile Include="..\src\vertexSphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\blocks\Cinder-Reymenta\src\WarpWrapper.cpp">
+      <Filter>Blocks\Reymenta\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Resources.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\BatchassApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\WarpWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\WindowMngr.h">
@@ -460,6 +457,9 @@
     </ClInclude>
     <ClInclude Include="..\include\vertexSphere.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\blocks\Cinder-Reymenta\include\WarpWrapper.h">
+      <Filter>Blocks\Reymenta\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -12,8 +12,13 @@ AppConsole::AppConsole(ParameterBagRef aParameterBag, BatchassRef aBatchass)
 	Commands.push_back("HELP");
 	Commands.push_back("HISTORY");
 	Commands.push_back("CLEAR");
-	Commands.push_back("DEBUG");  
-
+	Commands.push_back("DEBUG");
+	Commands.push_back("WARPCREATE");
+	Commands.push_back("MODEMIX");
+	Commands.push_back("MODEAUDIO");
+	Commands.push_back("MODEWARP");
+	Commands.push_back("MODESPHERE");
+	Commands.push_back("MODEMESH");
 }
 void AppConsole::ClearLog()
 {
@@ -139,6 +144,13 @@ void AppConsole::ExecCommand(const char* command_line)
 	else if (ui::ImStricmp(command_line, "WARPCREATE") == 0)
 	{
 		mBatchass->createWarp(); 
+	}
+	else if (ui::ImStrnicmp(command_line, "WARP", 4) == 0)
+	{
+		if (strstr(command_line, "F"))
+		{
+
+		}
 	}
 	else if (ui::ImStricmp(command_line, "MODEMIX") == 0)
 	{

@@ -42,8 +42,6 @@ along with Cinder-MIDI.  If not, see <http://www.gnu.org/licenses/>.
 #include "JSONWrapper.h"
 // WebSockets
 #include "WebSocketsWrapper.h"
-// warps
-#include "WarpWrapper.h"
 // audio
 #include "AudioWrapper.h"
 // meshes
@@ -102,8 +100,6 @@ private:
 	JSONWrapperRef				mJson;
 	// WebSockets
 	WebSocketsRef				mWebSockets;
-	// warps
-	WarpWrapperRef				mWarpings;
 	// audio
 	AudioWrapperRef				mAudio;
 	// mesh helper

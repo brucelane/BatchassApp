@@ -70,8 +70,6 @@ void BatchassApp::setup()
 
 	// instanciate the audio class
 	mAudio = AudioWrapper::create(mParameterBag, mBatchass->getTexturesRef());
-	// instanciate the warp wrapper class
-	mWarpings = WarpWrapper::create(mParameterBag, mBatchass->getTexturesRef(), mBatchass->getShadersRef());
 	// instanciate the Meshes class
 	mMeshes = Meshes::create(mParameterBag, mBatchass->getTexturesRef());
 	// instanciate the PointSphere class
@@ -269,7 +267,7 @@ void BatchassApp::drawMain()
 				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mAudioFboIndex), rect);
 				break;
 			case MODE_WARP:
-				mWarpings->draw();
+				mBatchass->getWarpsRef()->draw();
 				break;
 			case MODE_SPHERE:
 				mSphere->draw();
@@ -478,7 +476,7 @@ void BatchassApp::drawMain()
 #pragma region warps
 	if (mParameterBag->mMode == MODE_WARP)
 	{
-		for (int i = 0; i < mWarpings->getWarpsCount(); i++)
+		for (int i = 0; i < mBatchass->getWarpsRef()->getWarpsCount(); i++)
 		{
 			sprintf_s(buf, "Warps %d", i);
 			ui::SetNextWindowSize(ImVec2(w, h));
@@ -539,7 +537,7 @@ void BatchassApp::drawMain()
 				if (ui::Button("Save Params"))
 				{
 					// save warp settings
-					mWarpings->save("warps1.xml");
+					mBatchass->getWarpsRef()->save("warps1.xml");
 					// save params
 					mParameterBag->save();
 				}
@@ -1108,7 +1106,7 @@ void BatchassApp::drawRender()
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mAudioFboIndex));
 		break;
 	case MODE_WARP:
-		mWarpings->draw();
+		mBatchass->getWarpsRef()->draw();
 		break;
 	case MODE_SPHERE:
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mSphereFboIndex));
@@ -1154,7 +1152,7 @@ void BatchassApp::saveThumb()
 }
 void BatchassApp::keyUp(KeyEvent event)
 {
-	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mWarpings->keyUp(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mBatchass->getWarpsRef()->keyUp(event);
 }
 
 void BatchassApp::fileDrop(FileDropEvent event)
@@ -1206,7 +1204,7 @@ void BatchassApp::fileDrop(FileDropEvent event)
 	}
 	else if (ext == "xml")
 	{
-		mWarpings->loadWarps(mFile);
+		mBatchass->getWarpsRef()->loadWarps(mFile);
 	}
 	else if (ext == "patchjson")
 	{
@@ -1282,7 +1280,7 @@ void BatchassApp::shutdown()
 		mBatchass->log("shutdown");
 		deleteRenderWindows();
 		// save warp settings
-		mWarpings->save();
+		mBatchass->getWarpsRef()->save();
 		// save params
 		mParameterBag->save();
 		ui::Shutdown();
@@ -1371,7 +1369,7 @@ void BatchassApp::update()
 
 void BatchassApp::resize()
 {
-	mWarpings->resize();
+	mBatchass->getWarpsRef()->resize();
 	/*ui::disconnectWindow(mMainWindow);
 	ui::connectWindow(mMainWindow);
 	ui::initialize();*/
@@ -1379,26 +1377,26 @@ void BatchassApp::resize()
 
 void BatchassApp::mouseMove(MouseEvent event)
 {
-	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mWarpings->mouseMove(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mBatchass->getWarpsRef()->mouseMove(event);
 }
 
 void BatchassApp::mouseDown(MouseEvent event)
 {
-	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mWarpings->mouseDown(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mBatchass->getWarpsRef()->mouseDown(event);
 	if (mParameterBag->mMode == mParameterBag->MODE_MESH) mMeshes->mouseDown(event);
 	if (mParameterBag->mMode == mParameterBag->MODE_AUDIO) mAudio->mouseDown(event);
 }
 
 void BatchassApp::mouseDrag(MouseEvent event)
 {
-	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mWarpings->mouseDrag(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mBatchass->getWarpsRef()->mouseDrag(event);
 	if (mParameterBag->mMode == mParameterBag->MODE_MESH) mMeshes->mouseDrag(event);
 	if (mParameterBag->mMode == mParameterBag->MODE_AUDIO) mAudio->mouseDrag(event);
 }
 
 void BatchassApp::mouseUp(MouseEvent event)
 {
-	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mWarpings->mouseUp(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mBatchass->getWarpsRef()->mouseUp(event);
 	if (mParameterBag->mMode == mParameterBag->MODE_AUDIO) mAudio->mouseUp(event);
 }
 
@@ -1406,7 +1404,7 @@ void BatchassApp::keyDown(KeyEvent event)
 {
 	if (mParameterBag->mMode == mParameterBag->MODE_WARP)
 	{
-		mWarpings->keyDown(event);
+		mBatchass->getWarpsRef()->keyDown(event);
 	}
 	else
 	{
@@ -1423,7 +1421,7 @@ void BatchassApp::keyDown(KeyEvent event)
 			if (event.isControlDown())
 			{
 				// save warp settings
-				mWarpings->save("warps2.xml");
+				mBatchass->getWarpsRef()->save("warps2.xml");
 				// save params
 				mParameterBag->save();
 			}

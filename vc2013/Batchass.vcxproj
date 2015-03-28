@@ -124,6 +124,7 @@ xcopy /y "..\..\..\blocks\Cinder-Spout\lib\Spout.dll" "$(OutDir)"
     <ClInclude Include="..\..\..\blocks\Cinder-ImGui\include\CinderImGui.h" />
     <ClInclude Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui.h" />
     <ClInclude Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.h" />
+    <ClInclude Include="..\..\..\blocks\Cinder-Reymenta\include\WarpWrapper.h" />
     <ClInclude Include="..\include\AppConsole.h" />
     <ClInclude Include="..\include\BatchassApp.h" />
     <ClInclude Include="..\include\Meshes.h" />
@@ -185,13 +186,13 @@ xcopy /y "..\..\..\blocks\Cinder-Spout\lib\Spout.dll" "$(OutDir)"
     <ClInclude Include="..\..\..\blocks\OSC\src\osc\OscTypes.h" />
     <ClInclude Include="..\include\UI.h" />
     <ClInclude Include="..\include\vertexSphere.h" />
-    <ClInclude Include="..\include\WarpWrapper.h" />
     <ClInclude Include="..\include\WindowMngr.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-ImGui\src\CinderImGui.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.cpp" />
+    <ClCompile Include="..\..\..\blocks\Cinder-Reymenta\src\WarpWrapper.cpp" />
     <ClCompile Include="..\src\AppConsole.cpp" />
     <ClCompile Include="..\src\BatchassApp.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-KCB\src\Kinect.cpp" />
@@ -239,7 +240,6 @@ xcopy /y "..\..\..\blocks\Cinder-Spout\lib\Spout.dll" "$(OutDir)"
     <ClCompile Include="..\src\PointSphere.cpp" />
     <ClCompile Include="..\src\UI.cpp" />
     <ClCompile Include="..\src\vertexSphere.cpp" />
-    <ClCompile Include="..\src\WarpWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\mix.frag" />
