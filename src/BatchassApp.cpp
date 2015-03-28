@@ -1,5 +1,8 @@
 /*
 TODO
+- warp select mix fbo texture
+- flip horiz
+- check flip H and V (spout also)
 */
 
 #include "BatchassApp.h"
@@ -58,6 +61,7 @@ void BatchassApp::setup()
 
 	// setup shaders and textures
 	mBatchass->setup();
+	mParameterBag->mWarpFbos[0].textureIndex = 1;
 	// setup the main window and associated draw function
 	mMainWindow = getWindow();
 	mMainWindow->setTitle("Batchass");
@@ -98,7 +102,7 @@ void BatchassApp::setup()
 	static float f = 0.0f;
 	char buf[32];
 
-	showConsole = showGlobal = showSlidas = showWarps = showTextures = showFps = showRouting = showFbos = showAudio = showShaders = true;
+	showConsole = showGlobal = showSlidas = showTextures = showFps = showRouting = showFbos = showAudio = showShaders = true;
 	showTest = showMidi = showTheme = showOSC = showWS = false;
 
 	// set ui window and io events callbacks
@@ -472,7 +476,7 @@ void BatchassApp::drawMain()
 	}
 #pragma endregion fbos
 #pragma region warps
-	if (showWarps)
+	if (mParameterBag->mMode == MODE_WARP)
 	{
 		for (int i = 0; i < mWarpings->getWarpsCount(); i++)
 		{
@@ -512,8 +516,6 @@ void BatchassApp::drawMain()
 				ui::Checkbox("Fbos", &showFbos);
 				ui::SameLine();
 				ui::Checkbox("Shada", &showShaders);
-				ui::SameLine();
-				ui::Checkbox("WarpS", &showWarps);
 
 				ui::Checkbox("Audio", &showAudio);
 				ui::SameLine();

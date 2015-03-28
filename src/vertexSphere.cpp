@@ -28,6 +28,10 @@ VertexSphere::VertexSphere(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 }*/
 void VertexSphere::update(){
 
+	// vertex sphere
+	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).setWrap(GL_REPEAT, GL_REPEAT);
+	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).setMinFilter(GL_NEAREST);
+	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).setMagFilter(GL_NEAREST);
 	//if (mRotate)
 	//{
 		mAngle += mParameterBag->controlValues[19];
@@ -37,26 +41,16 @@ void VertexSphere::update(){
 
 void VertexSphere::draw()
 {
-	// vertex sphere
-	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).setWrap(GL_REPEAT, GL_REPEAT);
-	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).setMinFilter(GL_NEAREST);
-	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).setMagFilter(GL_NEAREST);
 
 	mTextures->getFbo(mParameterBag->mVertexSphereFboIndex).bindFramebuffer();
 	gl::clear();
-	gl::enableDepthRead();
 	gl::setViewport(mTextures->getFbo(mParameterBag->mVertexSphereFboIndex).getBounds());
 
 	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).enableAndBind();
+	
 	mShaders->getVertexSphereShader()->bind();
-	/*if (maxVolume > 0)
-	{*/
+
 	mShaders->getVertexSphereShader()->uniform("normScale", mParameterBag->maxVolume);
-	//}
-	//else
-	//{
-	//	mShader.uniform("normScale", (mMouse.x) / 5.0f);// (mMouse.x)
-	//}
 	mShaders->getVertexSphereShader()->uniform("colorMap", 0);
 	mShaders->getVertexSphereShader()->uniform("displacementMap", 0);
 	gl::pushModelView();
@@ -65,6 +59,7 @@ void VertexSphere::draw()
 	gl::drawSphere(Vec3f(0, 0, 0), 140, 500);
 	gl::popModelView();
 	mShaders->getVertexSphereShader()->unbind();
+	
 	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).unbind();
 
 	mTextures->getFbo(mParameterBag->mVertexSphereFboIndex).unbindFramebuffer();

@@ -136,9 +136,9 @@ void AppConsole::ExecCommand(const char* command_line)
 	{
 		mParameterBag->iDebug = !mParameterBag->iDebug;
 	}
-	else if (ui::ImStricmp(command_line, "fff") == 0)
+	else if (ui::ImStricmp(command_line, "WARPCREATE") == 0)
 	{
-		//mBatchass->createWarp(); 
+		mBatchass->createWarp(); 
 	}
 	else if (ui::ImStricmp(command_line, "MODEMIX") == 0)
 	{
@@ -152,7 +152,7 @@ void AppConsole::ExecCommand(const char* command_line)
 	{
 		mBatchass->changeMode(mParameterBag->MODE_WARP);
 	}
-	else if (ui::ImStricmp(command_line, "MODE_SPHERE") == 0)
+	else if (ui::ImStricmp(command_line, "MODESPHERE") == 0)
 	{
 		mBatchass->changeMode(mParameterBag->MODE_SPHERE);
 	}

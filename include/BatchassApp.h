@@ -178,7 +178,7 @@ private:
 	float f = 0.0f;
 	char buf[32];
 
-	bool showConsole, showGlobal, showSlidas, showWarps, showTextures, showTest, showRouting, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showFps, showWS;
+	bool showConsole, showGlobal, showSlidas, showTextures, showTest, showRouting, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showFps, showWS;
 
 	// From imgui by Omar Cornut
 	void ShowAppConsole(bool* opened);

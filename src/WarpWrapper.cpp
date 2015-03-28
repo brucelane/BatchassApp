@@ -36,6 +36,12 @@ WarpWrapper::WarpWrapper(ParameterBagRef aParameterBag, TexturesRef aTexturesRef
 	gl::enableDepthRead();
 	gl::enableDepthWrite();
 }
+void WarpWrapper::createWarp()
+{
+	// create a new warp
+	mWarps.push_back(WarpPerspectiveBilinear::create());
+}
+
 void WarpWrapper::load()
 {
 	fs::path settings = getAssetPath("") / "warps.xml";
