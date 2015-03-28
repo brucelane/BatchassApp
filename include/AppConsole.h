@@ -5,6 +5,8 @@
 
 // parameters
 #include "ParameterBag.h"
+// Utils
+#include "Batchass.h"
 // UserInterface
 #include "CinderImGui.h"
 
@@ -22,10 +24,10 @@ namespace Reymenta
 	class AppConsole
 	{
 	public:
-		AppConsole(ParameterBagRef aParameterBag);
-		static AppConsoleRef	create(ParameterBagRef aParameterBag)
+		AppConsole(ParameterBagRef aParameterBag, BatchassRef aBatchass);
+		static AppConsoleRef	create(ParameterBagRef aParameterBag, BatchassRef aBatchass)
 		{
-			return shared_ptr<AppConsole>(new AppConsole(aParameterBag));
+			return shared_ptr<AppConsole>(new AppConsole(aParameterBag, aBatchass));
 		}
 		void    ClearLog();
 		void    AddLog(const char* fmt, ...);
@@ -35,6 +37,8 @@ namespace Reymenta
 	private:
 		// parameters
 		ParameterBagRef				mParameterBag;
+		// utils
+		BatchassRef					mBatchass;
 
 		char                  InputBuf[256];
 		ImVector<char*>       Items;

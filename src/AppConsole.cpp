@@ -2,9 +2,11 @@
 
 using namespace Reymenta;
 
-AppConsole::AppConsole(ParameterBagRef aParameterBag)
+AppConsole::AppConsole(ParameterBagRef aParameterBag, BatchassRef aBatchass)
 {
 	mParameterBag = aParameterBag;
+	mBatchass = aBatchass;
+
 	ClearLog();
 	HistoryPos = -1;
 	Commands.push_back("HELP");
@@ -134,9 +136,29 @@ void AppConsole::ExecCommand(const char* command_line)
 	{
 		mParameterBag->iDebug = !mParameterBag->iDebug;
 	}
+	else if (ui::ImStricmp(command_line, "fff") == 0)
+	{
+		//mBatchass->createWarp(); 
+	}
+	else if (ui::ImStricmp(command_line, "MODEMIX") == 0)
+	{
+		mBatchass->changeMode(mParameterBag->MODE_MIX);
+	}
 	else if (ui::ImStricmp(command_line, "MODEAUDIO") == 0)
 	{
-		//changeMode(MODE_AUDIO);
+		mBatchass->changeMode(mParameterBag->MODE_AUDIO);
+	}
+	else if (ui::ImStricmp(command_line, "MODEWARP") == 0)
+	{
+		mBatchass->changeMode(mParameterBag->MODE_WARP);
+	}
+	else if (ui::ImStricmp(command_line, "MODE_SPHERE") == 0)
+	{
+		mBatchass->changeMode(mParameterBag->MODE_SPHERE);
+	}
+	else if (ui::ImStricmp(command_line, "MODEMESH") == 0)
+	{
+		mBatchass->changeMode(mParameterBag->MODE_MESH);
 	}
 	else
 	{

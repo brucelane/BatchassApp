@@ -1,96 +1,6 @@
 /*
 TODO
-* ANIMATED TITLE
-if (ImGui::TreeNode("Vertical Sliders"))
-{
-ImGui::Unindent();
-const float spacing = 4;
-ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(spacing, spacing));
-
-static int int_value = 0;
-ImGui::VSliderInt("##int", ImVec2(18,160), &int_value, 0, 5);
-ImGui::SameLine();
-
-static float values[7] = { 0.0f, 0.60f, 0.35f, 0.9f, 0.70f, 0.20f, 0.0f };
-ImGui::PushID("set1");
-for (int i = 0; i < 7; i++)
-{
-if (i > 0) ImGui::SameLine();
-ImGui::PushID(i);
-ImGui::PushStyleColor(ImGuiCol_FrameBg, ImColor::HSV(i/7.0f, 0.5f, 0.5f));
-ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImColor::HSV(i/7.0f, 0.9f, 0.9f));
-ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImColor::HSV(i/7.0f, 1.0f, 1.0f));
-ImGui::VSliderFloat("##v", ImVec2(18,160), &values[i], 0.0f, 1.0f, "");
-if (ImGui::IsItemActive() || ImGui::IsItemHovered())
-ImGui::SetTooltip("%.3f", values[i]);
-ImGui::PopStyleColor(3);
-ImGui::PopID();
-}
-ImGui::PopID();
-
-ImGui::SameLine();
-ImGui::PushID("set2");
-static float values2[4] = { 0.20f, 0.80f, 0.40f, 0.25f };
-const int rows = 3;
-const ImVec2 small_slider_size(18, (160.0f-(rows-1)*spacing)/rows);
-for (int nx = 0; nx < 4; nx++)
-{
-if (nx > 0) ImGui::SameLine();
-ImGui::BeginGroup();
-for (int ny = 0; ny < rows; ny++)
-{
-ImGui::PushID(nx*rows+ny);
-ImGui::VSliderFloat("##v", small_slider_size, &values2[nx], 0.0f, 1.0f, "");
-if (ImGui::IsItemActive() || ImGui::IsItemHovered())
-ImGui::SetTooltip("%.3f", values2[nx]);
-ImGui::PopID();
-}
-ImGui::EndGroup();
-}
-ImGui::PopID();
-
-ImGui::SameLine();
-ImGui::PushID("set3");
-for (int i = 0; i < 4; i++)
-{
-if (i > 0) ImGui::SameLine();
-ImGui::PushID(i);
-ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, 40);
-ImGui::VSliderFloat("##v", ImVec2(40,160), &values[i], 0.0f, 1.0f, "%.2f");
-ImGui::PopStyleVar();
-ImGui::PopID();
-}
-ImGui::PopID();
-
-ImGui::Indent();
-ImGui::TreePop();
-}
-
-if (ImGui::TreeNode("Dragging"))
-{
-// You can use ImGui::GetItemActiveDragDelta() to query for the dragged amount on any widget.
-static ImVec2 value_raw(0.0f, 0.0f);
-static ImVec2 value_with_lock_threshold(0.0f, 0.0f);
-ImGui::Button("Drag Me");
-if (ImGui::IsItemActive())
-{
-value_raw = ImGui::GetMouseDragDelta(0, 0.0f);
-value_with_lock_threshold = ImGui::GetMouseDragDelta(0);
-//ImGui::SetTooltip("Delta: %.1f, %.1f", value.x, value.y);
-
-// Draw a line between the button and the mouse cursor
-ImDrawList* draw_list = ImGui::GetWindowDrawList();
-draw_list->PushClipRectFullScreen();
-draw_list->AddLine(ImGui::CalcItemRectClosestPoint(ImGui::GetIO().MousePos, true, -2.0f), ImGui::GetIO().MousePos, ImColor(ImGui::GetStyle().Colors[ImGuiCol_Button]), 2.0f);
-draw_list->PopClipRect();
-}
-ImGui::SameLine(); ImGui::Text("Raw (%.1f, %.1f), WithLockThresold (%.1f, %.1f)", value_raw.x, value_raw.y, value_with_lock_threshold.x, value_with_lock_threshold.y);
-ImGui::TreePop();
-}
-
-
 */
-
 
 #include "BatchassApp.h"
 
@@ -165,7 +75,7 @@ void BatchassApp::setup()
 	// instanciate the spout class
 	mSpout = SpoutWrapper::create(mParameterBag, mBatchass->getTexturesRef());
 	// instanciate the console class
-	mConsole = AppConsole::create(mParameterBag);
+	mConsole = AppConsole::create(mParameterBag, mBatchass);
 
 	mTimer = 0.0f;
 
@@ -635,7 +545,7 @@ void BatchassApp::drawMain()
 				ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE); ui::SameLine();
 				ui::RadioButton("Warp##mode", &mode, MODE_WARP); ui::SameLine();
 				ui::RadioButton("Mesh##mode", &mode, MODE_MESH);
-				if (mParameterBag->mMode != mode) changeMode(mode);
+				if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
 			}
 			if (ui::CollapsingHeader("Render Window", NULL, true, true))
 			{
@@ -1232,7 +1142,7 @@ void BatchassApp::saveThumb()
 }
 void BatchassApp::keyUp(KeyEvent event)
 {
-	if (mParameterBag->mMode == MODE_WARP) mWarpings->keyUp(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mWarpings->keyUp(event);
 }
 
 void BatchassApp::fileDrop(FileDropEvent event)
@@ -1454,32 +1364,32 @@ void BatchassApp::resize()
 
 void BatchassApp::mouseMove(MouseEvent event)
 {
-	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseMove(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mWarpings->mouseMove(event);
 }
 
 void BatchassApp::mouseDown(MouseEvent event)
 {
-	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseDown(event);
-	if (mParameterBag->mMode == MODE_MESH) mMeshes->mouseDown(event);
-	if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseDown(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mWarpings->mouseDown(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_MESH) mMeshes->mouseDown(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_AUDIO) mAudio->mouseDown(event);
 }
 
 void BatchassApp::mouseDrag(MouseEvent event)
 {
-	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseDrag(event);
-	if (mParameterBag->mMode == MODE_MESH) mMeshes->mouseDrag(event);
-	if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseDrag(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mWarpings->mouseDrag(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_MESH) mMeshes->mouseDrag(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_AUDIO) mAudio->mouseDrag(event);
 }
 
 void BatchassApp::mouseUp(MouseEvent event)
 {
-	if (mParameterBag->mMode == MODE_WARP) mWarpings->mouseUp(event);
-	if (mParameterBag->mMode == MODE_AUDIO) mAudio->mouseUp(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mWarpings->mouseUp(event);
+	if (mParameterBag->mMode == mParameterBag->MODE_AUDIO) mAudio->mouseUp(event);
 }
 
 void BatchassApp::keyDown(KeyEvent event)
 {
-	if (mParameterBag->mMode == MODE_WARP)
+	if (mParameterBag->mMode == mParameterBag->MODE_WARP)
 	{
 		mWarpings->keyDown(event);
 	}
@@ -1489,10 +1399,10 @@ void BatchassApp::keyDown(KeyEvent event)
 		switch (event.getCode())
 		{
 		case ci::app::KeyEvent::KEY_n:
-			changeMode(MODE_MIX);
+			mBatchass->changeMode(mParameterBag->MODE_MIX);
 			break;
 		case ci::app::KeyEvent::KEY_a:
-			changeMode(MODE_AUDIO);
+			mBatchass->changeMode(mParameterBag->MODE_AUDIO);
 			break;
 		case ci::app::KeyEvent::KEY_s:
 			if (event.isControlDown())
@@ -1504,14 +1414,14 @@ void BatchassApp::keyDown(KeyEvent event)
 			}
 			else
 			{
-				changeMode(MODE_SPHERE);
+				mBatchass->changeMode(mParameterBag->MODE_SPHERE);
 			}
 			break;
 		case ci::app::KeyEvent::KEY_w:
-			changeMode(MODE_WARP);
+			mBatchass->changeMode(mParameterBag->MODE_WARP);
 			break;
 		case ci::app::KeyEvent::KEY_m:
-			changeMode(MODE_MESH);
+			changeMode(mParameterBag->MODE_MESH);
 			break;
 		case ci::app::KeyEvent::KEY_o:
 			mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft;
@@ -1559,52 +1469,7 @@ void BatchassApp::keyDown(KeyEvent event)
 	}
 	//mWebSockets->write("yo");
 }
-void BatchassApp::changeMode(int newMode)
-{
-	if (mParameterBag->mMode != newMode)
-	{
-		mParameterBag->controlValues[4] = 1.0f;
-		mParameterBag->controlValues[8] = 1.0f;
 
-		mParameterBag->mPreviousMode = mParameterBag->mMode;
-		switch (mParameterBag->mPreviousMode)
-		{
-		case 5: //mesh
-			mParameterBag->iLight = false;
-			mParameterBag->controlValues[19] = 0.0; //reset rotation
-			break;
-		}
-		mParameterBag->mMode = newMode;
-
-		switch (newMode)
-		{
-		case 1: // Mix
-			mConsole->AddLog("Mix mode");
-			break;
-		case 2: // Audio
-			mConsole->AddLog("Audio mode");
-			break;
-		case 3: // Warp
-			mConsole->AddLog("Warp mode");
-			break;
-		case 4: // sphere
-			mConsole->AddLog("Sphere mode");
-			mParameterBag->mCamPosXY = Vec2f(-155.6, -87.3);
-			mParameterBag->mCamEyePointZ = -436.f;
-			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
-			break;
-		case 5: // mesh
-			mConsole->AddLog("Mesh mode");
-			mParameterBag->controlValues[19] = 1.0; //reset rotation
-			mParameterBag->mRenderPosXY = Vec2f(0.0, 0.0);
-			mParameterBag->mCamEyePointZ = -56.f;
-			mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = 0;
-			mParameterBag->currentSelectedIndex = 5;
-			mParameterBag->iLight = true;
-			break;
-		}
-	}
-}
 // From imgui by Omar Cornut
 void BatchassApp::ShowAppConsole(bool* opened)
 {
