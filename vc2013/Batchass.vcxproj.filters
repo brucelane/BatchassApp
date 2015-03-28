@@ -420,6 +420,9 @@
     <ClCompile Include="..\src\AppConsole.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\vertexSphere.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Resources.h">
@@ -453,6 +456,9 @@
       <Filter>Blocks\imGui\src</Filter>
     </ClInclude>
     <ClInclude Include="..\include\AppConsole.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\vertexSphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -72,6 +72,8 @@ void BatchassApp::setup()
 	mMeshes = Meshes::create(mParameterBag, mBatchass->getTexturesRef());
 	// instanciate the PointSphere class
 	mSphere = PointSphere::create(mParameterBag, mBatchass->getTexturesRef(), mBatchass->getShadersRef());
+	// instanciate the VertexSphere class
+	mVertexSphere = VertexSphere::create(mParameterBag, mBatchass->getTexturesRef(), mBatchass->getShadersRef());
 	// instanciate the spout class
 	mSpout = SpoutWrapper::create(mParameterBag, mBatchass->getTexturesRef());
 	// instanciate the console class
@@ -282,6 +284,10 @@ void BatchassApp::drawMain()
 					gl::drawLine(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), Vec2f(mOSC->skeleton[i].z, mOSC->skeleton[i].w));
 					gl::drawSolidCircle(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), 5.0f, 16);
 				}
+				break;
+			case MODE_VERTEXSPHERE:
+				mVertexSphere->draw();
+				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mVertexSphereFboIndex), rect);
 				break;
 			default:
 				//gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex), rect);
@@ -545,6 +551,7 @@ void BatchassApp::drawMain()
 				ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE); ui::SameLine();
 				ui::RadioButton("Warp##mode", &mode, MODE_WARP); ui::SameLine();
 				ui::RadioButton("Mesh##mode", &mode, MODE_MESH);
+				ui::RadioButton("VertexSphere##mode", &mode, MODE_VERTEXSPHERE); ui::SameLine();
 				if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
 			}
 			if (ui::CollapsingHeader("Render Window", NULL, true, true))
@@ -655,7 +662,7 @@ void BatchassApp::drawMain()
 					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 				}
 
-				// rotation speed
+				// rotation speed 
 				ctrl = 19;
 				if (ui::Button("a##rotationspeed")) { mBatchass->lockRotationSpeed(); }
 				ui::SameLine();
@@ -1107,6 +1114,9 @@ void BatchassApp::drawRender()
 	case MODE_MESH:
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMeshFboIndex));
 		break;
+	case MODE_VERTEXSPHERE:
+		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mVertexSphereFboIndex));
+		break;
 	default:
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
 		break;
@@ -1318,6 +1328,9 @@ void BatchassApp::update()
 	case MODE_MESH:
 		if (mMeshes->isSetup()) mMeshes->update();
 		break;
+	case MODE_VERTEXSPHERE:
+		mVertexSphere->update();
+		break;
 	default:
 		break;
 	}
@@ -1421,7 +1434,7 @@ void BatchassApp::keyDown(KeyEvent event)
 			mBatchass->changeMode(mParameterBag->MODE_WARP);
 			break;
 		case ci::app::KeyEvent::KEY_m:
-			changeMode(mParameterBag->MODE_MESH);
+			mBatchass->changeMode(mParameterBag->MODE_MESH);
 			break;
 		case ci::app::KeyEvent::KEY_o:
 			mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft;

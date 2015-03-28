@@ -50,6 +50,8 @@ along with Cinder-MIDI.  If not, see <http://www.gnu.org/licenses/>.
 #include "Meshes.h"
 // point sphere
 #include "PointSphere.h"
+// Vertex sphere
+#include "VertexSphere.h"
 // spout
 #include "SpoutWrapper.h"
 // UI
@@ -110,6 +112,8 @@ private:
 	PointSphereRef				mSphere;
 	// spout
 	SpoutWrapperRef				mSpout;
+	//  Vertex Sphere
+	VertexSphereRef				mVertexSphere;
 	// utils
 	BatchassRef					mBatchass;
 	// console
@@ -151,6 +155,7 @@ private:
 	static const int			MODE_SPHERE = 4;
 	static const int			MODE_MESH = 5;
 	static const int			MODE_KINECT = 6;
+	static const int			MODE_VERTEXSPHERE = 7;
 	// windows to create, should be the same as in ParameterBag
 	static const int			NONE = 0;
 	static const int			RENDER_1 = 1;
