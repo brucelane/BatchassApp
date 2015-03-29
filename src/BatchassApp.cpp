@@ -95,7 +95,7 @@ void BatchassApp::setup()
 	w = mParameterBag->mPreviewFboWidth + margin;
 	h = mParameterBag->mPreviewFboHeight * 2;
 	largeW = (mParameterBag->mPreviewFboWidth + margin) * 3;
-	largeH = (mParameterBag->mPreviewFboHeight + margin) * 3;
+	largeH = (mParameterBag->mPreviewFboHeight + margin) * 4;
 
 	static float f = 0.0f;
 	char buf[32];
@@ -476,6 +476,9 @@ void BatchassApp::drawMain()
 #pragma region warps
 	if (mParameterBag->mMode == MODE_WARP)
 	{
+				const char* fboNames[] = { "preview", "mix", "audio", "warp", "sphere", "mesh", "left", "right", "live", "vtxsphere" };
+				bool popup_open = false;
+				int selected_fbo = -1;
 		for (int i = 0; i < mBatchass->getWarpsRef()->getWarpsCount(); i++)
 		{
 			sprintf_s(buf, "Warps %d", i);
@@ -488,7 +491,34 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+				popup_open = false;
+				selected_fbo = -1;
 
+				sprintf_s(buf, "Input Fbo...##wm%d", i);
+				if (ImGui::Button(buf))
+				{
+					popup_open = true;
+					ImGui::SetNextWindowPos(ImGui::GetMousePos());
+				}
+				ImGui::SameLine();
+				ImGui::Text(selected_fbo == -1 ? "<None>" : fboNames[selected_fbo]);
+				if (popup_open)
+				{
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+					sprintf_s(buf, "##wmpopup%d", i);
+					ImGui::Begin(buf, &popup_open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
+					if (!ImGui::IsWindowFocused())
+						popup_open = false;
+					for (size_t i = 0; i < IM_ARRAYSIZE(fboNames); i++)
+						if (ImGui::Selectable(fboNames[i], false))
+						{
+						selected_fbo = i;
+						popup_open = false;
+						}
+					ImGui::End();
+					ImGui::PopStyleVar();
+				}
+				mBatchass->assignFboToWarp(i, selected_fbo);
 				ui::PopStyleColor(3);
 				ui::PopID();
 			}
@@ -549,9 +579,9 @@ void BatchassApp::drawMain()
 				ui::RadioButton("Mix##mode", &mode, MODE_MIX); ui::SameLine();
 				ui::RadioButton("Audio##mode", &mode, MODE_AUDIO); ui::SameLine();
 				ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE); ui::SameLine();
-				ui::RadioButton("Warp##mode", &mode, MODE_WARP); ui::SameLine();
-				ui::RadioButton("Mesh##mode", &mode, MODE_MESH);
-				ui::RadioButton("VertexSphere##mode", &mode, MODE_VERTEXSPHERE); ui::SameLine();
+				ui::RadioButton("Warp##mode", &mode, MODE_WARP); 
+				ui::RadioButton("Mesh##mode", &mode, MODE_MESH);ui::SameLine();
+				ui::RadioButton("VertexSphere##mode", &mode, MODE_VERTEXSPHERE);
 				if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
 			}
 			if (ui::CollapsingHeader("Render Window", NULL, true, true))

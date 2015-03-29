@@ -145,11 +145,14 @@ void AppConsole::ExecCommand(const char* command_line)
 	{
 		mBatchass->createWarp(); 
 	}
-	else if (ui::ImStrnicmp(command_line, "WARP", 4) == 0)
+	else if (ui::ImStrnicmp(command_line, "WARPF", 5) == 0)
 	{
-		if (strstr(command_line, "F"))
-		{
-
+		// for instance WARPF04
+		if (strlen(command_line) > 6)
+		{			
+			int index = command_line[5];
+			int fbo = command_line[6];
+			mBatchass->assignFboToWarp(index-48, fbo-48);			
 		}
 	}
 	else if (ui::ImStricmp(command_line, "MODEMIX") == 0)
