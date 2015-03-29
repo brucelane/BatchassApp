@@ -40,7 +40,7 @@ void AppConsole::AddLog(const char* fmt, ...)
 
 void AppConsole::Run(const char* title, bool* opened)
 {
-	ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiSetCond_FirstUseEver);
+	//ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiSetCond_FirstUseEver);
 	if (!ImGui::Begin(title, opened))
 	{
 		ImGui::End();

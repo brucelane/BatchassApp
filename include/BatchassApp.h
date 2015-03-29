@@ -162,12 +162,14 @@ private:
 	float backcolor[4];
 	// imgui
 	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
-	int w;
-	int h;
-	int xPos;
-	int yPos;
-	int largeW;
-	int largeH;
+	int							w;
+	int							h;
+	int							xPos;
+	int							yPos;
+	int							largeW;
+	int							largeH;
+	int							largePreviewW;
+	int							largePreviewH;
 	int							margin;
 	int							inBetween;
 

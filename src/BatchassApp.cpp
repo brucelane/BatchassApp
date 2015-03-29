@@ -3,34 +3,32 @@ TODO
 - warp select mix fbo texture
 - flip horiz
 - check flip H and V (spout also)
+- dnd index verify 
 */
 
 #include "BatchassApp.h"
 
 void BatchassApp::prepareSettings(Settings* settings)
 {
+	int w;
 	// parameters
 	mParameterBag = ParameterBag::create();
 	// utils
 	mBatchass = Batchass::create(mParameterBag);
 	mBatchass->log("start");
 
-	mBatchass->getWindowsResolution();
+	w = mBatchass->getWindowsResolution();
 
 	settings->setWindowSize(mParameterBag->mMainWindowWidth, mParameterBag->mMainWindowHeight);
 	// Setting an unrealistically high frame rate effectively
 	// disables frame rate limiting
 	//settings->setFrameRate(10000.0f);
 	settings->setFrameRate(60.0f);
-	settings->setWindowPos(Vec2i(mParameterBag->mMainWindowX, mParameterBag->mMainWindowY));
+	settings->setWindowPos(Vec2i(w - mParameterBag->mMainWindowWidth, 0));
 
-#ifdef _DEBUG
 	settings->setResizable(false);
 	settings->setBorderless();
-#else
-	settings->setBorderless();
-	settings->setResizable(false);
-#endif  // _DEBUG
+
 	// if mStandalone, put on the 2nd screen
 	if (mParameterBag->mStandalone)
 	{
@@ -44,6 +42,7 @@ void BatchassApp::prepareSettings(Settings* settings)
 
 void BatchassApp::setup()
 {
+	//0SetWindowPos
 	mBatchass->log("setup");
 	mIsShutDown = false;
 	removeUI = false;
@@ -96,12 +95,13 @@ void BatchassApp::setup()
 	h = mParameterBag->mPreviewFboHeight * 2;
 	largeW = (mParameterBag->mPreviewFboWidth + margin) * 3;
 	largeH = (mParameterBag->mPreviewFboHeight + margin) * 4;
-
+	largePreviewW = mParameterBag->mPreviewWidth + margin;
+	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2;
 	static float f = 0.0f;
 	char buf[32];
 
-	showConsole = showGlobal = showSlidas = showTextures = showFps = showRouting = showFbos = showAudio = showShaders = true;
-	showTest = showMidi = showTheme = showOSC = showWS = false;
+	showConsole = showGlobal = showSlidas = showTextures = showFps = showRouting = showAudio = showShaders = true;
+	showTest = showMidi = showTheme = showOSC = showFbos = showWS = false;
 
 	// set ui window and io events callbacks
 	ui::connectWindow(getWindow());
@@ -292,8 +292,7 @@ void BatchassApp::drawMain()
 				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mVertexSphereFboIndex), rect);
 				break;
 			default:
-				//gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex), rect);
-				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
+				//gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
 				break;
 			}
 		}
@@ -320,7 +319,7 @@ void BatchassApp::drawMain()
 	gl::setMatricesWindow(getWindowSize());
 	xPos = margin;
 	yPos = margin;
-	const char* fboNames[] = { "preview", "mix", "audio", "warp", "sphere", "mesh", "left", "right", "live", "vtxsphere" };
+	const char* fboNames[] = { "preview", "mix", "audio", "warp", "sphere", "mesh", "left", "right", "warp1", "warp2", "live", "vtxsphere" };
 
 #pragma region style
 	// our theme variables
@@ -377,219 +376,128 @@ void BatchassApp::drawMain()
 		ui::ShowStyleEditor();
 
 	}
-#pragma region textures
-	if (showTextures)
+#pragma region mix
+
+	// left/warp1 fbo
+	ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
+	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+	ui::Begin("Left/warp1 fbo");
 	{
-		for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
+		ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.1f, 0.6f, 0.6f));
+		ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.1f, 0.7f, 0.7f));
+		ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.1f, 0.8f, 0.8f));
+
+		sprintf_s(buf, "FV##f%d", 40);
+		if (mParameterBag->mMode == mParameterBag->MODE_WARP)
 		{
-			sprintf_s(buf, "Texture %d", i);
-			ui::SetNextWindowSize(ImVec2(w, h));
-			ui::SetNextWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
-			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
-			{
-				//ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
-				ui::PushID(i);
-				ui::Image((void*)mBatchass->getTexturesRef()->getTexture(i).getId(), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				sprintf_s(buf, "FV##t%d", i);
-				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipTexture(i);
-				if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
-				ui::PopStyleColor(3);
-				ui::PopID();
-			}
-			ui::End();
-		}
-		yPos += h + margin;
-	}
-#pragma endregion textures
-#pragma region shaders
-	if (showShaders)
-	{
-		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
-		{
-			sprintf_s(buf, "%d %s", i, mBatchass->getShadersRef()->getShaderName(i).c_str());
-			ui::SetNextWindowSize(ImVec2(w, h));
-			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
-			{
-				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
-				ui::PushID(i);
-				ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-
-				ui::Columns(3, "data", true);
-
-				if (mParameterBag->mLeftFragIndex == i)
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 1.0f, 0.5f));
-				}
-				else
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-
-				}
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.0f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.0f, 0.8f, 0.8f));
-				sprintf_s(buf, "L##s%d", i);
-				if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
-				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to left");
-				ui::PopStyleColor(3);
-				ui::NextColumn();
-
-				if (mParameterBag->mRightFragIndex == i)
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.3f, 1.0f, 0.5f));
-				}
-				else
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-
-				}
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.3f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.3f, 0.8f, 0.8f));
-				sprintf_s(buf, "R##s%d", i);
-				if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
-				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to right");
-				ui::PopStyleColor(3);
-				ui::NextColumn();
-
-				if (mParameterBag->mPreviewFragIndex == i)
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
-				}
-				else
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-
-				}
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.6f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.6f, 0.8f, 0.8f));
-				sprintf_s(buf, "P##s%d", i);
-				if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
-				if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
-				ui::PopStyleColor(3);
-				ui::NextColumn();
-
-
-				ui::PopID();
-
-				ui::Columns(1);
-			}
-			ui::End();
-		}
-		yPos += h + margin;
-	}
-
-#pragma endregion shaders
-#pragma region fbos
-
-	if (showFbos)
-	{
-		for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
-		{
-			ui::SetNextWindowSize(ImVec2(w, h));
-			ui::Begin(fboNames[i], NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
-			{
-				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
-				//if (i > 0) ui::SameLine();
-				ui::PushID(i);
-				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-
-				sprintf_s(buf, "FV##f%d", i);
-				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(i);
-				if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
-
-				ui::PopStyleColor(3);
-				ui::PopID();
-			}
-			ui::End();
-		}
-		yPos += h + margin;
-	}
-#pragma endregion fbos
-	if (mParameterBag->mMode == MODE_MIX)
-	{
-		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
-		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-
-		ui::Begin("Mix fbo");
-		{
-
-			ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mMixFboIndex), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-			ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.1f, 0.6f, 0.6f));
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.1f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.1f, 0.8f, 0.8f));
-
-			sprintf_s(buf, "FV##f%d", 15);
-			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mMixFboIndex);
+			ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarp1FboIndex), Vec2i(mParameterBag->mPreviewWidth, mParameterBag->mPreviewHeight));
+			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mWarp1FboIndex);
 			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
-			// renderX mouse
-			ui::SliderFloat("renderX##rxmix", &mParameterBag->mRenderXY.x, 0.01f, 1.0f);
-			ui::SliderFloat("renderY##rymix", &mParameterBag->mRenderXY.y, 0.01f, 1.0f);
-			ui::PopStyleColor(3);
+			// renderXY mouse
+			ui::SliderFloat("Warp1RdrX", &mParameterBag->mWarp1RenderXY.x, 0.01f, 1.0f);
+			ui::SliderFloat("Warp1RdrY", &mParameterBag->mWarp1RenderXY.y, 0.01f, 1.0f);
 		}
-		ui::End();
+		else
+		{
+			ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mLeftFboIndex), Vec2i(mParameterBag->mPreviewWidth, mParameterBag->mPreviewHeight));
+			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mLeftFboIndex);
+			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+			// renderXY mouse
+			ui::SliderFloat("LeftRdrX", &mParameterBag->mLeftRenderXY.x, 0.01f, 1.0f);
+			ui::SliderFloat("LeftRdrY", &mParameterBag->mLeftRenderXY.y, 0.01f, 1.0f);
+		}
+		ui::PopStyleColor(3);
 	}
-#pragma region warps
-	if (mParameterBag->mMode == MODE_WARP)
+	ui::End();
+	xPos += largePreviewW + margin;
+
+	// right/warp2 fbo
+	ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
+	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+	ui::Begin("Right/warp2 fbo");
 	{
-		bool popup_open;
-		int selected_index = -1;
-		int selected_fbo;
-		for (int i = 0; i < mBatchass->getWarpsRef()->getWarpsCount(); i++)
-		{
-			sprintf_s(buf, "Warps %d", i);
-			ui::SetNextWindowSize(ImVec2(w, h));
-			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
-			{
-				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
-				ui::PushID(i);
-				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarpFbos[i].textureIndex), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				popup_open = false;
-				selected_fbo = -1;
+		ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.1f, 0.6f, 0.6f));
+		ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.1f, 0.7f, 0.7f));
+		ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.1f, 0.8f, 0.8f));
 
-				sprintf_s(buf, "Input Fbo...##wm%d", i);
-				if (ImGui::Button(buf))
-				{
-					popup_open = true;
-					selected_index = i;
-				}
-				ui::PopStyleColor(3);
-				ui::PopID();
-			}
-			ui::End();
-		}
-		ImGui::SameLine();
-		ImGui::Text(selected_fbo == -1 ? "<None>" : fboNames[selected_fbo]);
-		if (popup_open)
+		sprintf_s(buf, "FV##f%d", 41);
+		if (mParameterBag->mMode == mParameterBag->MODE_WARP)
 		{
-			sprintf_s(buf, "##wmpopup", selected_index);
-			ImGui::BeginPopup(&popup_open);
-			for (size_t i = 0; i < IM_ARRAYSIZE(fboNames); i++)
-				if (ImGui::Selectable(fboNames[i], false))
-				{
-				selected_fbo = i;
-				popup_open = false;
-				}
-			ImGui::EndPopup();
-
+			ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarp2FboIndex), Vec2i(mParameterBag->mPreviewWidth, mParameterBag->mPreviewHeight));
+			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mWarp2FboIndex);
+			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+			// renderXY mouse
+			ui::SliderFloat("Warp2RdrX", &mParameterBag->mWarp2RenderXY.x, 0.01f, 1.0f);
+			ui::SliderFloat("Warp2RdrY", &mParameterBag->mWarp2RenderXY.y, 0.01f, 1.0f);
 		}
-		if (selected_fbo > -1) mBatchass->assignFboToWarp(selected_index, selected_fbo);
-		yPos += h + margin;
+		else
+		{
+			ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mRightFboIndex), Vec2i(mParameterBag->mPreviewWidth, mParameterBag->mPreviewHeight));
+			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mRightFboIndex);
+			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+			// renderXY mouse
+			ui::SliderFloat("RightRdrX", &mParameterBag->mRightRenderXY.x, 0.01f, 1.0f);
+			ui::SliderFloat("RightRdrY", &mParameterBag->mRightRenderXY.y, 0.01f, 1.0f);
+		}
+		ui::PopStyleColor(3);
 	}
-#pragma endregion warps
+	ui::End();
+	xPos += largePreviewW + margin;
 
+	// mix fbo
+	ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
+	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+	ui::Begin("Mix fbo");
+	{
 
+		ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mMixFboIndex), Vec2i(mParameterBag->mPreviewWidth, mParameterBag->mPreviewHeight));
+		ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.1f, 0.6f, 0.6f));
+		ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.1f, 0.7f, 0.7f));
+		ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.1f, 0.8f, 0.8f));
+
+		sprintf_s(buf, "FV##f%d", 42);
+		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mMixFboIndex);
+		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+		// renderXY mouse
+		ui::SliderFloat("RenderX", &mParameterBag->mRenderXY.x, 0.01f, 1.0f);
+		ui::SliderFloat("RenderY", &mParameterBag->mRenderXY.y, 0.01f, 1.0f);
+		ui::PopStyleColor(3);
+		// iPreviewCrossfade
+		if (ui::SliderFloat("previewCrossfade", &mParameterBag->controlValues[17], 0.01f, 1.0f))
+		{	
+		}
+		// crossfade
+		if (ui::SliderFloat("crossfade", &mParameterBag->controlValues[18], 0.01f, 1.0f))
+		{			
+		}
+
+	}
+	ui::End();
+	xPos += largePreviewW + margin;
+
+	// preview fbo
+	ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
+	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+	ui::Begin("Preview fbo");
+	{
+		ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mCurrentPreviewFboIndex), Vec2i(mParameterBag->mPreviewWidth, mParameterBag->mPreviewHeight));
+		ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.1f, 0.6f, 0.6f));
+		ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.1f, 0.7f, 0.7f));
+		ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.1f, 0.8f, 0.8f));
+
+		sprintf_s(buf, "FV##f%d", 39);
+		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mCurrentPreviewFboIndex);
+		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+		ui::PopStyleColor(3);
+	}
+	ui::End();
+	xPos += largePreviewW + margin;
+
+#pragma endregion mix
 #pragma region Global
 	if (showGlobal)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("Global");
 		{
@@ -654,14 +562,15 @@ void BatchassApp::drawMain()
 			}
 
 		}
-		xPos += largeW + margin;
+		xPos += largePreviewW + margin;
 		ui::End();
 	}
 #pragma endregion Global
+
 #pragma region slidas
 	if (showSlidas)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("Animation");// , NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 		{
@@ -779,19 +688,6 @@ void BatchassApp::drawMain()
 				{
 					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 				}
-				// iPreviewCrossfade
-				ctrl = 17;
-				if (ui::SliderFloat("previewCrossfade", &mParameterBag->controlValues[ctrl], 0.01f, 1.0f))
-				{
-					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
-				}
-				// crossfade
-				ctrl = 18;
-				//static float crossfade = mParameterBag->controlValues[ctrl];
-				if (ui::SliderFloat("crossfade", &mParameterBag->controlValues[ctrl], 0.01f, 1.0f))
-				{
-					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
-				}
 
 				aParams << "]}";
 				string strAParams = aParams.str();
@@ -868,10 +764,238 @@ void BatchassApp::drawMain()
 
 			}
 			ui::End();
-			xPos += largeW + margin;
+			xPos += largePreviewW + margin;
 		}
 	}
 #pragma endregion slidas
+	ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
+	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+	if (showConsole) ShowAppConsole(&showConsole);
+	// next line
+	xPos = margin;
+	yPos += largePreviewH + margin;
+
+#pragma region textures
+	if (showTextures)
+	{
+		for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
+		{
+			sprintf_s(buf, "Texture %d", i);
+			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::SetNextWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+			{
+				//ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getTexture(i).getId(), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+				sprintf_s(buf, "FV##t%d", i);
+				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipTexture(i);
+				if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+				ui::PopStyleColor(3);
+				ui::PopID();
+			}
+			ui::End();
+		}
+		yPos += h + margin;
+	}
+#pragma endregion textures
+#pragma region shaders
+	if (showShaders)
+	{
+		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
+		{
+			sprintf_s(buf, "%d %s", i, mBatchass->getShadersRef()->getShaderName(i).c_str());
+			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+			{
+				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::Columns(5, "data", true);
+
+				// left
+				if (mParameterBag->mLeftFragIndex == i)
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 1.0f, 0.5f));
+				}
+				else
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+
+				}
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.0f, 0.8f, 0.8f));
+				sprintf_s(buf, "L##s%d", i);
+				if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to left");
+				ui::PopStyleColor(3);
+				ui::NextColumn();
+
+				// right
+				if (mParameterBag->mRightFragIndex == i)
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.3f, 1.0f, 0.5f));
+				}
+				else
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+				}
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.3f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.3f, 0.8f, 0.8f));
+				sprintf_s(buf, "R##s%d", i);
+				if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to right");
+				ui::PopStyleColor(3);
+				ui::NextColumn();
+
+				// preview
+				if (mParameterBag->mPreviewFragIndex == i)
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
+				}
+				else
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+				}
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.6f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.6f, 0.8f, 0.8f));
+				sprintf_s(buf, "P##s%d", i);
+				if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
+				ui::PopStyleColor(3);
+				ui::NextColumn();
+
+				// warp1
+				if (mParameterBag->mWarp1FragIndex == i)
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.16f, 1.0f, 0.5f));
+				}
+				else
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+				}
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.16f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.16f, 0.8f, 0.8f));
+				sprintf_s(buf, "W1##s%d", i);
+				if (ui::Button(buf)) mParameterBag->mWarp1FragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Set warp 1 shader");
+				ui::PopStyleColor(3);
+				ui::NextColumn();
+
+				// warp2
+				if (mParameterBag->mWarp2FragIndex == i)
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.77f, 1.0f, 0.5f));
+				}
+				else
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+				}
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.77f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.77f, 0.8f, 0.8f));
+				sprintf_s(buf, "W2##s%d", i);
+				if (ui::Button(buf)) mParameterBag->mWarp2FragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
+				ui::PopStyleColor(3);
+				ui::NextColumn();
+
+				ui::PopID();
+
+				ui::Columns(1);
+			}
+			ui::End();
+		}
+		yPos += h + margin;
+	}
+
+#pragma endregion shaders
+#pragma region fbos
+
+	if (showFbos)
+	{
+		for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
+		{
+			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::Begin(fboNames[i], NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+			{
+				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+				//if (i > 0) ui::SameLine();
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+
+				sprintf_s(buf, "FV##f%d", i);
+				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(i);
+				if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+
+				ui::PopStyleColor(3);
+				ui::PopID();
+			}
+			ui::End();
+		}
+		yPos += h + margin;
+	}
+#pragma endregion fbos
+#pragma region warps
+	if (mParameterBag->mMode == MODE_WARP)
+	{
+		static bool popup_open = false;
+		static int selected_index = -1;
+		static int selected_fbo = -1;
+		for (int i = 0; i < mBatchass->getWarpsRef()->getWarpsCount(); i++)
+		{
+			sprintf_s(buf, "Warps %d", i);
+			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+			{
+				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarpFbos[i].textureIndex), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+
+				sprintf_s(buf, "Input Fbo...##wm%d", i);
+				if (ImGui::Button(buf))
+				{
+					popup_open = true;
+					selected_index = i;
+				}
+				ui::PopStyleColor(3);
+				ui::PopID();
+			}
+			ui::End();
+		}
+		ImGui::SameLine();
+		ImGui::Text(selected_fbo == -1 ? "<None>" : fboNames[selected_fbo]);
+		if (popup_open)
+		{
+			sprintf_s(buf, "##wmpopup", selected_index);
+			ImGui::BeginPopup(&popup_open);
+			for (size_t i = 0; i < IM_ARRAYSIZE(fboNames); i++)
+			{
+				if (ImGui::Selectable(fboNames[i], false))
+				{
+					selected_fbo = i;
+					if (selected_fbo > -1) mBatchass->assignFboToWarp(selected_index, selected_fbo);
+					// reinit
+					popup_open = false;
+					selected_index = -1;
+					selected_fbo = -1;
+				}
+			}
+			ImGui::EndPopup();
+
+		}
+		yPos += h + margin;
+	}
+#pragma endregion warps
+
 #pragma region FPS
 	// fps window
 	if (showFps)
@@ -1174,7 +1298,6 @@ void BatchassApp::drawMain()
 		xPos += largeW + margin;
 	}
 #pragma endregion Routing
-	if (showConsole) ShowAppConsole(&showConsole);
 
 	gl::disableAlphaBlending();
 }
@@ -1250,8 +1373,8 @@ void BatchassApp::fileDrop(FileDropEvent event)
 	boost::filesystem::path mPath = event.getFile(event.getNumFiles() - 1);
 	string mFile = mPath.string();
 	if (mFile.find_last_of(".") != std::string::npos) ext = mFile.substr(mFile.find_last_of(".") + 1);
-	index = (int)(event.getX() / (margin + mParameterBag->mPreviewWidth + inBetween)) + 1;
-	mBatchass->log(mFile + " dropped, currentSelectedIndex:" + toString(mParameterBag->currentSelectedIndex) + " x: " + toString(event.getX()) + " mPreviewWidth: " + toString(mParameterBag->mPreviewWidth));
+	index = (int)(event.getX() / (margin + mParameterBag->mPreviewFboWidth + inBetween)) + 1;
+	//mBatchass->log(mFile + " dropped, currentSelectedIndex:" + toString(mParameterBag->currentSelectedIndex) + " x: " + toString(event.getX()) + " PreviewFboWidth: " + toString(mParameterBag->mPreviewFboWidth));
 
 	if (ext == "wav" || ext == "mp3")
 	{
