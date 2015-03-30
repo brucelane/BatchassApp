@@ -3,7 +3,9 @@ TODO
 - warp select mix fbo texture
 - flip horiz
 - check flip H and V (spout also)
-- dnd index verify 
+- sort fbo names and indexes (warps only 4 or 5 inputs)
+- spout texture 10 create shader 10.glsl(ThemeFromBrazil) iChannel0 
+- warpwrapper handle texture mode 0 for spout (without fbo)
 */
 
 #include "BatchassApp.h"
@@ -96,7 +98,7 @@ void BatchassApp::setup()
 	largeW = (mParameterBag->mPreviewFboWidth + margin) * 3;
 	largeH = (mParameterBag->mPreviewFboHeight + margin) * 4;
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
-	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2;
+	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 3;
 	static float f = 0.0f;
 	char buf[32];
 
@@ -1373,7 +1375,7 @@ void BatchassApp::fileDrop(FileDropEvent event)
 	boost::filesystem::path mPath = event.getFile(event.getNumFiles() - 1);
 	string mFile = mPath.string();
 	if (mFile.find_last_of(".") != std::string::npos) ext = mFile.substr(mFile.find_last_of(".") + 1);
-	index = (int)(event.getX() / (margin + mParameterBag->mPreviewFboWidth + inBetween)) + 1;
+	index = (int)(event.getX() / (margin + mParameterBag->mPreviewFboWidth + inBetween));// +1;
 	//mBatchass->log(mFile + " dropped, currentSelectedIndex:" + toString(mParameterBag->currentSelectedIndex) + " x: " + toString(event.getX()) + " PreviewFboWidth: " + toString(mParameterBag->mPreviewFboWidth));
 
 	if (ext == "wav" || ext == "mp3")
