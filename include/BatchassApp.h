@@ -86,6 +86,7 @@ public:
 	void mouseDown(MouseEvent event);
 	void mouseDrag(MouseEvent event);
 	void mouseUp(MouseEvent event);
+	void mouseWheel(MouseEvent event);
 	void saveThumb();
 	//! Override to receive window activate events
 	void	activate();

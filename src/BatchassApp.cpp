@@ -492,10 +492,14 @@ void BatchassApp::drawMain()
 	xPos += largePreviewW + margin;
 
 #pragma endregion mix
+	ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
+	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+	if (showConsole) ShowAppConsole(&showConsole);
+	xPos += largePreviewW + margin;
 #pragma region Global
 	if (showGlobal)
 	{
-		ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
 		ui::Begin(buf);
@@ -579,17 +583,16 @@ void BatchassApp::drawMain()
 
 			}
 		}
-		xPos += largePreviewW + margin;
+		xPos += largeW + margin;
 		ui::End();
 	}
 #pragma endregion Global
-
 #pragma region slidas
 	if (showSlidas)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH*2.0f), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		ui::Begin("Animation");// , NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+		ui::Begin("Animation");
 		{
 			if (ui::CollapsingHeader("Effects", NULL, true, true))
 			{
@@ -780,17 +783,28 @@ void BatchassApp::drawMain()
 				}*/
 
 			}
+			if (ui::CollapsingHeader("Camera", NULL, true, true))
+			{
+				ui::SliderFloat("Pos.x", &mParameterBag->mRenderPosXY.x, 0.0f, mParameterBag->mRenderWidth);
+				ui::SliderFloat("Pos.y", &mParameterBag->mRenderPosXY.y, 0.0f, mParameterBag->mRenderHeight);
+				float eyeZ = mParameterBag->mCamera.getEyePoint().z;
+				if (ui::SliderFloat("Eye.z", &eyeZ, -500.0f, 1.0f))
+				{
+					Vec3f eye = mParameterBag->mCamera.getEyePoint();
+					eye.z = eyeZ;
+					mParameterBag->mCamera.setEyePoint(eye);
+				}
+				
+			}			
 			ui::End();
-			xPos += largeW + margin;
+			
 		}
 	}
 #pragma endregion slidas
-	ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
-	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-	if (showConsole) ShowAppConsole(&showConsole);
 	// next line
 	xPos = margin;
 	yPos += largePreviewH + margin;
+
 #pragma region warps
 	if (mParameterBag->mMode == MODE_WARP)
 	{
@@ -1603,7 +1617,10 @@ void BatchassApp::mouseUp(MouseEvent event)
 	if (mParameterBag->mMode == mParameterBag->MODE_WARP) mBatchass->getWarpsRef()->mouseUp(event);
 	if (mParameterBag->mMode == mParameterBag->MODE_AUDIO) mAudio->mouseUp(event);
 }
-
+void BatchassApp::mouseWheel(MouseEvent event)
+{
+	if (mParameterBag->mMode == mParameterBag->MODE_MESH) mMeshes->mouseWheel(event);
+}
 void BatchassApp::keyDown(KeyEvent event)
 {
 	if (mParameterBag->mMode == mParameterBag->MODE_WARP)
