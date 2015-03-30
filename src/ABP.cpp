@@ -70,18 +70,16 @@ void ABP::updateBricks()
 	float bendFactor;
 	float volumeFactor;
 	mBend = mParameterBag->mBend;
-	if (mParameterBag->maxVolume > 0.7)
+	if (mParameterBag->liveMeter > 0.7)
 	{
-		float between08and1 = mParameterBag->maxVolume - 0.7;
+		float between08and1 = mParameterBag->liveMeter - 0.7;
 		volumeFactor = lmap<float>(between08and1, 0.0, 0.3, 0.1, 0.8);
 	}
 	else
 	{
 		volumeFactor = 0.01;
 	}
-	//if (newRecording == true) {
-	//	newRendering();
-	//}
+
 	mTextures->getFbo(mParameterBag->mABPFboIndex).bindFramebuffer();
 	gl::clear();
 	gl::setViewport(mTextures->getFbo(mParameterBag->mABPFboIndex).getBounds());
@@ -152,11 +150,6 @@ void ABP::updateBricks()
 		gl::popMatrices();
 
 	}
-	//gl::pushModelView();
-	//gl::translate(Vec3f(0.5f*mParameterBag->mRenderWidth, 0.5f*mParameterBag->mRenderHeight, 0));
-
-	//gl::drawSphere(Vec3f(0, 0, 0), 140, 500);
-	//gl::popModelView();
 
 	mTextures->getFbo(mParameterBag->mABPFboIndex).unbindFramebuffer();
 

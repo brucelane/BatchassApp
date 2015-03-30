@@ -327,8 +327,8 @@ void BatchassApp::drawMain()
 	gl::setMatricesWindow(getWindowSize());
 	xPos = margin;
 	yPos = margin;
-	const char* fboNames[] = { "mix", "left", "right", "warp1", "warp2", "preview","audio", "warp", "sphere", "mesh", "live", "vtxsphere" };
-	const char* warpInputs[] = { "mix", "left", "right", "warp1", "warp2" };
+	const char* fboNames[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "warp", "sphere", "mesh","audio", "vtxsphere" };
+	const char* warpInputs[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp" };
 
 #pragma region style
 	// our theme variables
@@ -1401,6 +1401,8 @@ void BatchassApp::fileDrop(FileDropEvent event)
 	}
 	else if (ext == "png" || ext == "jpg")
 	{
+		if (index < 1) index = 1;
+		if (index > 3) index = 3;
 		//mTextures->loadImageFile(mParameterBag->currentSelectedIndex, mFile);
 		mBatchass->getTexturesRef()->loadImageFile(index, mFile);
 	}
@@ -1408,6 +1410,8 @@ void BatchassApp::fileDrop(FileDropEvent event)
 	{
 		//mShaders->incrementPreviewIndex();
 		//mUserInterface->mLibraryPanel->addShader(mFile);
+
+		if (index < 3) index = 3;
 		int rtn = mBatchass->getShadersRef()->loadPixelFragmentShaderAtIndex(mFile, index);
 		if (rtn > -1 && rtn < mBatchass->getShadersRef()->getCount())
 		{
@@ -1560,9 +1564,7 @@ void BatchassApp::update()
 	case MODE_VERTEXSPHERE:
 		mVertexSphere->update();
 		break;
-	case MODE_ABP:
-		mABP->update();
-		break;
+
 	default:
 		break;
 	}
@@ -1570,6 +1572,7 @@ void BatchassApp::update()
 	mBatchass->update();
 	mWebSockets->update();
 	mOSC->update();
+	mABP->update();
 	mAudio->update();
 	//mUI->update();
 	if (mParameterBag->mWindowToCreate > 0)
