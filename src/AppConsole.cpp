@@ -47,21 +47,25 @@ void AppConsole::Run(const char* title, bool* opened)
 		return;
 	}
 
-	ImGui::TextWrapped("Enter 'HELP' for help, press TAB to use text completion.");
+	ImGui::TextWrapped("TAB=text completion");
 
 	// TODO: display from bottom
 	// TODO: clip manually
 
-	if (ImGui::SmallButton("Add Dummy Text")) { AddLog("%d some text", Items.size()); AddLog("some more text"); AddLog("display very important message here!"); } ImGui::SameLine();
-	if (ImGui::SmallButton("Add Dummy Error")) AddLog("[error] something went wrong"); ImGui::SameLine();
+	if (ImGui::SmallButton("Help")) 
+	{
+		AddLog("Commands:");
+		for (size_t i = 0; i < Commands.size(); i++)
+			AddLog("- %s", Commands[i]);
+	} 
+	ImGui::SameLine();
 	if (ImGui::SmallButton("Clear")) ClearLog();
-	//static float t = 0.0f; if (ImGui::GetTime() - t > 0.02f) { t = ImGui::GetTime(); AddLog("Spam %f", t); }
 
 	ImGui::Separator();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
 	static ImGuiTextFilter filter;
-	filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
+	filter.Draw("Filter (\"incl,-excl\") (\"error\")", 70);
 	//if (ImGui::IsItemHovered()) ImGui::SetKeyboardFocusHere(-1); // Auto focus on hover
 	ImGui::PopStyleVar();
 	ImGui::Separator();

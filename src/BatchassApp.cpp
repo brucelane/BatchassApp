@@ -321,7 +321,8 @@ void BatchassApp::drawMain()
 	gl::setMatricesWindow(getWindowSize());
 	xPos = margin;
 	yPos = margin;
-	const char* fboNames[] = { "preview", "mix", "audio", "warp", "sphere", "mesh", "left", "right", "warp1", "warp2", "live", "vtxsphere" };
+	const char* fboNames[] = { "mix", "left", "right", "warp1", "warp2", "preview","audio", "warp", "sphere", "mesh", "live", "vtxsphere" };
+	const char* warpInputs[] = { "mix", "left", "right", "warp1", "warp2" };
 
 #pragma region style
 	// our theme variables
@@ -372,12 +373,7 @@ void BatchassApp::drawMain()
 	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.24f, 0.24f, 0.24f, 1.00f);
 	style.Colors[ImGuiCol_TooltipBg] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
 #pragma endregion style
-	if (showTest)
-	{
-		ui::ShowTestWindow();
-		ui::ShowStyleEditor();
 
-	}
 #pragma region mix
 
 	// left/warp1 fbo
@@ -396,8 +392,8 @@ void BatchassApp::drawMain()
 			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mWarp1FboIndex);
 			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 			// renderXY mouse
-			ui::SliderFloat("Warp1RdrX", &mParameterBag->mWarp1RenderXY.x, 0.01f, 1.0f);
-			ui::SliderFloat("Warp1RdrY", &mParameterBag->mWarp1RenderXY.y, 0.01f, 1.0f);
+			ui::SliderFloat("W1RdrX", &mParameterBag->mWarp1RenderXY.x, 0.01f, 1.0f);
+			ui::SliderFloat("W1RdrY", &mParameterBag->mWarp1RenderXY.y, 0.01f, 1.0f);
 		}
 		else
 		{
@@ -429,8 +425,8 @@ void BatchassApp::drawMain()
 			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mWarp2FboIndex);
 			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 			// renderXY mouse
-			ui::SliderFloat("Warp2RdrX", &mParameterBag->mWarp2RenderXY.x, 0.01f, 1.0f);
-			ui::SliderFloat("Warp2RdrY", &mParameterBag->mWarp2RenderXY.y, 0.01f, 1.0f);
+			ui::SliderFloat("W2RdrX", &mParameterBag->mWarp2RenderXY.x, 0.01f, 1.0f);
+			ui::SliderFloat("W2RdrY", &mParameterBag->mWarp2RenderXY.y, 0.01f, 1.0f);
 		}
 		else
 		{
@@ -501,12 +497,24 @@ void BatchassApp::drawMain()
 	{
 		ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		ui::Begin("Global");
+		sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
+		ui::Begin(buf);
 		{
+			if (ui::CollapsingHeader("Render Window", NULL, true, true))
+			{
+				if (ui::Button("Create")) { createRenderWindow(); }
+				ui::SameLine();
+				if (ui::Button("Delete")) { deleteRenderWindows(); }
+				ui::SameLine();
+				//if (ui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
+				mParameterBag->mPreviewEnabled ^= ui::Button("Preview");
+				ui::SameLine();
+				mParameterBag->iDebug ^= ui::Button("Debug");
+			}
 			if (ui::CollapsingHeader("Panels", "11", true, true))
 			{
 				// Checkbox
-				ui::Checkbox("Textures", &showTextures);
+				ui::Checkbox("Tex", &showTextures);
 				ui::SameLine();
 				ui::Checkbox("Fbos", &showFbos);
 				ui::SameLine();
@@ -517,15 +525,15 @@ void BatchassApp::drawMain()
 				ui::Checkbox("WebSockets", &showWS);
 				ui::SameLine();
 				ui::Checkbox("Routing", &showRouting);
-				ui::SameLine();
+			
 				ui::Checkbox("Console", &showConsole);
-
+				ui::SameLine();
 				ui::Checkbox("OSC", &showOSC);
 				ui::SameLine();
 				ui::Checkbox("MIDI", &showMidi);
-				ui::SameLine();
+				
 				ui::Checkbox("Sliders", &showSlidas);
-
+				ui::SameLine();
 				ui::Checkbox("Test", &showTest);
 				ui::SameLine();
 				ui::Checkbox("FPS", &showFps);
@@ -545,24 +553,31 @@ void BatchassApp::drawMain()
 				static int mode = mParameterBag->mMode;
 				ui::RadioButton("Mix##mode", &mode, MODE_MIX); ui::SameLine();
 				ui::RadioButton("Audio##mode", &mode, MODE_AUDIO); ui::SameLine();
-				ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE); ui::SameLine();
-				ui::RadioButton("Warp##mode", &mode, MODE_WARP);
+				ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE); 
+				ui::RadioButton("Warp##mode", &mode, MODE_WARP);ui::SameLine();
 				ui::RadioButton("Mesh##mode", &mode, MODE_MESH); ui::SameLine();
 				ui::RadioButton("VertexSphere##mode", &mode, MODE_VERTEXSPHERE);
 				if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
 			}
-			if (ui::CollapsingHeader("Render Window", NULL, true, true))
+			
+			if (ui::CollapsingHeader("Mouse", NULL, true, true))
 			{
-				if (ui::Button("Create")) { createRenderWindow(); }
-				ui::SameLine();
-				if (ui::Button("Delete")) { deleteRenderWindows(); }
-				ui::SameLine();
-				//if (ui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
-				mParameterBag->mPreviewEnabled ^= ui::Button("Preview");
-				ui::SameLine();
-				mParameterBag->iDebug ^= ui::Button("Debug");
-			}
+				static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
+				static int values_offset = 0;
+				static float refresh_time = -1.0f;
+				if (ui::GetTime() > refresh_time + 1.0f / 6.0f)
+				{
+					refresh_time = ui::GetTime();
+					values[values_offset] = mParameterBag->iFps;
+					values_offset = (values_offset + 1) % values.size();
+				}
+				if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+				ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
+				if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
+				ui::Text("Mouse Position: (%.1f,%.1f)", ui::GetIO().MousePos.x, ui::GetIO().MousePos.y);
+				ui::Text("Mouse %d", ui::GetIO().MouseDown[0]);
 
+			}
 		}
 		xPos += largePreviewW + margin;
 		ui::End();
@@ -572,7 +587,7 @@ void BatchassApp::drawMain()
 #pragma region slidas
 	if (showSlidas)
 	{
-		ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("Animation");// , NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 		{
@@ -766,7 +781,7 @@ void BatchassApp::drawMain()
 
 			}
 			ui::End();
-			xPos += largePreviewW + margin;
+			xPos += largeW + margin;
 		}
 	}
 #pragma endregion slidas
@@ -776,6 +791,60 @@ void BatchassApp::drawMain()
 	// next line
 	xPos = margin;
 	yPos += largePreviewH + margin;
+#pragma region warps
+	if (mParameterBag->mMode == MODE_WARP)
+	{
+		static bool popup_open = false;
+		static int selected_index = -1;
+		static int selected_fbo = -1;
+		for (int i = 0; i < mBatchass->getWarpsRef()->getWarpsCount(); i++)
+		{
+			sprintf_s(buf, "Warps %d", i);
+			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+			{
+				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarpFbos[i].textureIndex), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+
+				sprintf_s(buf, "In:%s##wm%d", warpInputs[mParameterBag->mWarpFbos[i].textureIndex], i);
+				if (ImGui::Button(buf))
+				{
+					popup_open = true;
+					selected_index = i;
+				}
+				ui::PopStyleColor(3);
+				ui::PopID();
+			}
+			ui::End();
+		}
+		ImGui::SameLine();
+		ImGui::Text(selected_fbo == -1 ? "<None>" : warpInputs[selected_fbo]);
+		if (popup_open)
+		{
+			sprintf_s(buf, "##wmpopup", selected_index);
+			ImGui::BeginPopup(&popup_open);
+			for (size_t i = 0; i < IM_ARRAYSIZE(warpInputs); i++)
+			{
+				if (ImGui::Selectable(warpInputs[i], false))
+				{
+					selected_fbo = i;
+					if (selected_fbo > -1) mBatchass->assignFboToWarp(selected_index, selected_fbo);
+					// reinit
+					popup_open = false;
+					selected_index = -1;
+					selected_fbo = -1;
+				}
+			}
+			ImGui::EndPopup();
+
+		}
+		yPos += h + margin;
+	}
+#pragma endregion warps
 
 #pragma region textures
 	if (showTextures)
@@ -943,90 +1012,8 @@ void BatchassApp::drawMain()
 		yPos += h + margin;
 	}
 #pragma endregion fbos
-#pragma region warps
-	if (mParameterBag->mMode == MODE_WARP)
-	{
-		static bool popup_open = false;
-		static int selected_index = -1;
-		static int selected_fbo = -1;
-		for (int i = 0; i < mBatchass->getWarpsRef()->getWarpsCount(); i++)
-		{
-			sprintf_s(buf, "Warps %d", i);
-			ui::SetNextWindowSize(ImVec2(w, h));
-			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
-			{
-				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
-				ui::PushID(i);
-				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarpFbos[i].textureIndex), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
 
-				sprintf_s(buf, "Input Fbo...##wm%d", i);
-				if (ImGui::Button(buf))
-				{
-					popup_open = true;
-					selected_index = i;
-				}
-				ui::PopStyleColor(3);
-				ui::PopID();
-			}
-			ui::End();
-		}
-		ImGui::SameLine();
-		ImGui::Text(selected_fbo == -1 ? "<None>" : fboNames[selected_fbo]);
-		if (popup_open)
-		{
-			sprintf_s(buf, "##wmpopup", selected_index);
-			ImGui::BeginPopup(&popup_open);
-			for (size_t i = 0; i < IM_ARRAYSIZE(fboNames); i++)
-			{
-				if (ImGui::Selectable(fboNames[i], false))
-				{
-					selected_fbo = i;
-					if (selected_fbo > -1) mBatchass->assignFboToWarp(selected_index, selected_fbo);
-					// reinit
-					popup_open = false;
-					selected_index = -1;
-					selected_fbo = -1;
-				}
-			}
-			ImGui::EndPopup();
 
-		}
-		yPos += h + margin;
-	}
-#pragma endregion warps
-
-#pragma region FPS
-	// fps window
-	if (showFps)
-	{
-		sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
-		//ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
-		//ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		ui::Begin(buf);
-		{
-			static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
-			static int values_offset = 0;
-			static float refresh_time = -1.0f;
-			if (ui::GetTime() > refresh_time + 1.0f / 6.0f)
-			{
-				refresh_time = ui::GetTime();
-				values[values_offset] = mParameterBag->iFps;
-				values_offset = (values_offset + 1) % values.size();
-			}
-			if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
-			ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
-			if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
-			ui::Text("Mouse Position: (%.1f,%.1f)", ui::GetIO().MousePos.x, ui::GetIO().MousePos.y);
-			ui::Text("Mouse %d", ui::GetIO().MouseDown[0]);
-
-		}
-		ui::End();
-		xPos += largeW + margin;
-	}
-#pragma endregion FPS
 #pragma region MIDI
 
 	// MIDI window
@@ -1300,7 +1287,12 @@ void BatchassApp::drawMain()
 		xPos += largeW + margin;
 	}
 #pragma endregion Routing
+	if (showTest)
+	{
+		ui::ShowTestWindow();
+		ui::ShowStyleEditor();
 
+	}
 	gl::disableAlphaBlending();
 }
 void BatchassApp::drawRender()

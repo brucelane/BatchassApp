@@ -9,10 +9,6 @@ uniform sampler2D    iChannel3;
 uniform sampler2D    iChannel4;
 uniform sampler2D    iChannel5;
 uniform sampler2D    iChannel6;
-uniform sampler2D   iChannel7;       // input channel 7
-uniform sampler2D   iChannel8;        // input channel 8
-uniform sampler2D   iChannel9;        // input channel 9
-uniform sampler2D   iChannel10;       // input channel 10
 uniform sampler2D    iAudio0;
 uniform vec4         iMouse;              // mouse pixel coords. xy: current (if MLB down), zw: click
 uniform float        iGlobalTime;         // shader playback time (in seconds)
