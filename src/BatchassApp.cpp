@@ -77,6 +77,8 @@ void BatchassApp::setup()
 	mSphere = PointSphere::create(mParameterBag, mBatchass->getTexturesRef(), mBatchass->getShadersRef());
 	// instanciate the VertexSphere class
 	mVertexSphere = VertexSphere::create(mParameterBag, mBatchass->getTexturesRef(), mBatchass->getShadersRef());
+	// instanciate the ABP class
+	mABP = ABP::create(mParameterBag, mBatchass->getTexturesRef());
 	// instanciate the spout class
 	mSpout = SpoutWrapper::create(mParameterBag, mBatchass->getTexturesRef());
 	// instanciate the console class
@@ -292,6 +294,10 @@ void BatchassApp::drawMain()
 			case MODE_VERTEXSPHERE:
 				mVertexSphere->draw();
 				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mVertexSphereFboIndex), rect);
+				break;
+			case MODE_ABP:
+				//mABP->draw();
+				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mABPFboIndex), rect);
 				break;
 			default:
 				//gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
@@ -560,6 +566,7 @@ void BatchassApp::drawMain()
 				ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE); 
 				ui::RadioButton("Warp##mode", &mode, MODE_WARP);ui::SameLine();
 				ui::RadioButton("Mesh##mode", &mode, MODE_MESH); ui::SameLine();
+				ui::RadioButton("ABP##mode", &mode, MODE_ABP);
 				ui::RadioButton("VertexSphere##mode", &mode, MODE_VERTEXSPHERE);
 				if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
 			}
@@ -794,6 +801,7 @@ void BatchassApp::drawMain()
 					eye.z = eyeZ;
 					mParameterBag->mCamera.setEyePoint(eye);
 				}
+				ui::SliderFloat("ABP Bend", &mParameterBag->mBend, -20.0f, 20.0f);
 				
 			}			
 			ui::End();
@@ -1335,6 +1343,9 @@ void BatchassApp::drawRender()
 	case MODE_VERTEXSPHERE:
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mVertexSphereFboIndex));
 		break;
+	case MODE_ABP:
+		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mABPFboIndex));
+		break;
 	default:
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
 		break;
@@ -1548,6 +1559,9 @@ void BatchassApp::update()
 		break;
 	case MODE_VERTEXSPHERE:
 		mVertexSphere->update();
+		break;
+	case MODE_ABP:
+		mABP->update();
 		break;
 	default:
 		break;
