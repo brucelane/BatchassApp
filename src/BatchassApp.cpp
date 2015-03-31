@@ -100,12 +100,12 @@ void BatchassApp::setup()
 	largeW = (mParameterBag->mPreviewFboWidth + margin) * 3;
 	largeH = (mParameterBag->mPreviewFboHeight + margin) * 4;
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
-	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 3;
+	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2;
 	static float f = 0.0f;
 	char buf[32];
 
-	showConsole = showGlobal = showSlidas = showTextures = showFps = showRouting = showAudio = showShaders = true;
-	showTest = showMidi = showTheme = showOSC = showFbos = showWS = false;
+	showConsole = showGlobal = showTextures = showRouting = showAudio = showShaders = showWS = true;
+	showTest = showMidi = showTheme = showOSC = showFbos = false;
 
 	// set ui window and io events callbacks
 	ui::connectWindow(getWindow());
@@ -205,7 +205,6 @@ void BatchassApp::midiListener(midi::Message msg){
 }
 void BatchassApp::createRenderWindow()
 {
-	removeUI = true;
 	deleteRenderWindows();
 	mBatchass->getWindowsResolution();
 
@@ -271,7 +270,7 @@ void BatchassApp::drawMain()
 				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mAudioFboIndex), rect);
 				break;
 			case MODE_WARP:
-				mBatchass->getWarpsRef()->draw();
+				//mBatchass->getWarpsRef()->draw();
 				break;
 			case MODE_SPHERE:
 				mSphere->draw();
@@ -316,13 +315,9 @@ void BatchassApp::drawMain()
 	//imgui
 	if (removeUI)
 	{
-		//error
-		//return;
+		return;
 	}
-	else
-	{
-		// mUI->draw();
-	}
+	
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
 	xPos = margin;
@@ -463,15 +458,15 @@ void BatchassApp::drawMain()
 		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mMixFboIndex);
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 		// renderXY mouse
-		ui::SliderFloat("RenderX", &mParameterBag->mRenderXY.x, 0.01f, 1.0f);
-		ui::SliderFloat("RenderY", &mParameterBag->mRenderXY.y, 0.01f, 1.0f);
+		ui::SliderFloat("RdrX", &mParameterBag->mRenderXY.x, 0.01f, 1.0f);
+		ui::SliderFloat("RdrY", &mParameterBag->mRenderXY.y, 0.01f, 1.0f);
 		ui::PopStyleColor(3);
 		// iPreviewCrossfade
-		if (ui::SliderFloat("previewCrossfade", &mParameterBag->controlValues[17], 0.01f, 1.0f))
+		if (ui::SliderFloat("pwXfade", &mParameterBag->controlValues[17], 0.01f, 1.0f))
 		{	
 		}
 		// crossfade
-		if (ui::SliderFloat("crossfade", &mParameterBag->controlValues[18], 0.01f, 1.0f))
+		if (ui::SliderFloat("Xfade", &mParameterBag->controlValues[18], 0.01f, 1.0f))
 		{			
 		}
 
@@ -502,77 +497,115 @@ void BatchassApp::drawMain()
 	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 	if (showConsole) ShowAppConsole(&showConsole);
 	xPos += largePreviewW + margin;
-#pragma region Global
-	if (showGlobal)
+
+#pragma region WebSockets
+	if (showWS)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin("WebSockets");
+		{
+			if (mParameterBag->mIsWebSocketsServer)
+			{
+				ui::Text("Server %s", mParameterBag->mWebSocketsHost.c_str());
+				ui::SameLine();
+			}
+			else
+			{
+				ui::Text("Client %s", mParameterBag->mWebSocketsHost.c_str());
+				ui::SameLine();
+			}
+			ui::Text(" on port %d", mParameterBag->mWebSocketsPort);
+			if (ui::Button("Connect"))
+			{
+				mWebSockets->clientConnect();
+			}
+			ui::SameLine();
+			if (ui::Button("Ping"))
+			{
+				mWebSockets->ping();
+			}
+			ui::SameLine();
+			if (ui::Button("Send"))
+			{
+				mSeconds = (int)getElapsedSeconds();
+				stringstream s;
+				s << mSeconds;
+				mWebSockets->write(s.str());
+			}
+			static ImGuiTextBuffer WSlog;
+			static int lines = 0;
+			if (ui::Button("Clear##ws")) { WSlog.clear(); lines = 0; }
+			ui::SameLine();
+			ui::Text("Buffer contents: %d lines, %d bytes", lines, WSlog.size());
+
+			if (mParameterBag->newWSMsg)
+			{
+				mParameterBag->newWSMsg = false;
+				WSlog.append(mParameterBag->WSMsg.c_str());
+				lines++;
+				if (lines > 5) { WSlog.clear(); lines = 0; }
+			}
+			ui::BeginChild("WSlog");
+			ui::TextUnformatted(WSlog.begin(), WSlog.end());
+			ui::EndChild();
+		}
+		ui::End();
+		yPos += h + margin;
+	}
+#pragma endregion WebSockets
+
+#pragma region Audio
+
+	// audio window
+	if (showAudio)
+	{
+		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin("Audio##ap");
+		{
+			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
+			ui::SameLine();
+			ui::Text("Beat %d", mParameterBag->mBeat);
+			ui::SameLine();
+			ui::Text("Tempo %.2f", mParameterBag->mTempo);
+			if (ui::Button("Tap tempo")) { mBatchass->tapTempo(); }
+			ui::SameLine();
+			if (ui::Button("Time with tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
+
+			//void Batchass::setTimeFactor(const int &aTimeFactor)
+			ImGui::SliderFloat("time factor", &mParameterBag->iTimeFactor, 0.0001f, 32.0f, "%.1f");
+
+			static ImVector<float> values; if (values.empty()) { values.resize(40); memset(&values.front(), 0, values.size()*sizeof(float)); }
+			static int values_offset = 0;
+			// audio maxVolume
+			static float refresh_time = -1.0f;
+			if (ui::GetTime() > refresh_time + 1.0f / 20.0f)
+			{
+				refresh_time = ui::GetTime();
+				values[values_offset] = mParameterBag->maxVolume;
+				values_offset = (values_offset + 1) % values.size();
+			}
+
+			ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
+			ImGui::PlotHistogram("Histogram", mAudio->getSmallSpectrum(), 7, 0, NULL, 0.0f, 255.0f, ImVec2(0, 30));
+
+			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+			ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
+			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
+		}
+		ui::End();
+		xPos += largeW + margin;
+		yPos = margin;
+	}
+#pragma endregion Audio
+#pragma region Global
+
+		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH*2.0f), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
 		ui::Begin(buf);
 		{
-			if (ui::CollapsingHeader("Render Window", NULL, true, true))
-			{
-				if (ui::Button("Create")) { createRenderWindow(); }
-				ui::SameLine();
-				if (ui::Button("Delete")) { deleteRenderWindows(); }
-				ui::SameLine();
-				//if (ui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
-				mParameterBag->mPreviewEnabled ^= ui::Button("Preview");
-				ui::SameLine();
-				mParameterBag->iDebug ^= ui::Button("Debug");
-			}
-			if (ui::CollapsingHeader("Panels", "11", true, true))
-			{
-				// Checkbox
-				ui::Checkbox("Tex", &showTextures);
-				ui::SameLine();
-				ui::Checkbox("Fbos", &showFbos);
-				ui::SameLine();
-				ui::Checkbox("Shada", &showShaders);
-
-				ui::Checkbox("Audio", &showAudio);
-				ui::SameLine();
-				ui::Checkbox("WebSockets", &showWS);
-				ui::SameLine();
-				ui::Checkbox("Routing", &showRouting);
-			
-				ui::Checkbox("Console", &showConsole);
-				ui::SameLine();
-				ui::Checkbox("OSC", &showOSC);
-				ui::SameLine();
-				ui::Checkbox("MIDI", &showMidi);
-				
-				ui::Checkbox("Sliders", &showSlidas);
-				ui::SameLine();
-				ui::Checkbox("Test", &showTest);
-				ui::SameLine();
-				ui::Checkbox("FPS", &showFps);
-				ui::SameLine();
-				ui::Checkbox("Editor", &showTheme);
-				if (ui::Button("Save Params"))
-				{
-					// save warp settings
-					mBatchass->getWarpsRef()->save("warps1.xml");
-					// save params
-					mParameterBag->save();
-				}
-
-			}
-			if (ui::CollapsingHeader("Mode", NULL, true, true))
-			{
-				static int mode = mParameterBag->mMode;
-				ui::RadioButton("Mix##mode", &mode, MODE_MIX); ui::SameLine();
-				ui::RadioButton("Audio##mode", &mode, MODE_AUDIO); ui::SameLine();
-				ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE); 
-				ui::RadioButton("Warp##mode", &mode, MODE_WARP);ui::SameLine();
-				ui::RadioButton("Mesh##mode", &mode, MODE_MESH); ui::SameLine();
-				ui::RadioButton("ABP##mode", &mode, MODE_ABP);
-				ui::RadioButton("VertexSphere##mode", &mode, MODE_VERTEXSPHERE);
-				if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
-			}
-			
-			if (ui::CollapsingHeader("Mouse", NULL, true, true))
-			{
 				static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
 				static int values_offset = 0;
 				static float refresh_time = -1.0f;
@@ -585,22 +618,68 @@ void BatchassApp::drawMain()
 				if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
 				ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
 				if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
+				if (ui::CollapsingHeader("Render Window", NULL, true, true))
+				{
+					if (ui::Button("Create")) { createRenderWindow(); }
+					ui::SameLine();
+					if (ui::Button("Delete")) { deleteRenderWindows(); }
+					ui::SameLine();
+					//if (ui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
+					mParameterBag->mPreviewEnabled ^= ui::Button("Preview");
+					ui::SameLine();
+					mParameterBag->iDebug ^= ui::Button("Debug");
+				}
+				if (ui::CollapsingHeader("Panels", "11", true, true))
+				{
+					// Checkbox
+					ui::Checkbox("Tex", &showTextures);
+					ui::SameLine();
+					ui::Checkbox("Fbos", &showFbos);
+					ui::SameLine();
+					ui::Checkbox("Shada", &showShaders);
+
+					ui::Checkbox("Audio", &showAudio);
+					ui::SameLine();
+					ui::Checkbox("WebSockets", &showWS);
+					ui::SameLine();
+					ui::Checkbox("Routing", &showRouting);
+
+					ui::Checkbox("Console", &showConsole);
+					ui::SameLine();
+					ui::Checkbox("OSC", &showOSC);
+					ui::SameLine();
+					ui::Checkbox("MIDI", &showMidi);
+
+					ui::Checkbox("Test", &showTest);
+					ui::SameLine();
+					ui::Checkbox("Editor", &showTheme);
+					if (ui::Button("Save Params"))
+					{
+						// save warp settings
+						mBatchass->getWarpsRef()->save("warps1.xml");
+						// save params
+						mParameterBag->save();
+					}
+
+				}
+				if (ui::CollapsingHeader("Mode", NULL, true, true))
+				{
+					static int mode = mParameterBag->mMode;
+					ui::RadioButton("Mix##mode", &mode, MODE_MIX); ui::SameLine();
+					ui::RadioButton("Audio##mode", &mode, MODE_AUDIO); ui::SameLine();
+					ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE);
+					ui::RadioButton("Warp##mode", &mode, MODE_WARP); ui::SameLine();
+					ui::RadioButton("Mesh##mode", &mode, MODE_MESH); ui::SameLine();
+					ui::RadioButton("ABP##mode", &mode, MODE_ABP);
+					ui::RadioButton("VertexSphere##mode", &mode, MODE_VERTEXSPHERE);
+					if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
+				}
+				if (ui::CollapsingHeader("Mouse", NULL, true, true))
+			{
 				ui::Text("Mouse Position: (%.1f,%.1f)", ui::GetIO().MousePos.x, ui::GetIO().MousePos.y);
 				ui::Text("Mouse %d", ui::GetIO().MouseDown[0]);
 
 			}
-		}
-		xPos += largeW + margin;
-		ui::End();
-	}
-#pragma endregion Global
-#pragma region slidas
-	if (showSlidas)
-	{
-		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH*2.0f), ImGuiSetCond_Once);
-		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		ui::Begin("Animation");
-		{
 			if (ui::CollapsingHeader("Effects", NULL, true, true))
 			{
 				if (ui::Button("chromatic")) { mParameterBag->controlValues[20] = !mParameterBag->controlValues[20]; }
@@ -807,8 +886,8 @@ void BatchassApp::drawMain()
 			ui::End();
 			
 		}
-	}
-#pragma endregion slidas
+
+#pragma endregion Global
 	// next line
 	xPos = margin;
 	yPos += largePreviewH + margin;
@@ -1182,102 +1261,7 @@ void BatchassApp::drawMain()
 		xPos += largeW + margin;
 	}
 #pragma endregion OSC
-#pragma region WebSockets
-	if (showWS)
-	{
-		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
-		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		ui::Begin("WebSockets");
-		{
-			if (mParameterBag->mIsWebSocketsServer)
-			{
-				ui::Text("Server %s", mParameterBag->mWebSocketsHost.c_str());
-				ui::SameLine();
-			}
-			else
-			{
-				ui::Text("Client %s", mParameterBag->mWebSocketsHost.c_str());
-				ui::SameLine();
-			}
-			ui::Text(" on port %d", mParameterBag->mWebSocketsPort);
-			if (ui::Button("Send"))
-			{
-				mSeconds = (int)getElapsedSeconds();
-				stringstream s;
-				s << mSeconds;
-				mWebSockets->write(s.str());
-			}
-			static ImGuiTextBuffer WSlog;
-			static int lines = 0;
-			if (ui::Button("Clear##ws")) { WSlog.clear(); lines = 0; }
-			ui::SameLine();
-			ui::Text("Buffer contents: %d lines, %d bytes", lines, WSlog.size());
 
-			if (mParameterBag->newWSMsg)
-			{
-				mParameterBag->newWSMsg = false;
-				WSlog.append(mParameterBag->WSMsg.c_str());
-				lines++;
-				if (lines > 5) { WSlog.clear(); lines = 0; }
-			}
-			ui::BeginChild("WSlog");
-			ui::TextUnformatted(WSlog.begin(), WSlog.end());
-			ui::EndChild();
-		}
-		ui::End();
-		xPos += largeW + margin;
-	}
-#pragma endregion WebSockets
-
-#pragma region Audio
-
-	// audio window
-	if (showAudio)
-	{
-		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
-		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		ui::Begin("Audio##ap");
-		{
-			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
-			ui::SameLine();
-			ui::Text("Beat %d", mParameterBag->mBeat);
-			ui::SameLine();
-			ui::Text("Tempo %.2f", mParameterBag->mTempo);
-			if (ui::Button("Tap tempo")) { mBatchass->tapTempo(); }
-			ui::SameLine();
-			if (ui::Button("Time with tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
-
-			//void Batchass::setTimeFactor(const int &aTimeFactor)
-			ImGui::SliderFloat("time factor", &mParameterBag->iTimeFactor, 0.0001f, 32.0f, "%.1f");
-
-			static ImVector<float> values; if (values.empty()) { values.resize(40); memset(&values.front(), 0, values.size()*sizeof(float)); }
-			static int values_offset = 0;
-			// audio maxVolume
-			static float refresh_time = -1.0f;
-			if (ui::GetTime() > refresh_time + 1.0f / 20.0f)
-			{
-				refresh_time = ui::GetTime();
-				values[values_offset] = mParameterBag->maxVolume;
-				values_offset = (values_offset + 1) % values.size();
-			}
-
-			ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
-			ImGui::PlotHistogram("Histogram", mAudio->getSmallSpectrum(), 7, 0, NULL, 0.0f, 255.0f, ImVec2(0, 30));
-
-			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
-			ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
-			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
-			/*
-			for (int a = 0; a < MAX; a++)
-			{
-			if (mOSC->tracks[a] != "default.glsl") ui::Button(mOSC->tracks[a].c_str());
-			}*/
-
-		}
-		ui::End();
-		xPos += largeW + margin;
-	}
-#pragma endregion Audio
 
 #pragma region Routing
 	if (showRouting)
@@ -1677,8 +1661,17 @@ void BatchassApp::keyDown(KeyEvent event)
 		case ci::app::KeyEvent::KEY_o:
 			mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft;
 			break;
+		case ci::app::KeyEvent::KEY_r:
+			mParameterBag->controlValues[1] += 0.2;
+			if (mParameterBag->controlValues[1] > 0.9) mParameterBag->controlValues[1] = 0.0;
+			break;
 		case ci::app::KeyEvent::KEY_g:
-			mParameterBag->iGreyScale = !mParameterBag->iGreyScale;
+			mParameterBag->controlValues[2] += 0.2;
+			if (mParameterBag->controlValues[2] > 0.9) mParameterBag->controlValues[2] = 0.0;
+			break;
+		case ci::app::KeyEvent::KEY_b:
+			mParameterBag->controlValues[3] += 0.2;
+			if (mParameterBag->controlValues[3] > 0.9) mParameterBag->controlValues[3] = 0.0;
 			break;
 		case ci::app::KeyEvent::KEY_p:
 			mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled;
@@ -1689,17 +1682,15 @@ void BatchassApp::keyDown(KeyEvent event)
 		case ci::app::KeyEvent::KEY_f:
 			if (allRenderWindows.size() > 0) allRenderWindows[0].mWRef->setFullScreen(!allRenderWindows[0].mWRef->isFullScreen());
 			break;
-		case ci::app::KeyEvent::KEY_x:
-			removeUI = !removeUI;
-			//mUI->toggleVisibility();
-			break;
-		case ci::app::KeyEvent::KEY_c:
+		case ci::app::KeyEvent::KEY_h:
 			if (mParameterBag->mCursorVisible)
 			{
+				removeUI = true;
 				hideCursor();
 			}
 			else
 			{
+				removeUI = false;
 				showCursor();
 			}
 			mParameterBag->mCursorVisible = !mParameterBag->mCursorVisible;

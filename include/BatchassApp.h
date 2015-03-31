@@ -182,7 +182,7 @@ private:
 	float f = 0.0f;
 	char buf[32];
 
-	bool showConsole, showGlobal, showSlidas, showTextures, showTest, showRouting, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showFps, showWS;
+	bool showConsole, showGlobal, showTextures, showTest, showRouting, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showWS;
 	void ShowAppConsole(bool* opened);
 
 

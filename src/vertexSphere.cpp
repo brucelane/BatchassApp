@@ -13,25 +13,11 @@ VertexSphere::VertexSphere(ParameterBagRef aParameterBag, TexturesRef aTexturesR
 	mQuat = Quatf(mAxis, mAngle);
 	mRotate = true;
 
-	/*mTexture = gl::Texture(loadImage(loadAsset("vertexsphere.jpg")));//ndf.jpg
-	mTexture.setWrap(GL_REPEAT, GL_REPEAT);
-	mTexture.setMinFilter(GL_NEAREST);
-	mTexture.setMagFilter(GL_NEAREST);
-	sTexture = gl::Texture(loadImage(loadAsset("vertexsphere.jpg")));*/
-
-	//gl::enableDepthRead();
+	gl::enableDepthRead();
 }
 
-/*void VertexSphere::mouseDown(MouseEvent event)
+void VertexSphere::update()
 {
-	mRotate = !mRotate;
-}*/
-void VertexSphere::update(){
-
-	// vertex sphere
-	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).setWrap(GL_REPEAT, GL_REPEAT);
-	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).setMinFilter(GL_NEAREST);
-	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).setMagFilter(GL_NEAREST);
 	//if (mRotate)
 	//{
 		mAngle += mParameterBag->controlValues[19];
@@ -45,6 +31,7 @@ void VertexSphere::draw()
 	mTextures->getFbo(mParameterBag->mVertexSphereFboIndex).bindFramebuffer();
 	gl::clear();
 	gl::setViewport(mTextures->getFbo(mParameterBag->mVertexSphereFboIndex).getBounds());
+
 
 	mTextures->getTexture(mParameterBag->mVertexSphereTextureIndex).enableAndBind();
 	
