@@ -101,10 +101,11 @@ void BatchassApp::setup()
 	largeH = (mParameterBag->mPreviewFboHeight + margin) * 5;
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
 	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2;
+	warpWidth = mParameterBag->mPreviewFboWidth/2 + margin;
 	static float f = 0.0f;
 	char buf[32];
 
-	showConsole = showGlobal = showTextures = showRouting = showAudio = showShaders = showWS = true;
+	showConsole = showGlobal = showTextures = showAudio = showShaders = showWS = true;
 	showTest = showMidi = showTheme = showOSC = showFbos = false;
 
 	// set ui window and io events callbacks
@@ -333,7 +334,7 @@ void BatchassApp::drawMain()
 	style.FramePadding = ImVec2(2, 2);
 	style.ItemSpacing = ImVec2(3, 3);
 	style.ItemInnerSpacing = ImVec2(3, 3);
-	style.WindowMinSize = ImVec2(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight);
+	style.WindowMinSize = ImVec2(warpWidth, mParameterBag->mPreviewFboHeight);
 	style.Alpha = 0.6f;
 	style.Colors[ImGuiCol_Text] = ImVec4(0.89f, 0.92f, 0.94f, 1.00f);
 	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
@@ -395,6 +396,27 @@ void BatchassApp::drawMain()
 			// renderXY mouse
 			ui::SliderFloat("W1RdrX", &mParameterBag->mWarp1RenderXY.x, 0.01f, 1.0f);
 			ui::SliderFloat("W1RdrY", &mParameterBag->mWarp1RenderXY.y, 0.01f, 1.0f);
+					
+					ui::Columns(4);
+					ui::Text("ID"); ui::NextColumn();
+					ui::Text("idx"); ui::NextColumn();
+					ui::Text("mode"); ui::NextColumn();
+					ui::Text("actv"); ui::NextColumn();
+					ui::Separator();
+					for (int i = 0; i < mParameterBag->mWarpFbos.size() - 1; i++)
+					{
+						if (mParameterBag->mWarpFbos[i].textureIndex == 3)
+						{
+							ui::Text("%d", i); ui::NextColumn();
+							ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
+							ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
+							ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
+
+						}
+
+					}
+					ui::Columns(1);
+							
 		}
 		else
 		{
@@ -404,6 +426,26 @@ void BatchassApp::drawMain()
 			// renderXY mouse
 			ui::SliderFloat("LeftRdrX", &mParameterBag->mLeftRenderXY.x, 0.01f, 1.0f);
 			ui::SliderFloat("LeftRdrY", &mParameterBag->mLeftRenderXY.y, 0.01f, 1.0f);
+
+			ui::Columns(4);
+			ui::Text("ID"); ui::NextColumn();
+			ui::Text("idx"); ui::NextColumn();
+			ui::Text("mode"); ui::NextColumn();
+			ui::Text("actv"); ui::NextColumn();
+			ui::Separator();
+			for (int i = 0; i < mParameterBag->mWarpFbos.size() - 1; i++)
+			{
+				if (mParameterBag->mWarpFbos[i].textureIndex == 4)
+				{
+					ui::Text("%d", i); ui::NextColumn();
+					ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
+					ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
+					ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
+
+				}
+
+			}
+			ui::Columns(1);
 		}
 		ui::PopStyleColor(3);
 	}
@@ -489,11 +531,11 @@ void BatchassApp::drawMain()
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 		if (mParameterBag->mPreviewEnabled)
 		{
-			sprintf_s(buf, "On:##pvwe");
+			sprintf_s(buf, "On##pvwe");
 		}
 		else
 		{
-			sprintf_s(buf, "Off:##pvwe");
+			sprintf_s(buf, "Off##pvwe");
 		}
 		mParameterBag->mPreviewEnabled ^= ui::Button(buf);
 		ui::PopStyleColor(3);
@@ -569,7 +611,7 @@ void BatchassApp::drawMain()
 	// audio window
 	if (showAudio)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("Audio##ap");
 		{
@@ -650,8 +692,6 @@ void BatchassApp::drawMain()
 					ui::Checkbox("Audio", &showAudio);
 					ui::SameLine();
 					ui::Checkbox("WebSockets", &showWS);
-					ui::SameLine();
-					ui::Checkbox("Routing", &showRouting);
 
 					ui::Checkbox("Console", &showConsole);
 					ui::SameLine();
@@ -665,7 +705,7 @@ void BatchassApp::drawMain()
 					if (ui::Button("Save Params"))
 					{
 						// save warp settings
-						mBatchass->getWarpsRef()->save("warps1.xml");
+						mBatchass->getWarpsRef()->save( "warps1.xml");
 						// save params
 						mParameterBag->save();
 					}
@@ -907,15 +947,16 @@ void BatchassApp::drawMain()
 		static bool popup_open = false;
 		static int selected_index = -1;
 		static int selected_fbo = -1;
+
 		for (int i = 0; i < mBatchass->getWarpsRef()->getWarpsCount(); i++)
 		{
-			sprintf_s(buf, "Warps %d", i);
-			ui::SetNextWindowSize(ImVec2(w, h));
+			sprintf_s(buf, "Warp %d", i);
+			ui::SetNextWindowSize(ImVec2(warpWidth, h));
 			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 			{
 				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
 				ui::PushID(i);
-				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarpFbos[i].textureIndex), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarpFbos[i].textureIndex), Vec2i(mParameterBag->mPreviewFboWidth/2, mParameterBag->mPreviewFboHeight/2));
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
@@ -1268,36 +1309,7 @@ void BatchassApp::drawMain()
 		xPos += largeW + margin;
 	}
 #pragma endregion OSC
-#pragma region Routing
-	if (showRouting)
-	{
-		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
-		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		ui::Begin("Routing###rtg");
-		{
-			ui::BeginChild("Warps routing", ImVec2(0, 300), true);
-			ui::Text("Selected warp: %d", mParameterBag->selectedWarp);
-			ui::Columns(4);
-			ui::Text("ID"); ui::NextColumn();
-			ui::Text("texIndex"); ui::NextColumn();
-			ui::Text("texMode"); ui::NextColumn();
-			ui::Text("active"); ui::NextColumn();//if (ui::Button("Clear")) { WSlog.clear(); lines = 0; }
-			ui::Separator();
-			for (int i = 0; i < mParameterBag->MAX; i++)
-			{
-				ui::Text("%d", i); ui::NextColumn();
-				ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
-				ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
-				ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
 
-			}
-			ui::Columns(1);
-			ui::EndChild();
-		}
-		ui::End();
-		xPos += largeW + margin;
-	}
-#pragma endregion Routing
 	if (showTest)
 	{
 		ui::ShowTestWindow();

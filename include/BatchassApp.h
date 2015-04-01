@@ -170,6 +170,7 @@ private:
 	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
 	int							w;
 	int							h;
+	int							warpWidth;
 	int							xPos;
 	int							yPos;
 	int							largeW;
@@ -182,7 +183,7 @@ private:
 	float f = 0.0f;
 	char buf[32];
 
-	bool showConsole, showGlobal, showTextures, showTest, showRouting, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showWS;
+	bool showConsole, showGlobal, showTextures, showTest, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showWS;
 	void ShowAppConsole(bool* opened);
 
 
