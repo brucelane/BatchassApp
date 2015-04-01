@@ -62,7 +62,7 @@ void BatchassApp::setup()
 
 	// setup shaders and textures
 	mBatchass->setup();
-	mParameterBag->mWarpFbos[0].textureIndex = 1;
+	//mParameterBag->mWarpFbos[0].textureIndex = 1;
 	// setup the main window and associated draw function
 	mMainWindow = getWindow();
 	mMainWindow->setTitle("Batchass");
@@ -487,7 +487,14 @@ void BatchassApp::drawMain()
 		sprintf_s(buf, "FV##f%d", 39);
 		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mCurrentPreviewFboIndex);
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
-		sprintf_s(buf, "Enabled:##pvwe%d", mParameterBag->mPreviewEnabled);
+		if (mParameterBag->mPreviewEnabled)
+		{
+			sprintf_s(buf, "On:##pvwe");
+		}
+		else
+		{
+			sprintf_s(buf, "Off:##pvwe");
+		}
 		mParameterBag->mPreviewEnabled ^= ui::Button(buf);
 		ui::PopStyleColor(3);
 	}

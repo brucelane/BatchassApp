@@ -13,7 +13,8 @@ void main(void)
 	float fft = max(0.0001, mix( texture2D( uLeftTex, coord ).r, texture2D( uRightTex, coord ).r, 0.5));
 
 	// convert to decibels
-	const float logBase10 = 1.0 / log(10.0);
+	// 20150401 BL removed const 
+	float logBase10 = 1.0 / log(10.0);
 	float decibels = 10.0 * log( fft ) * logBase10;
 
 	// offset the vertex based on the decibels
