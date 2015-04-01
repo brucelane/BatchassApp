@@ -98,7 +98,7 @@ void BatchassApp::setup()
 	w = mParameterBag->mPreviewFboWidth + margin;
 	h = mParameterBag->mPreviewFboHeight * 2;
 	largeW = (mParameterBag->mPreviewFboWidth + margin) * 3;
-	largeH = (mParameterBag->mPreviewFboHeight + margin) * 4;
+	largeH = (mParameterBag->mPreviewFboHeight + margin) * 5;
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
 	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2;
 	static float f = 0.0f;
@@ -487,6 +487,8 @@ void BatchassApp::drawMain()
 		sprintf_s(buf, "FV##f%d", 39);
 		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mCurrentPreviewFboIndex);
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+		sprintf_s(buf, "Enabled:##pvwe%d", mParameterBag->mPreviewEnabled);
+		mParameterBag->mPreviewEnabled ^= ui::Button(buf);
 		ui::PopStyleColor(3);
 	}
 	ui::End();
@@ -1113,8 +1115,6 @@ void BatchassApp::drawMain()
 		yPos += h + margin;
 	}
 #pragma endregion fbos
-
-
 #pragma region MIDI
 
 	// MIDI window
@@ -1261,8 +1261,6 @@ void BatchassApp::drawMain()
 		xPos += largeW + margin;
 	}
 #pragma endregion OSC
-
-
 #pragma region Routing
 	if (showRouting)
 	{
