@@ -394,8 +394,8 @@ void BatchassApp::drawMain()
 			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mWarp1FboIndex);
 			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 			// renderXY mouse
-			ui::SliderFloat("W1RdrX", &mParameterBag->mWarp1RenderXY.x, 0.01f, 1.0f);
-			ui::SliderFloat("W1RdrY", &mParameterBag->mWarp1RenderXY.y, 0.01f, 1.0f);
+			ui::SliderFloat("W1RdrX", &mParameterBag->mWarp1RenderXY.x, 0.0f, 1.0f);
+			ui::SliderFloat("W1RdrY", &mParameterBag->mWarp1RenderXY.y, 0.0f, 1.0f);
 					
 					ui::Columns(4);
 					ui::Text("ID"); ui::NextColumn();
@@ -424,8 +424,8 @@ void BatchassApp::drawMain()
 			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mLeftFboIndex);
 			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 			// renderXY mouse
-			ui::SliderFloat("LeftRdrX", &mParameterBag->mLeftRenderXY.x, 0.01f, 1.0f);
-			ui::SliderFloat("LeftRdrY", &mParameterBag->mLeftRenderXY.y, 0.01f, 1.0f);
+			ui::SliderFloat("LeftRdrX", &mParameterBag->mLeftRenderXY.x, 0.0f, 1.0f);
+			ui::SliderFloat("LeftRdrY", &mParameterBag->mLeftRenderXY.y, 0.0f, 1.0f);
 
 			ui::Columns(4);
 			ui::Text("ID"); ui::NextColumn();
@@ -468,8 +468,8 @@ void BatchassApp::drawMain()
 			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mWarp2FboIndex);
 			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 			// renderXY mouse
-			ui::SliderFloat("W2RdrX", &mParameterBag->mWarp2RenderXY.x, 0.01f, 1.0f);
-			ui::SliderFloat("W2RdrY", &mParameterBag->mWarp2RenderXY.y, 0.01f, 1.0f);
+			ui::SliderFloat("W2RdrX", &mParameterBag->mWarp2RenderXY.x, 0.0f, 1.0f);
+			ui::SliderFloat("W2RdrY", &mParameterBag->mWarp2RenderXY.y, 0.0f, 1.0f);
 		}
 		else
 		{
@@ -477,8 +477,8 @@ void BatchassApp::drawMain()
 			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mRightFboIndex);
 			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 			// renderXY mouse
-			ui::SliderFloat("RightRdrX", &mParameterBag->mRightRenderXY.x, 0.01f, 1.0f);
-			ui::SliderFloat("RightRdrY", &mParameterBag->mRightRenderXY.y, 0.01f, 1.0f);
+			ui::SliderFloat("RightRdrX", &mParameterBag->mRightRenderXY.x, 0.0f, 1.0f);
+			ui::SliderFloat("RightRdrY", &mParameterBag->mRightRenderXY.y, 0.0f, 1.0f);
 		}
 		ui::PopStyleColor(3);
 	}
@@ -500,8 +500,8 @@ void BatchassApp::drawMain()
 		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mMixFboIndex);
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 		// renderXY mouse
-		ui::SliderFloat("RdrX", &mParameterBag->mRenderXY.x, 0.01f, 1.0f);
-		ui::SliderFloat("RdrY", &mParameterBag->mRenderXY.y, 0.01f, 1.0f);
+		ui::SliderFloat("RdrX", &mParameterBag->mRenderXY.x, 0.0f, 1.0f);
+		ui::SliderFloat("RdrY", &mParameterBag->mRenderXY.y, 0.0f, 1.0f);
 		ui::PopStyleColor(3);
 		// iPreviewCrossfade
 		if (ui::SliderFloat("pwXfade", &mParameterBag->controlValues[17], 0.01f, 1.0f))
@@ -671,6 +671,9 @@ void BatchassApp::drawMain()
 				if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
 				if (ui::CollapsingHeader("Render Window", NULL, true, true))
 				{
+					ui::SliderInt("RenderX", &mParameterBag->mRenderX, 0, 3000);
+					ui::SliderInt("RenderWidth", &mParameterBag->mRenderWidth, 1024, 3840);
+					ui::SliderInt("RenderHeight", &mParameterBag->mRenderHeight, 600, 1280);
 					if (ui::Button("Create")) { createRenderWindow(); }
 					ui::SameLine();
 					if (ui::Button("Delete")) { deleteRenderWindows(); }
