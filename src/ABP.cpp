@@ -208,7 +208,7 @@ void ABP::update()
 			mB = 0.8f;
 			if (mParameterBag->mBeat > 510 && mParameterBag->mBeat % 2 == 0)
 			{
-				mRotation += 0.2;
+				mRotation += 0.2 + mParameterBag->controlValues[19]; //was 0.2
 				if (mRotation > 6.35) mRotation = 0;
 			}
 		}

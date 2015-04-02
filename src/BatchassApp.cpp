@@ -4,7 +4,7 @@ TODO
 - flip horiz
 - check flip H and V (spout also)
 - sort fbo names and indexes (warps only 4 or 5 inputs)
-- spout texture 10 create shader 10.glsl(ThemeFromBrazil) iChannel0 
+- spout texture 10 create shader 10.glsl(ThemeFromBrazil) iChannel0
 - warpwrapper handle texture mode 0 for spout (without fbo)
 */
 
@@ -91,6 +91,7 @@ void BatchassApp::setup()
 	// Setup the MinimalUI user interface
 	//mUI = UI::create(mParameterBag, mBatchass->getShadersRef(), mBatchass->getTexturesRef(), mMainWindow);
 	//mUI->setup();
+	mouseGlobal = false;
 	// imgui
 	margin = 3;
 	inBetween = 3;
@@ -101,7 +102,7 @@ void BatchassApp::setup()
 	largeH = (mParameterBag->mPreviewFboHeight + margin) * 5;
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
 	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2;
-	warpWidth = mParameterBag->mPreviewFboWidth/2 + margin;
+	warpWidth = mParameterBag->mPreviewFboWidth / 2 + margin;
 	static float f = 0.0f;
 	char buf[32];
 
@@ -297,7 +298,7 @@ void BatchassApp::drawMain()
 				break;
 			case MODE_ABP:
 				//mABP->draw();
-				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mABPFboIndex), rect);
+				//gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mABPFboIndex), rect);
 				break;
 			default:
 				//gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMixFboIndex));
@@ -318,12 +319,12 @@ void BatchassApp::drawMain()
 	{
 		return;
 	}
-	
+
 	gl::setViewport(getWindowBounds());
 	gl::setMatricesWindow(getWindowSize());
 	xPos = margin;
 	yPos = margin;
-	const char* fboNames[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "warp", "sphere", "mesh","audio", "vtxsphere" };
+	const char* fboNames[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "warp", "sphere", "mesh", "audio", "vtxsphere" };
 	const char* warpInputs[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp" };
 
 #pragma region style
@@ -396,27 +397,27 @@ void BatchassApp::drawMain()
 			// renderXY mouse
 			ui::SliderFloat("W1RdrX", &mParameterBag->mWarp1RenderXY.x, 0.0f, 1.0f);
 			ui::SliderFloat("W1RdrY", &mParameterBag->mWarp1RenderXY.y, 0.0f, 1.0f);
-					
-					ui::Columns(4);
-					ui::Text("ID"); ui::NextColumn();
-					ui::Text("idx"); ui::NextColumn();
-					ui::Text("mode"); ui::NextColumn();
-					ui::Text("actv"); ui::NextColumn();
-					ui::Separator();
-					for (int i = 0; i < mParameterBag->mWarpFbos.size() - 1; i++)
-					{
-						if (mParameterBag->mWarpFbos[i].textureIndex == 3)
-						{
-							ui::Text("%d", i); ui::NextColumn();
-							ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
-							ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
-							ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
 
-						}
+			ui::Columns(4);
+			ui::Text("ID"); ui::NextColumn();
+			ui::Text("idx"); ui::NextColumn();
+			ui::Text("mode"); ui::NextColumn();
+			ui::Text("actv"); ui::NextColumn();
+			ui::Separator();
+			for (int i = 0; i < mParameterBag->mWarpFbos.size() - 1; i++)
+			{
+				if (mParameterBag->mWarpFbos[i].textureIndex == 3)
+				{
+					ui::Text("%d", i); ui::NextColumn();
+					ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
+					ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
+					ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
 
-					}
-					ui::Columns(1);
-							
+				}
+
+			}
+			ui::Columns(1);
+
 		}
 		else
 		{
@@ -505,11 +506,11 @@ void BatchassApp::drawMain()
 		ui::PopStyleColor(3);
 		// iPreviewCrossfade
 		if (ui::SliderFloat("pwXfade", &mParameterBag->controlValues[17], 0.01f, 1.0f))
-		{	
+		{
 		}
 		// crossfade
 		if (ui::SliderFloat("Xfade", &mParameterBag->controlValues[18], 0.01f, 1.0f))
-		{			
+		{
 		}
 
 	}
@@ -552,7 +553,7 @@ void BatchassApp::drawMain()
 #pragma region WebSockets
 	if (showWS)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, h), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largePreviewW + 20, h), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("WebSockets");
 		{
@@ -588,7 +589,7 @@ void BatchassApp::drawMain()
 			static int lines = 0;
 			if (ui::Button("Clear##ws")) { WSlog.clear(); lines = 0; }
 			ui::SameLine();
-			ui::Text("Buffer contents: %d lines, %d bytes", lines, WSlog.size());
+			ui::Text("Content: %d l, %d b", lines, WSlog.size());
 
 			if (mParameterBag->newWSMsg)
 			{
@@ -611,21 +612,21 @@ void BatchassApp::drawMain()
 	// audio window
 	if (showAudio)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largePreviewW + 20, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("Audio##ap");
 		{
-			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
-			ui::SameLine();
 			ui::Text("Beat %d", mParameterBag->mBeat);
 			ui::SameLine();
+			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
+			
 			ui::Text("Tempo %.2f", mParameterBag->mTempo);
 			if (ui::Button("Tap tempo")) { mBatchass->tapTempo(); }
 			ui::SameLine();
-			if (ui::Button("Time with tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
+			if (ui::Button("Time tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
 
 			//void Batchass::setTimeFactor(const int &aTimeFactor)
-			ImGui::SliderFloat("time factor", &mParameterBag->iTimeFactor, 0.0001f, 32.0f, "%.1f");
+			ui::SliderFloat("time x", &mParameterBag->iTimeFactor, 0.0001f, 32.0f, "%.1f");
 
 			static ImVector<float> values; if (values.empty()) { values.resize(40); memset(&values.front(), 0, values.size()*sizeof(float)); }
 			static int values_offset = 0;
@@ -638,7 +639,7 @@ void BatchassApp::drawMain()
 				values_offset = (values_offset + 1) % values.size();
 			}
 
-			ui::SliderFloat("mult factor", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
+			ui::SliderFloat("mult x", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
 			ImGui::PlotHistogram("Histogram", mAudio->getSmallSpectrum(), 7, 0, NULL, 0.0f, 255.0f, ImVec2(0, 30));
 
 			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
@@ -646,298 +647,311 @@ void BatchassApp::drawMain()
 			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
 		}
 		ui::End();
-		xPos += largeW + margin;
+		xPos += largePreviewW + 20 + margin;
 		yPos = margin;
 	}
 #pragma endregion Audio
 #pragma region Global
 
-		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH*2.0f), ImGuiSetCond_Once);
-		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
-		ui::Begin(buf);
+	ui::SetNextWindowSize(ImVec2(largeW, mParameterBag->mMainDisplayHeight), ImGuiSetCond_Once);
+	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+	sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
+	ui::Begin(buf);
+	{
+		static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
+		static int values_offset = 0;
+		static float refresh_time = -1.0f;
+		if (ui::GetTime() > refresh_time + 1.0f / 6.0f)
 		{
-				static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
-				static int values_offset = 0;
-				static float refresh_time = -1.0f;
-				if (ui::GetTime() > refresh_time + 1.0f / 6.0f)
-				{
-					refresh_time = ui::GetTime();
-					values[values_offset] = mParameterBag->iFps;
-					values_offset = (values_offset + 1) % values.size();
-				}
-				if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
-				ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
-				if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
-				if (ui::CollapsingHeader("Render Window", NULL, true, true))
-				{
-					ui::SliderInt("RenderX", &mParameterBag->mRenderX, 0, 3000);
-					ui::SliderInt("RenderWidth", &mParameterBag->mRenderWidth, 1024, 3840);
-					ui::SliderInt("RenderHeight", &mParameterBag->mRenderHeight, 600, 1280);
-					if (ui::Button("Create")) { createRenderWindow(); }
-					ui::SameLine();
-					if (ui::Button("Delete")) { deleteRenderWindows(); }
-					ui::SameLine();
-					//if (ui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
-					mParameterBag->mPreviewEnabled ^= ui::Button("Preview");
-					ui::SameLine();
-					mParameterBag->iDebug ^= ui::Button("Debug");
-				}
-				if (ui::CollapsingHeader("Panels", "11", true, true))
-				{
-					// Checkbox
-					ui::Checkbox("Tex", &showTextures);
-					ui::SameLine();
-					ui::Checkbox("Fbos", &showFbos);
-					ui::SameLine();
-					ui::Checkbox("Shada", &showShaders);
-
-					ui::Checkbox("Audio", &showAudio);
-					ui::SameLine();
-					ui::Checkbox("WebSockets", &showWS);
-
-					ui::Checkbox("Console", &showConsole);
-					ui::SameLine();
-					ui::Checkbox("OSC", &showOSC);
-					ui::SameLine();
-					ui::Checkbox("MIDI", &showMidi);
-
-					ui::Checkbox("Test", &showTest);
-					ui::SameLine();
-					ui::Checkbox("Editor", &showTheme);
-					if (ui::Button("Save Params"))
-					{
-						// save warp settings
-						mBatchass->getWarpsRef()->save( "warps1.xml");
-						// save params
-						mParameterBag->save();
-					}
-
-				}
-				if (ui::CollapsingHeader("Mode", NULL, true, true))
-				{
-					static int mode = mParameterBag->mMode;
-					ui::RadioButton("Mix##mode", &mode, MODE_MIX); ui::SameLine();
-					ui::RadioButton("Audio##mode", &mode, MODE_AUDIO); ui::SameLine();
-					ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE);
-					ui::RadioButton("Warp##mode", &mode, MODE_WARP); ui::SameLine();
-					ui::RadioButton("Mesh##mode", &mode, MODE_MESH); ui::SameLine();
-					ui::RadioButton("ABP##mode", &mode, MODE_ABP);
-					ui::RadioButton("VertexSphere##mode", &mode, MODE_VERTEXSPHERE);
-					if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
-				}
-				if (ui::CollapsingHeader("Mouse", NULL, true, true))
-			{
-				ui::Text("Mouse Position: (%.1f,%.1f)", ui::GetIO().MousePos.x, ui::GetIO().MousePos.y);
-				ui::Text("Mouse %d", ui::GetIO().MouseDown[0]);
-
-			}
-			if (ui::CollapsingHeader("Effects", NULL, true, true))
-			{
-				if (ui::Button("chromatic")) { mParameterBag->controlValues[20] = !mParameterBag->controlValues[20]; }
-				ui::SameLine();
-				mParameterBag->mOriginUpperLeft ^= ui::Button("origin up left");
-				ui::SameLine();
-				mParameterBag->iRepeat ^= ui::Button("repeat");
-				ui::SameLine();
-				if (ui::Button("45 glitch")) { mParameterBag->controlValues[45] = !mParameterBag->controlValues[45]; }
-
-				if (ui::Button("46 toggle")) { mParameterBag->controlValues[46] = !mParameterBag->controlValues[46]; }
-				ui::SameLine();
-				if (ui::Button("47 vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
-				ui::SameLine();
-				if (ui::Button("48 invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
-				ui::SameLine();
-				mParameterBag->iGreyScale ^= ui::Button("greyscale");
-				ui::SameLine();
-				if (ui::Button("instant black"))
-				{
-					mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3] = mParameterBag->controlValues[4] = 0.0;
-					mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = mParameterBag->controlValues[8] = 0.0;
-				}
-			}
-			if (ui::CollapsingHeader("Animation", NULL, true, true))
-			{
-
-				ui::SliderInt("mUIRefresh", &mParameterBag->mUIRefresh, 1, 255);
-				int ctrl;
-				stringstream aParams;
-				aParams << "{\"anim\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
-
-				// ratio
-				ctrl = 11;
-				if (ui::Button("a##ratio")) { mBatchass->lockRatio(); }
-				ui::SameLine();
-				if (ui::Button("t##ratio")) { mBatchass->tempoRatio(); }
-				ui::SameLine();
-				if (ui::Button("x##ratio")) { mBatchass->resetRatio(); }
-				ui::SameLine();
-				if (ui::SliderFloat("ratio/min/max", &mParameterBag->controlValues[ctrl], mBatchass->minRatio, mBatchass->maxRatio))
-				{
-					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
-				}
-				// exposure
-				ctrl = 14;
-				if (ui::Button("a##exposure")) { mBatchass->lockExposure(); }
-				ui::SameLine();
-				if (ui::Button("t##exposure")) { mBatchass->tempoExposure(); }
-				ui::SameLine();
-				if (ui::Button("x##exposure")) { mBatchass->resetExposure(); }
-				ui::SameLine();
-				if (ui::SliderFloat("exposure", &mParameterBag->controlValues[ctrl], mBatchass->minExposure, mBatchass->maxExposure))
-				{
-					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
-				}
-				// zoom
-				ctrl = 13;
-				if (ui::Button("a##zoom"))
-				{
-					mBatchass->lockZoom();
-				}
-				ui::SameLine();
-				if (ui::Button("t##zoom")) { mBatchass->tempoZoom(); }
-				ui::SameLine();
-				if (ui::Button("x##zoom")) { mBatchass->resetZoom(); }
-				ui::SameLine();
-				if (ui::SliderFloat("zoom", &mParameterBag->controlValues[ctrl], mBatchass->minZoom, mBatchass->maxZoom))
-				{
-					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
-				}
-				// z position
-				ctrl = 9;
-				if (ui::Button("a##zpos")) { mBatchass->lockZPos(); }
-				ui::SameLine();
-				if (ui::Button("t##zpos")) { mBatchass->tempoZPos(); }
-				ui::SameLine();
-				if (ui::Button("x##zpos")) { mBatchass->resetZPos(); }
-				ui::SameLine();
-				if (ui::SliderFloat("zPosition", &mParameterBag->controlValues[ctrl], mBatchass->minZPos, mBatchass->maxZPos))
-				{
-					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
-				}
-
-				// rotation speed 
-				ctrl = 19;
-				if (ui::Button("a##rotationspeed")) { mBatchass->lockRotationSpeed(); }
-				ui::SameLine();
-				if (ui::Button("t##rotationspeed")) { mBatchass->tempoRotationSpeed(); }
-				ui::SameLine();
-				if (ui::Button("x##rotationspeed")) { mBatchass->resetRotationSpeed(); }
-				ui::SameLine();
-				if (ui::SliderFloat("rotationSpeed", &mParameterBag->controlValues[ctrl], mBatchass->minRotationSpeed, mBatchass->maxRotationSpeed))
-				{
-					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
-				}
-				// blend modes
-				ctrl = 20;
-				if (ui::SliderFloat("blendmode", &mParameterBag->controlValues[ctrl], 0.0f, 27.0f))
-				{
-					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
-				}
-				// steps
-				ctrl = 16;
-				if (ui::SliderFloat("steps", &mParameterBag->controlValues[ctrl], 1.0f, 128.0f))
-				{
-					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
-				}
-				// pixelate
-				ctrl = 15;
-				if (ui::SliderFloat("pixelate", &mParameterBag->controlValues[ctrl], 0.01f, 1.0f))
-				{
-					aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
-				}
-
-				aParams << "]}";
-				string strAParams = aParams.str();
-				if (strAParams.length() > 60)
-				{
-					mWebSockets->write(strAParams);
-				}
-			}
-			if (ui::CollapsingHeader("Colors", NULL, true, true))
-			{
-				stringstream sParams;
-				bool colorChanged = false;
-				sParams << "{\"colors\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
-				// foreground color
-				color[0] = mParameterBag->controlValues[1];
-				color[1] = mParameterBag->controlValues[2];
-				color[2] = mParameterBag->controlValues[3];
-				color[3] = mParameterBag->controlValues[4];
-				ui::ColorEdit4("f", color);
-
-				for (int i = 0; i < 4; i++)
-				{
-					if (mParameterBag->controlValues[i + 1] != color[i])
-					{
-						sParams << ",{\"name\" : " << i + 1 << ",\"value\" : " << color[i] << "}";
-						mParameterBag->controlValues[i + 1] = color[i];
-						if (i == 0) mOSC->sendOSCColorMessage("/fr", mParameterBag->controlValues[1]);
-						if (i == 1) mOSC->sendOSCColorMessage("/fg", mParameterBag->controlValues[2]);
-						if (i == 2) mOSC->sendOSCColorMessage("/fb", mParameterBag->controlValues[3]);
-						if (i == 3) mOSC->sendOSCColorMessage("/fa", mParameterBag->controlValues[4]);
-						colorChanged = true;
-					}
-				}
-				if (colorChanged)
-				{
-					char col[8];
-					int r = mParameterBag->controlValues[1] * 255;
-					int g = mParameterBag->controlValues[2] * 255;
-					int b = mParameterBag->controlValues[3] * 255;
-					ui::ImFormatString(col, IM_ARRAYSIZE(col), "#%02X%02X%02X", r, g, b);
-					mWebSockets->write(col);
-
-				}
-				//ui::SameLine();
-				//ui::TextColored(ImVec4(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4]), "fg color");
-
-				// background color
-				backcolor[0] = mParameterBag->controlValues[5];
-				backcolor[1] = mParameterBag->controlValues[6];
-				backcolor[2] = mParameterBag->controlValues[7];
-				backcolor[3] = mParameterBag->controlValues[8];
-				//backcolor[4] = { mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8] };
-				ui::ColorEdit4("g", backcolor);
-				for (int i = 0; i < 4; i++)
-				{
-					if (mParameterBag->controlValues[i + 5] != backcolor[i])
-					{
-						sParams << ",{\"name\" : " << i + 5 << ",\"value\" : " << backcolor[i] << "}";
-						mParameterBag->controlValues[i + 5] = backcolor[i];
-					}
-
-				}
-
-
-				//ui::SameLine();
-				//ui::TextColored(ImVec4(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8]), "bg color");
-
-				sParams << "]}";
-				string strParams = sParams.str();
-				/*if (strParams.length() > 60)
-				{
-				mWebSockets->write(strParams);
-				}*/
-
-			}
-			if (ui::CollapsingHeader("Camera", NULL, true, true))
-			{
-				ui::SliderFloat("Pos.x", &mParameterBag->mRenderPosXY.x, 0.0f, mParameterBag->mRenderWidth);
-				ui::SliderFloat("Pos.y", &mParameterBag->mRenderPosXY.y, 0.0f, mParameterBag->mRenderHeight);
-				float eyeZ = mParameterBag->mCamera.getEyePoint().z;
-				if (ui::SliderFloat("Eye.z", &eyeZ, -500.0f, 1.0f))
-				{
-					Vec3f eye = mParameterBag->mCamera.getEyePoint();
-					eye.z = eyeZ;
-					mParameterBag->mCamera.setEyePoint(eye);
-				}
-				ui::SliderFloat("ABP Bend", &mParameterBag->mBend, -20.0f, 20.0f);
-				
-			}			
-			ui::End();
-			
+			refresh_time = ui::GetTime();
+			values[values_offset] = mParameterBag->iFps;
+			values_offset = (values_offset + 1) % values.size();
 		}
+		if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+		ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
+		if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
+		if (ui::CollapsingHeader("Render Window", NULL, true, true))
+		{
+			ui::SliderInt("RenderX", &mParameterBag->mRenderX, 0, 3000);
+			ui::SliderInt("RenderWidth", &mParameterBag->mRenderWidth, 1024, 3840);
+			ui::SliderInt("RenderHeight", &mParameterBag->mRenderHeight, 600, 1280);
+			if (ui::Button("Create")) { createRenderWindow(); }
+			ui::SameLine();
+			if (ui::Button("Delete")) { deleteRenderWindows(); }
+			ui::SameLine();
+			//if (ui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
+			mParameterBag->mPreviewEnabled ^= ui::Button("Preview");
+			ui::SameLine();
+			mParameterBag->iDebug ^= ui::Button("Debug");
+		}
+		if (ui::CollapsingHeader("Panels", "11", true, true))
+		{
+			// Checkbox
+			ui::Checkbox("Tex", &showTextures);
+			ui::SameLine();
+			ui::Checkbox("Fbos", &showFbos);
+			ui::SameLine();
+			ui::Checkbox("Shada", &showShaders);
+
+			ui::Checkbox("Audio", &showAudio);
+			ui::SameLine();
+			ui::Checkbox("WebSockets", &showWS);
+
+			ui::Checkbox("Console", &showConsole);
+			ui::SameLine();
+			ui::Checkbox("OSC", &showOSC);
+			ui::SameLine();
+			ui::Checkbox("MIDI", &showMidi);
+
+			ui::Checkbox("Test", &showTest);
+			ui::SameLine();
+			ui::Checkbox("Editor", &showTheme);
+			if (ui::Button("Save Params"))
+			{
+				// save warp settings
+				mBatchass->getWarpsRef()->save("warps1.xml");
+				// save params
+				mParameterBag->save();
+			}
+
+		}
+		if (ui::CollapsingHeader("Mode", NULL, true, true))
+		{
+			static int mode = mParameterBag->mMode;
+			ui::RadioButton("Mix##mode", &mode, MODE_MIX); ui::SameLine();
+			ui::RadioButton("Audio##mode", &mode, MODE_AUDIO); ui::SameLine();
+			ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE);
+			ui::RadioButton("Warp##mode", &mode, MODE_WARP); ui::SameLine();
+			ui::RadioButton("Mesh##mode", &mode, MODE_MESH); ui::SameLine();
+			ui::RadioButton("ABP##mode", &mode, MODE_ABP);
+			ui::RadioButton("VertexSphere##mode", &mode, MODE_VERTEXSPHERE);
+			if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
+		}
+		if (ui::CollapsingHeader("Mouse", NULL, true, true))
+		{
+			ui::Text("Mouse Position: (%.1f,%.1f)", ui::GetIO().MousePos.x, ui::GetIO().MousePos.y);
+			ui::Text("Mouse %d", ui::GetIO().MouseDown[0]);
+			mouseGlobal ^= ui::Button("mouse gbl");
+			if (mouseGlobal)
+			{
+				mParameterBag->mRenderPosXY.x = ui::GetIO().MousePos.x;
+				mParameterBag->mRenderPosXY.y = ui::GetIO().MousePos.y;
+				mParameterBag->iMouse.z = ui::GetIO().MouseDown[0];
+			}
+			else
+			{
+				mParameterBag->iMouse.z = ui::Button("mouse click");
+			}
+			ui::SliderFloat("MouseX", &mParameterBag->mRenderPosXY.x, 0, mParameterBag->mFboWidth);
+			ui::SliderFloat("MouseY", &mParameterBag->mRenderPosXY.y, 0, mParameterBag->mFboHeight);
+
+		}
+		if (ui::CollapsingHeader("Effects", NULL, true, true))
+		{
+			if (ui::Button("chromatic")) { mParameterBag->controlValues[20] = !mParameterBag->controlValues[20]; }
+			ui::SameLine();
+			mParameterBag->mOriginUpperLeft ^= ui::Button("origin up left");
+			ui::SameLine();
+			mParameterBag->iRepeat ^= ui::Button("repeat");
+			ui::SameLine();
+			if (ui::Button("45 glitch")) { mParameterBag->controlValues[45] = !mParameterBag->controlValues[45]; }
+
+			if (ui::Button("46 toggle")) { mParameterBag->controlValues[46] = !mParameterBag->controlValues[46]; }
+			ui::SameLine();
+			if (ui::Button("47 vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
+			ui::SameLine();
+			if (ui::Button("48 invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
+			ui::SameLine();
+			mParameterBag->iGreyScale ^= ui::Button("greyscale");
+			ui::SameLine();
+			if (ui::Button("instant black"))
+			{
+				mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3] = mParameterBag->controlValues[4] = 0.0;
+				mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = mParameterBag->controlValues[8] = 0.0;
+			}
+		}
+		if (ui::CollapsingHeader("Animation", NULL, true, true))
+		{
+
+			ui::SliderInt("mUIRefresh", &mParameterBag->mUIRefresh, 1, 255);
+			int ctrl;
+			stringstream aParams;
+			aParams << "{\"anim\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
+
+			// ratio
+			ctrl = 11;
+			if (ui::Button("a##ratio")) { mBatchass->lockRatio(); }
+			ui::SameLine();
+			if (ui::Button("t##ratio")) { mBatchass->tempoRatio(); }
+			ui::SameLine();
+			if (ui::Button("x##ratio")) { mBatchass->resetRatio(); }
+			ui::SameLine();
+			if (ui::SliderFloat("ratio/min/max", &mParameterBag->controlValues[ctrl], mBatchass->minRatio, mBatchass->maxRatio))
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
+			// exposure
+			ctrl = 14;
+			if (ui::Button("a##exposure")) { mBatchass->lockExposure(); }
+			ui::SameLine();
+			if (ui::Button("t##exposure")) { mBatchass->tempoExposure(); }
+			ui::SameLine();
+			if (ui::Button("x##exposure")) { mBatchass->resetExposure(); }
+			ui::SameLine();
+			if (ui::SliderFloat("exposure", &mParameterBag->controlValues[ctrl], mBatchass->minExposure, mBatchass->maxExposure))
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
+			// zoom
+			ctrl = 13;
+			if (ui::Button("a##zoom"))
+			{
+				mBatchass->lockZoom();
+			}
+			ui::SameLine();
+			if (ui::Button("t##zoom")) { mBatchass->tempoZoom(); }
+			ui::SameLine();
+			if (ui::Button("x##zoom")) { mBatchass->resetZoom(); }
+			ui::SameLine();
+			if (ui::SliderFloat("zoom", &mParameterBag->controlValues[ctrl], mBatchass->minZoom, mBatchass->maxZoom))
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
+			// z position
+			ctrl = 9;
+			if (ui::Button("a##zpos")) { mBatchass->lockZPos(); }
+			ui::SameLine();
+			if (ui::Button("t##zpos")) { mBatchass->tempoZPos(); }
+			ui::SameLine();
+			if (ui::Button("x##zpos")) { mBatchass->resetZPos(); }
+			ui::SameLine();
+			if (ui::SliderFloat("zPosition", &mParameterBag->controlValues[ctrl], mBatchass->minZPos, mBatchass->maxZPos))
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
+
+			// rotation speed 
+			ctrl = 19;
+			if (ui::Button("a##rotationspeed")) { mBatchass->lockRotationSpeed(); }
+			ui::SameLine();
+			if (ui::Button("t##rotationspeed")) { mBatchass->tempoRotationSpeed(); }
+			ui::SameLine();
+			if (ui::Button("x##rotationspeed")) { mBatchass->resetRotationSpeed(); }
+			ui::SameLine();
+			if (ui::SliderFloat("rotationSpeed", &mParameterBag->controlValues[ctrl], mBatchass->minRotationSpeed, mBatchass->maxRotationSpeed))
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
+			// blend modes
+			ctrl = 20;
+			if (ui::SliderFloat("blendmode", &mParameterBag->controlValues[ctrl], 0.0f, 27.0f))
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
+			// steps
+			ctrl = 16;
+			if (ui::SliderFloat("steps", &mParameterBag->controlValues[ctrl], 1.0f, 128.0f))
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
+			// pixelate
+			ctrl = 15;
+			if (ui::SliderFloat("pixelate", &mParameterBag->controlValues[ctrl], 0.01f, 1.0f))
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
+
+			aParams << "]}";
+			string strAParams = aParams.str();
+			if (strAParams.length() > 60)
+			{
+				mWebSockets->write(strAParams);
+			}
+		}
+		if (ui::CollapsingHeader("Colors", NULL, true, true))
+		{
+			stringstream sParams;
+			bool colorChanged = false;
+			sParams << "{\"colors\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
+			// foreground color
+			color[0] = mParameterBag->controlValues[1];
+			color[1] = mParameterBag->controlValues[2];
+			color[2] = mParameterBag->controlValues[3];
+			color[3] = mParameterBag->controlValues[4];
+			ui::ColorEdit4("f", color);
+
+			for (int i = 0; i < 4; i++)
+			{
+				if (mParameterBag->controlValues[i + 1] != color[i])
+				{
+					sParams << ",{\"name\" : " << i + 1 << ",\"value\" : " << color[i] << "}";
+					mParameterBag->controlValues[i + 1] = color[i];
+					if (i == 0) mOSC->sendOSCColorMessage("/fr", mParameterBag->controlValues[1]);
+					if (i == 1) mOSC->sendOSCColorMessage("/fg", mParameterBag->controlValues[2]);
+					if (i == 2) mOSC->sendOSCColorMessage("/fb", mParameterBag->controlValues[3]);
+					if (i == 3) mOSC->sendOSCColorMessage("/fa", mParameterBag->controlValues[4]);
+					colorChanged = true;
+				}
+			}
+			if (colorChanged)
+			{
+				char col[8];
+				int r = mParameterBag->controlValues[1] * 255;
+				int g = mParameterBag->controlValues[2] * 255;
+				int b = mParameterBag->controlValues[3] * 255;
+				ui::ImFormatString(col, IM_ARRAYSIZE(col), "#%02X%02X%02X", r, g, b);
+				mWebSockets->write(col);
+
+			}
+			//ui::SameLine();
+			//ui::TextColored(ImVec4(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4]), "fg color");
+
+			// background color
+			backcolor[0] = mParameterBag->controlValues[5];
+			backcolor[1] = mParameterBag->controlValues[6];
+			backcolor[2] = mParameterBag->controlValues[7];
+			backcolor[3] = mParameterBag->controlValues[8];
+			//backcolor[4] = { mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8] };
+			ui::ColorEdit4("g", backcolor);
+			for (int i = 0; i < 4; i++)
+			{
+				if (mParameterBag->controlValues[i + 5] != backcolor[i])
+				{
+					sParams << ",{\"name\" : " << i + 5 << ",\"value\" : " << backcolor[i] << "}";
+					mParameterBag->controlValues[i + 5] = backcolor[i];
+				}
+
+			}
+
+
+			//ui::SameLine();
+			//ui::TextColored(ImVec4(mParameterBag->controlValues[5], mParameterBag->controlValues[6], mParameterBag->controlValues[7], mParameterBag->controlValues[8]), "bg color");
+
+			sParams << "]}";
+			string strParams = sParams.str();
+			/*if (strParams.length() > 60)
+			{
+			mWebSockets->write(strParams);
+			}*/
+
+		}
+		if (ui::CollapsingHeader("Camera", NULL, true, true))
+		{
+			ui::SliderFloat("Pos.x", &mParameterBag->mRenderPosXY.x, 0.0f, mParameterBag->mRenderWidth);
+			ui::SliderFloat("Pos.y", &mParameterBag->mRenderPosXY.y, 0.0f, mParameterBag->mRenderHeight);
+			float eyeZ = mParameterBag->mCamera.getEyePoint().z;
+			if (ui::SliderFloat("Eye.z", &eyeZ, -500.0f, 1.0f))
+			{
+				Vec3f eye = mParameterBag->mCamera.getEyePoint();
+				eye.z = eyeZ;
+				mParameterBag->mCamera.setEyePoint(eye);
+			}
+			ui::SliderFloat("ABP Bend", &mParameterBag->mBend, -20.0f, 20.0f);
+
+		}
+		ui::End();
+
+	}
 
 #pragma endregion Global
 	// next line
@@ -955,11 +969,11 @@ void BatchassApp::drawMain()
 		{
 			sprintf_s(buf, "Warp %d", i);
 			ui::SetNextWindowSize(ImVec2(warpWidth, h));
-			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+			ui::Begin(buf);
 			{
-				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+				ui::SetWindowPos(ImVec2((i * (warpWidth + inBetween)) + margin, yPos));
 				ui::PushID(i);
-				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarpFbos[i].textureIndex), Vec2i(mParameterBag->mPreviewFboWidth/2, mParameterBag->mPreviewFboHeight/2));
+				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarpFbos[i].textureIndex), Vec2i(mParameterBag->mPreviewFboWidth / 2, mParameterBag->mPreviewFboHeight / 2));
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));

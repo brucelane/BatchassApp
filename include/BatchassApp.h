@@ -184,6 +184,7 @@ private:
 	char buf[32];
 
 	bool showConsole, showGlobal, showTextures, showTest, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showWS;
+	bool mouseGlobal;
 	void ShowAppConsole(bool* opened);
 
 
