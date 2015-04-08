@@ -183,7 +183,7 @@ private:
 	float f = 0.0f;
 	char buf[32];
 
-	bool showConsole, showGlobal, showTextures, showTest, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showWS;
+	bool showConsole, showGlobal, showTextures, showTest, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showWS, showChannels;
 	bool mouseGlobal;
 	void ShowAppConsole(bool* opened);
 

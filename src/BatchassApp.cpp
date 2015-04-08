@@ -106,8 +106,8 @@ void BatchassApp::setup()
 	static float f = 0.0f;
 	char buf[32];
 
-	showConsole = showGlobal = showTextures = showAudio = showShaders = showWS = true;
-	showTest = showMidi = showTheme = showOSC = showFbos = false;
+	showConsole = showGlobal = showTextures = showAudio = showShaders = showWS = showMidi = showChannels = true;
+	showTest = showTheme = showOSC = showFbos = false;
 
 	// set ui window and io events callbacks
 	ui::connectWindow(getWindow());
@@ -513,6 +513,7 @@ void BatchassApp::drawMain()
 		{
 		}
 
+
 	}
 	ui::End();
 	xPos += largePreviewW + margin;
@@ -529,7 +530,7 @@ void BatchassApp::drawMain()
 
 		sprintf_s(buf, "FV##f%d", 39);
 		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mCurrentPreviewFboIndex);
-		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically"); ui::SameLine();
 		if (mParameterBag->mPreviewEnabled)
 		{
 			sprintf_s(buf, "On##pvwe");
@@ -540,6 +541,8 @@ void BatchassApp::drawMain()
 		}
 		mParameterBag->mPreviewEnabled ^= ui::Button(buf);
 		ui::PopStyleColor(3);
+		ui::Text(mBatchass->getTexturesRef()->getPreviewTime());
+
 	}
 	ui::End();
 	xPos += largePreviewW + margin;
@@ -619,7 +622,7 @@ void BatchassApp::drawMain()
 			ui::Text("Beat %d", mParameterBag->mBeat);
 			ui::SameLine();
 			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
-			
+
 			ui::Text("Tempo %.2f", mParameterBag->mTempo);
 			if (ui::Button("Tap tempo")) { mBatchass->tapTempo(); }
 			ui::SameLine();
@@ -684,37 +687,7 @@ void BatchassApp::drawMain()
 			ui::SameLine();
 			mParameterBag->iDebug ^= ui::Button("Debug");
 		}
-		if (ui::CollapsingHeader("Panels", "11", true, true))
-		{
-			// Checkbox
-			ui::Checkbox("Tex", &showTextures);
-			ui::SameLine();
-			ui::Checkbox("Fbos", &showFbos);
-			ui::SameLine();
-			ui::Checkbox("Shada", &showShaders);
 
-			ui::Checkbox("Audio", &showAudio);
-			ui::SameLine();
-			ui::Checkbox("WebSockets", &showWS);
-
-			ui::Checkbox("Console", &showConsole);
-			ui::SameLine();
-			ui::Checkbox("OSC", &showOSC);
-			ui::SameLine();
-			ui::Checkbox("MIDI", &showMidi);
-
-			ui::Checkbox("Test", &showTest);
-			ui::SameLine();
-			ui::Checkbox("Editor", &showTheme);
-			if (ui::Button("Save Params"))
-			{
-				// save warp settings
-				mBatchass->getWarpsRef()->save("warps1.xml");
-				// save params
-				mParameterBag->save();
-			}
-
-		}
 		if (ui::CollapsingHeader("Mode", NULL, true, true))
 		{
 			static int mode = mParameterBag->mMode;
@@ -743,7 +716,7 @@ void BatchassApp::drawMain()
 				mParameterBag->iMouse.z = ui::Button("mouse click");
 			}
 			ui::SliderFloat("MouseX", &mParameterBag->mRenderPosXY.x, 0, mParameterBag->mFboWidth);
-			ui::SliderFloat("MouseY", &mParameterBag->mRenderPosXY.y, 0, mParameterBag->mFboHeight);
+			ui::SliderFloat("MouseY", &mParameterBag->mRenderPosXY.y, 0, 2048);// mParameterBag->mFboHeight);
 
 		}
 		if (ui::CollapsingHeader("Effects", NULL, true, true))
@@ -935,6 +908,37 @@ void BatchassApp::drawMain()
 			}*/
 
 		}
+		if (ui::CollapsingHeader("Panels", "11", true, true))
+		{
+			// Checkbox
+			ui::Checkbox("Tex", &showTextures);
+			ui::SameLine();
+			ui::Checkbox("Fbos", &showFbos);
+			ui::SameLine();
+			ui::Checkbox("Shada", &showShaders);
+
+			ui::Checkbox("Audio", &showAudio);
+			ui::SameLine();
+			ui::Checkbox("WebSockets", &showWS);
+
+			ui::Checkbox("Console", &showConsole);
+			ui::SameLine();
+			ui::Checkbox("OSC", &showOSC);
+			ui::SameLine();
+			ui::Checkbox("MIDI", &showMidi);
+
+			ui::Checkbox("Test", &showTest);
+			ui::SameLine();
+			ui::Checkbox("Editor", &showTheme);
+			if (ui::Button("Save Params"))
+			{
+				// save warp settings
+				mBatchass->getWarpsRef()->save("warps1.xml");
+				// save params
+				mParameterBag->save();
+			}
+
+		}
 		if (ui::CollapsingHeader("Camera", NULL, true, true))
 		{
 			ui::SliderFloat("Pos.x", &mParameterBag->mRenderPosXY.x, 0.0f, mParameterBag->mRenderWidth);
@@ -993,7 +997,7 @@ void BatchassApp::drawMain()
 		ImGui::Text(selected_fbo == -1 ? "<None>" : warpInputs[selected_fbo]);
 		if (popup_open)
 		{
-			sprintf_s(buf, "##wmpopup", selected_index);
+			// needed? sprintf_s(buf, "##wmpopup", selected_index);
 			ImGui::BeginPopup(&popup_open);
 			for (size_t i = 0; i < IM_ARRAYSIZE(warpInputs); i++)
 			{
@@ -1013,7 +1017,6 @@ void BatchassApp::drawMain()
 		yPos += h + margin;
 	}
 #pragma endregion warps
-
 #pragma region textures
 	if (showTextures)
 	{
@@ -1024,7 +1027,6 @@ void BatchassApp::drawMain()
 			ui::SetNextWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
 			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 			{
-				//ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getTexture(i).getId(), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
@@ -1041,6 +1043,7 @@ void BatchassApp::drawMain()
 		yPos += h + margin;
 	}
 #pragma endregion textures
+
 #pragma region shaders
 	if (showShaders)
 	{
@@ -1180,6 +1183,75 @@ void BatchassApp::drawMain()
 		yPos += h + margin;
 	}
 #pragma endregion fbos
+#pragma region channels
+	if (showChannels)
+	{
+		static bool popupTexture_open = false;
+		static int selectedChn = -1;
+		static int selectedTex = -1;
+
+		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+
+		ui::Begin("Channels");
+		{
+			ui::Columns(2);
+			ui::Text("Channel"); ui::NextColumn();
+			ui::Text("Texture"); ui::NextColumn();
+
+			ui::Separator();
+			for (int i = 0; i < mParameterBag->iChannels.size() - 1; i++)
+			{
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+				ui::Text("##ci%d", i); ui::NextColumn();
+				sprintf_s(buf, "%d", mParameterBag->iChannels[i]);
+				if (ImGui::Button(buf))
+				{
+					popupTexture_open = true;
+					selectedChn = i;
+				}
+				ui::NextColumn();
+				ui::PopStyleColor(3);
+			}
+			ui::Columns(1);
+		}
+		ui::End();
+
+		ImGui::SameLine();
+		if (selectedTex == -1)
+		{
+			ImGui::Text("<None>");
+		}
+		else
+		{
+			sprintf_s(buf, "%d", mParameterBag->iChannels[selectedTex]);
+			ImGui::Text(buf);
+		}
+		if (popupTexture_open)
+		{
+			//sprintf_s(buf, "##wtpopup", selectedChn);
+			ImGui::BeginPopup(&popupTexture_open);
+			for (size_t i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
+			{
+				sprintf_s(buf, "%d##wtpopup", i);
+				if (ImGui::Selectable(buf, false))
+				{
+					selectedTex = i;
+					if (selectedTex > -1) mBatchass->assignTextureToChannel(selectedTex, selectedChn);
+					// reinit
+					popupTexture_open = false;
+					selectedChn = -1;
+					selectedTex = -1;
+				}
+			}
+			ImGui::EndPopup();
+
+		}
+		xPos += largeW + margin;
+	}
+#pragma endregion channels
 #pragma region MIDI
 
 	// MIDI window
@@ -1340,7 +1412,8 @@ void BatchassApp::drawRender()
 	// clear
 	gl::clear();
 	// shaders			
-	gl::setViewport(getWindowBounds());
+	//gl::setViewport(getWindowBounds());
+	gl::setViewport(allRenderWindows[0].mWRef->getBounds());
 	gl::enableAlphaBlending();
 	//20140703 gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);//NEW 20140620, needed?
 	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);// , false);
