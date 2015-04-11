@@ -349,8 +349,8 @@ void BatchassApp::drawMain()
 	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
 	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
 	style.Colors[ImGuiCol_ComboBg] = ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
-	style.Colors[ImGuiCol_CheckHovered] = ImVec4(0.27f, 0.27f, 0.27f, 1.00f);
-	style.Colors[ImGuiCol_CheckActive] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
+	//style.Colors[ImGuiCol_CheckHovered] = ImVec4(0.27f, 0.27f, 0.27f, 1.00f);
+	//style.Colors[ImGuiCol_CheckActive] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.99f, 0.22f, 0.22f, 0.50f);
 	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
 	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.8f, 0.35f, 0.35f, 1.00f);
@@ -1190,7 +1190,7 @@ void BatchassApp::drawMain()
 		static int selectedChn = -1;
 		static int selectedTex = -1;
 
-		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(w, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 
 		ui::Begin("Channels");
@@ -1205,8 +1205,8 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				ui::Text("##ci%d", i); ui::NextColumn();
-				sprintf_s(buf, "%d", mParameterBag->iChannels[i]);
+				ui::Text("ch%d", i); ui::NextColumn();
+				sprintf_s(buf, "tx%d", mParameterBag->iChannels[i]);
 				if (ImGui::Button(buf))
 				{
 					popupTexture_open = true;
@@ -1235,7 +1235,7 @@ void BatchassApp::drawMain()
 			ImGui::BeginPopup(&popupTexture_open);
 			for (size_t i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
 			{
-				sprintf_s(buf, "%d##wtpopup", i);
+				sprintf_s(buf, "%d##chntpopup", i);
 				if (ImGui::Selectable(buf, false))
 				{
 					selectedTex = i;
@@ -1249,7 +1249,7 @@ void BatchassApp::drawMain()
 			ImGui::EndPopup();
 
 		}
-		xPos += largeW + margin;
+		xPos += w + margin;
 	}
 #pragma endregion channels
 #pragma region MIDI
@@ -1257,7 +1257,7 @@ void BatchassApp::drawMain()
 	// MIDI window
 	if (showMidi)
 	{
-		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("MIDI");
 		{
