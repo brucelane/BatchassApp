@@ -156,8 +156,9 @@ private:
 	static const int			MODE_SPHERE = 4;
 	static const int			MODE_MESH = 5;
 	static const int			MODE_KINECT = 6;
-	static const int			MODE_VERTEXSPHERE = 7;
+	static const int			MODE_LIVE = 7;
 	static const int			MODE_ABP = 8;
+	static const int			MODE_VERTEXSPHERE = 9;
 	// windows to create, should be the same as in ParameterBag
 	static const int			NONE = 0;
 	static const int			RENDER_1 = 1;
@@ -186,6 +187,5 @@ private:
 	bool showConsole, showGlobal, showTextures, showTest, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showWS, showChannels;
 	bool mouseGlobal;
 	void ShowAppConsole(bool* opened);
-
 
 };

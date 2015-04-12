@@ -38,7 +38,6 @@ void BatchassApp::prepareSettings(Settings* settings)
 		settings->setWindowPos(Vec2i(mParameterBag->mRenderX, mParameterBag->mRenderY));
 		settings->setBorderless();
 		settings->setResizable(false);
-
 	}
 }
 
@@ -98,11 +97,11 @@ void BatchassApp::setup()
 	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
 	w = mParameterBag->mPreviewFboWidth + margin;
 	h = mParameterBag->mPreviewFboHeight * 2;
-	largeW = (mParameterBag->mPreviewFboWidth + margin) * 3;
+	largeW = (mParameterBag->mPreviewFboWidth + margin) * 4;
 	largeH = (mParameterBag->mPreviewFboHeight + margin) * 5;
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
 	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2;
-	warpWidth = mParameterBag->mPreviewFboWidth / 2 + margin;
+	warpWidth = mParameterBag->mPreviewFboWidth/2 + margin;
 	static float f = 0.0f;
 	char buf[32];
 
@@ -116,8 +115,9 @@ void BatchassApp::setup()
 	// midi
 	setupMidi();
 	mSeconds = 0;
-
+	// RTE mBatchass->getShadersRef()->setupLiveShader();
 	mBatchass->tapTempo();
+
 }
 void BatchassApp::setupMidi()
 {
@@ -230,8 +230,6 @@ void BatchassApp::createRenderWindow()
 	mRenderWindow->connectDraw(&BatchassApp::drawRender, this);
 	mParameterBag->mRenderPosXY = Vec2i(mParameterBag->mRenderX, mParameterBag->mRenderY);//20141214 was 0
 	mRenderWindow->setPos(mParameterBag->mRenderX, mParameterBag->mRenderY);
-
-
 }
 void BatchassApp::deleteRenderWindows()
 {
@@ -324,7 +322,7 @@ void BatchassApp::drawMain()
 	gl::setMatricesWindow(getWindowSize());
 	xPos = margin;
 	yPos = margin;
-	const char* fboNames[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "warp", "sphere", "mesh", "audio", "vtxsphere" };
+	const char* fboNames[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "live", "sphere", "mesh", "audio", "vtxsphere" };
 	const char* warpInputs[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp" };
 
 #pragma region style
@@ -650,13 +648,13 @@ void BatchassApp::drawMain()
 			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
 		}
 		ui::End();
-		xPos += largePreviewW + 20 + margin;
+		xPos += largePreviewW + margin;
 		yPos = margin;
 	}
 #pragma endregion Audio
 #pragma region Global
 
-	ui::SetNextWindowSize(ImVec2(largeW, mParameterBag->mMainDisplayHeight), ImGuiSetCond_Once);
+	ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 	sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
 	ui::Begin(buf);
@@ -693,10 +691,11 @@ void BatchassApp::drawMain()
 			static int mode = mParameterBag->mMode;
 			ui::RadioButton("Mix##mode", &mode, MODE_MIX); ui::SameLine();
 			ui::RadioButton("Audio##mode", &mode, MODE_AUDIO); ui::SameLine();
-			ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE);
-			ui::RadioButton("Warp##mode", &mode, MODE_WARP); ui::SameLine();
+			ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE); ui::SameLine();
+			ui::RadioButton("Warp##mode", &mode, MODE_WARP); 
 			ui::RadioButton("Mesh##mode", &mode, MODE_MESH); ui::SameLine();
-			ui::RadioButton("ABP##mode", &mode, MODE_ABP);
+			ui::RadioButton("Live##mode", &mode, MODE_LIVE);ui::SameLine();
+			ui::RadioButton("ABP##mode", &mode, MODE_ABP); ui::SameLine();
 			ui::RadioButton("VertexSphere##mode", &mode, MODE_VERTEXSPHERE);
 			if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
 		}
@@ -713,6 +712,7 @@ void BatchassApp::drawMain()
 			}
 			else
 			{
+				ui::SameLine();
 				mParameterBag->iMouse.z = ui::Button("mouse click");
 			}
 			ui::SliderFloat("MouseX", &mParameterBag->mRenderPosXY.x, 0, mParameterBag->mFboWidth);
@@ -723,7 +723,7 @@ void BatchassApp::drawMain()
 		{
 			if (ui::Button("chromatic")) { mParameterBag->controlValues[20] = !mParameterBag->controlValues[20]; }
 			ui::SameLine();
-			mParameterBag->mOriginUpperLeft ^= ui::Button("origin up left");
+			mParameterBag->mOriginUpperLeft ^= ui::Button("o upleft");
 			ui::SameLine();
 			mParameterBag->iRepeat ^= ui::Button("repeat");
 			ui::SameLine();
@@ -734,7 +734,7 @@ void BatchassApp::drawMain()
 			if (ui::Button("47 vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
 			ui::SameLine();
 			if (ui::Button("48 invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
-			ui::SameLine();
+			
 			mParameterBag->iGreyScale ^= ui::Button("greyscale");
 			ui::SameLine();
 			if (ui::Button("instant black"))
@@ -916,7 +916,7 @@ void BatchassApp::drawMain()
 			ui::Checkbox("Fbos", &showFbos);
 			ui::SameLine();
 			ui::Checkbox("Shada", &showShaders);
-
+			ui::SameLine();
 			ui::Checkbox("Audio", &showAudio);
 			ui::SameLine();
 			ui::Checkbox("WebSockets", &showWS);
@@ -926,7 +926,7 @@ void BatchassApp::drawMain()
 			ui::Checkbox("OSC", &showOSC);
 			ui::SameLine();
 			ui::Checkbox("MIDI", &showMidi);
-
+			ui::SameLine();
 			ui::Checkbox("Test", &showTest);
 			ui::SameLine();
 			ui::Checkbox("Editor", &showTheme);
