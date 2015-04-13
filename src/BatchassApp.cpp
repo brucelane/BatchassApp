@@ -57,7 +57,7 @@ void BatchassApp::setup()
 	mJson = JSONWrapper::create();
 
 	// instanciate the WebSockets class
-	mWebSockets = WebSockets::create(mParameterBag);
+	mWebSockets = WebSockets::create(mParameterBag, mBatchass);
 
 	// setup shaders and textures
 	mBatchass->setup();
@@ -238,7 +238,6 @@ void BatchassApp::deleteRenderWindows()
 }
 void BatchassApp::drawMain()
 {
-
 	// must be first to avoid gl matrices to change
 	// draw from Spout receivers
 	mSpout->draw();
@@ -323,7 +322,7 @@ void BatchassApp::drawMain()
 	xPos = margin;
 	yPos = margin;
 	const char* fboNames[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "live", "sphere", "mesh", "audio", "vtxsphere" };
-	const char* warpInputs[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp" };
+	const char* warpInputs[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "live" };
 
 #pragma region style
 	// our theme variables
@@ -1618,7 +1617,6 @@ void BatchassApp::shutdown()
 
 void BatchassApp::update()
 {
-
 	mWebSockets->update();
 	mOSC->update();
 	mParameterBag->iFps = getAverageFps();
@@ -1661,8 +1659,6 @@ void BatchassApp::update()
 	}
 	mSpout->update();
 	mBatchass->update();
-	mWebSockets->update();
-	mOSC->update();
 	mABP->update();
 	mAudio->update();
 	//mUI->update();
@@ -1684,13 +1680,6 @@ void BatchassApp::update()
 				break;*/
 		}
 	}
-	/*if (mSeconds != (int)getElapsedSeconds())
-	{
-	mSeconds = (int)getElapsedSeconds();
-	stringstream s;
-	s << mSeconds;
-	mWebSockets->write(s.str());
-	}*/
 }
 
 void BatchassApp::resize()
@@ -1816,7 +1805,6 @@ void BatchassApp::keyDown(KeyEvent event)
 			break;
 		}
 	}
-	//mWebSockets->write("yo");
 }
 
 // From imgui by Omar Cornut
