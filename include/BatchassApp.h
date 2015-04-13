@@ -165,8 +165,8 @@ private:
 	static const int			RENDER_DELETE = 5;
 	static const int			MIDI_IN = 6;
 
-	float color[4];
-	float backcolor[4];
+	float						color[4];
+	float						backcolor[4];
 	// imgui
 	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
 	int							w;
@@ -181,8 +181,8 @@ private:
 	int							margin;
 	int							inBetween;
 
-	float f = 0.0f;
-	char buf[32];
+	float						f = 0.0f;
+	char						buf[32];
 
 	bool showConsole, showGlobal, showTextures, showTest, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showWS, showChannels;
 	bool mouseGlobal;
