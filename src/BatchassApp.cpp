@@ -873,7 +873,6 @@ void BatchassApp::drawMain()
 				int b = mParameterBag->controlValues[3] * 255;
 				ui::ImFormatString(col, IM_ARRAYSIZE(col), "#%02X%02X%02X", r, g, b);
 				mWebSockets->write(col);
-
 			}
 			//ui::SameLine();
 			//ui::TextColored(ImVec4(mParameterBag->controlValues[1], mParameterBag->controlValues[2], mParameterBag->controlValues[3], mParameterBag->controlValues[4]), "fg color");
