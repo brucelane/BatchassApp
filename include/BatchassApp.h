@@ -172,6 +172,7 @@ private:
 	int							w;
 	int							h;
 	int							warpWidth;
+	int							displayHeight;
 	int							xPos;
 	int							yPos;
 	int							largeW;

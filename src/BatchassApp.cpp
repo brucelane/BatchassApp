@@ -102,6 +102,7 @@ void BatchassApp::setup()
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
 	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2;
 	warpWidth = mParameterBag->mPreviewFboWidth/2 + margin;
+	displayHeight = mParameterBag->mMainDisplayHeight - 50;
 	static float f = 0.0f;
 	char buf[32];
 
@@ -321,6 +322,7 @@ void BatchassApp::drawMain()
 	gl::setMatricesWindow(getWindowSize());
 	xPos = margin;
 	yPos = margin;
+	const char* textureNames[] = { "audio", "img1", "img2", "img3", "4pvwFbo", "5mixFbo", "6leftFbo", "7rightFbo", "8warp1Fbo", "9warp2Fbo", "10spout", "11LiveFbo" };
 	const char* fboNames[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "live", "sphere", "mesh", "audio", "vtxsphere" };
 	const char* warpInputs[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "live" };
 
@@ -346,8 +348,6 @@ void BatchassApp::drawMain()
 	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
 	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
 	style.Colors[ImGuiCol_ComboBg] = ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
-	//style.Colors[ImGuiCol_CheckHovered] = ImVec4(0.27f, 0.27f, 0.27f, 1.00f);
-	//style.Colors[ImGuiCol_CheckActive] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.99f, 0.22f, 0.22f, 0.50f);
 	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.65f, 0.25f, 0.25f, 1.00f);
 	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.8f, 0.35f, 0.35f, 1.00f);
@@ -653,7 +653,7 @@ void BatchassApp::drawMain()
 #pragma endregion Audio
 #pragma region Global
 
-	ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
+	ui::SetNextWindowSize(ImVec2(largeW, displayHeight), ImGuiSetCond_Once);
 	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 	sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
 	ui::Begin(buf);
@@ -1021,10 +1021,9 @@ void BatchassApp::drawMain()
 	{
 		for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
 		{
-			sprintf_s(buf, "Texture %d", i);
 			ui::SetNextWindowSize(ImVec2(w, h));
 			ui::SetNextWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
-			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+			ui::Begin(textureNames[i], NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 			{
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getTexture(i).getId(), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
@@ -1055,8 +1054,8 @@ void BatchassApp::drawMain()
 				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-				ui::Columns(5, "data", true);
 
+				ui::Columns(5, "data", false);
 				// left
 				if (mParameterBag->mLeftFragIndex == i)
 				{
@@ -1195,8 +1194,8 @@ void BatchassApp::drawMain()
 		ui::Begin("Channels");
 		{
 			ui::Columns(2);
-			ui::Text("Channel"); ui::NextColumn();
-			ui::Text("Texture"); ui::NextColumn();
+			ui::Text("Chn"); ui::NextColumn();
+			ui::Text("Tex"); ui::NextColumn();
 
 			ui::Separator();
 			for (int i = 0; i < mParameterBag->iChannels.size() - 1; i++)
@@ -1204,8 +1203,8 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				ui::Text("ch%d", i); ui::NextColumn();
-				sprintf_s(buf, "tx%d", mParameterBag->iChannels[i]);
+				ui::Text("c%d", i); ui::NextColumn();
+				sprintf_s(buf, "%d", mParameterBag->iChannels[i]);
 				if (ImGui::Button(buf))
 				{
 					popupTexture_open = true;
