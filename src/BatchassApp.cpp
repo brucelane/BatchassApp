@@ -1457,7 +1457,7 @@ void BatchassApp::saveThumb()
 		log->logTimedString("saved:" + fpsFilename);
 		Area area = Area(0, mParameterBag->mMainWindowHeight, mParameterBag->mPreviewWidth, mParameterBag->mMainWindowHeight - mParameterBag->mPreviewHeight);
 		writeImage(getAssetPath("") / "thumbs" / filename, copyWindowSurface(area));*/
-		filename = mBatchass->getShadersRef()->getFragFileName() + ".png";
+		filename = mBatchass->getShadersRef()->getFragFileName() + ".jpg";
 		writeImage(getAssetPath("") / "thumbs" / filename, mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mCurrentPreviewFboIndex));
 		mBatchass->log("saved:" + filename);
 
@@ -1576,7 +1576,7 @@ void BatchassApp::fileDrop(FileDropEvent event)
 	{
 		// try loading image sequence from dir
 		//mTextures->createFromDir(mFile + "/");
-
+		mBatchass->getShadersRef()->createThumbsFromDir(mFile + "/");
 	}
 	/*if (!loaded && ext == "frag")
 	{
