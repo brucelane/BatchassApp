@@ -101,7 +101,7 @@ void BatchassApp::setup()
 	largeH = (mParameterBag->mPreviewFboHeight + margin) * 5;
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
 	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2;
-	warpWidth = mParameterBag->mPreviewFboWidth/2 + margin;
+	warpWidth = mParameterBag->mPreviewFboWidth / 2 + margin;
 	displayHeight = mParameterBag->mMainDisplayHeight - 50;
 	static float f = 0.0f;
 	char buf[32];
@@ -549,11 +549,79 @@ void BatchassApp::drawMain()
 	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 	if (showConsole) ShowAppConsole(&showConsole);
 	xPos += largePreviewW + margin;
+#pragma region channels
+	if (showChannels)
+	{
+		static bool popupTexture_open = false;
+		static int selectedChn = -1;
+		static int selectedTex = -1;
 
+		ui::SetNextWindowSize(ImVec2(w, largePreviewH), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+
+		ui::Begin("Channels");
+		{
+			ui::Columns(2);
+			ui::Text("Chn"); ui::NextColumn();
+			ui::Text("Tex"); ui::NextColumn();
+
+			ui::Separator();
+			for (int i = 0; i < mParameterBag->iChannels.size() - 1; i++)
+			{
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
+				ui::Text("c%d", i); ui::NextColumn();
+				sprintf_s(buf, "%d", mParameterBag->iChannels[i]);
+				if (ImGui::Button(buf))
+				{
+					popupTexture_open = true;
+					selectedChn = i;
+				}
+				ui::NextColumn();
+				ui::PopStyleColor(3);
+			}
+			ui::Columns(1);
+		}
+		ui::End();
+
+		ImGui::SameLine();
+		if (selectedTex == -1)
+		{
+			ImGui::Text("<None>");
+		}
+		else
+		{
+			sprintf_s(buf, "%d", mParameterBag->iChannels[selectedTex]);
+			ImGui::Text(buf);
+		}
+		if (popupTexture_open)
+		{
+			//sprintf_s(buf, "##wtpopup", selectedChn);
+			ImGui::BeginPopup(&popupTexture_open);
+			for (size_t i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
+			{
+				sprintf_s(buf, "%d##chntpopup", i);
+				if (ImGui::Selectable(buf, false))
+				{
+					selectedTex = i;
+					if (selectedTex > -1) mBatchass->assignTextureToChannel(selectedTex, selectedChn);
+					// reinit
+					popupTexture_open = false;
+					selectedChn = -1;
+					selectedTex = -1;
+				}
+			}
+			ImGui::EndPopup();
+
+		}
+		xPos += w + margin;
+	}
+#pragma endregion channels
 #pragma region WebSockets
 	if (showWS)
 	{
-		ui::SetNextWindowSize(ImVec2(largePreviewW + 20, h), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largePreviewW + 20, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("WebSockets");
 		{
@@ -603,7 +671,7 @@ void BatchassApp::drawMain()
 			ui::EndChild();
 		}
 		ui::End();
-		yPos += h + margin;
+		yPos += largePreviewH + margin;
 	}
 #pragma endregion WebSockets
 
@@ -647,10 +715,114 @@ void BatchassApp::drawMain()
 			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
 		}
 		ui::End();
-		xPos += largePreviewW + margin;
-		yPos = margin;
+
+		yPos += largePreviewH + margin;
 	}
 #pragma endregion Audio
+
+#pragma region MIDI
+
+	// MIDI window
+	if (showMidi)
+	{
+		ui::SetNextWindowSize(ImVec2(largePreviewW+20, largePreviewH), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin("MIDI");
+		{
+			if (ui::CollapsingHeader("MidiIn", "20", true, true))
+			{
+				ui::Columns(2, "data", true);
+				ui::Text("Name"); ui::NextColumn();
+				ui::Text("Connect"); ui::NextColumn();
+				ui::Separator();
+
+				for (int i = 0; i < mMidiInputs.size(); i++)
+				{
+					ui::Text(mMidiInputs[i].portName.c_str()); ui::NextColumn();
+					char buf[32];
+					if (mMidiInputs[i].isConnected)
+					{
+						sprintf_s(buf, "Disconnect %d", i);
+					}
+					else
+					{
+						sprintf_s(buf, "Connect %d", i);
+					}
+
+					if (ui::Button(buf))
+					{
+						stringstream ss;
+						if (mMidiInputs[i].isConnected)
+						{
+							if (i == 0)
+							{
+								mMidiIn0.closePort();
+							}
+							if (i == 1)
+							{
+								mMidiIn1.closePort();
+							}
+							if (i == 2)
+							{
+								mMidiIn2.closePort();
+							}
+							mMidiInputs[i].isConnected = false;
+						}
+						else
+						{
+							if (i == 0)
+							{
+								mMidiIn0.openPort(i);
+								mMidiIn0.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
+							}
+							if (i == 1)
+							{
+								mMidiIn1.openPort(i);
+								mMidiIn1.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
+							}
+							if (i == 2)
+							{
+								mMidiIn2.openPort(i);
+								mMidiIn2.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
+							}
+							mMidiInputs[i].isConnected = true;
+							ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName << std::endl;
+						}
+						mLogMsg = ss.str();
+
+					}
+					ui::NextColumn();
+					ui::Separator();
+				}
+				ui::Columns(1);
+
+			}
+			if (ui::CollapsingHeader("Log", "21", true, true))
+			{
+				static ImGuiTextBuffer log;
+				static int lines = 0;
+				ui::Text("Buffer contents: %d lines, %d bytes", lines, log.size());
+				if (ui::Button("Clear")) { log.clear(); lines = 0; }
+				//ui::SameLine();
+
+				if (newLogMsg)
+				{
+					newLogMsg = false;
+					log.append(mLogMsg.c_str());
+					lines++;
+					if (lines > 5) { log.clear(); lines = 0; }
+				}
+				ui::BeginChild("Log");
+				ui::TextUnformatted(log.begin(), log.end());
+				ui::EndChild();
+			}
+		}
+		ui::End();
+		xPos += largePreviewW + 20 + margin;
+		yPos = margin;
+
+	}
+#pragma endregion MIDI
 #pragma region Global
 
 	ui::SetNextWindowSize(ImVec2(largeW, displayHeight), ImGuiSetCond_Once);
@@ -691,9 +863,9 @@ void BatchassApp::drawMain()
 			ui::RadioButton("Mix##mode", &mode, MODE_MIX); ui::SameLine();
 			ui::RadioButton("Audio##mode", &mode, MODE_AUDIO); ui::SameLine();
 			ui::RadioButton("Sphere##mode", &mode, MODE_SPHERE); ui::SameLine();
-			ui::RadioButton("Warp##mode", &mode, MODE_WARP); 
+			ui::RadioButton("Warp##mode", &mode, MODE_WARP);
 			ui::RadioButton("Mesh##mode", &mode, MODE_MESH); ui::SameLine();
-			ui::RadioButton("Live##mode", &mode, MODE_LIVE);ui::SameLine();
+			ui::RadioButton("Live##mode", &mode, MODE_LIVE); ui::SameLine();
 			ui::RadioButton("ABP##mode", &mode, MODE_ABP); ui::SameLine();
 			ui::RadioButton("VertexSphere##mode", &mode, MODE_VERTEXSPHERE);
 			if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
@@ -733,7 +905,7 @@ void BatchassApp::drawMain()
 			if (ui::Button("47 vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
 			ui::SameLine();
 			if (ui::Button("48 invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
-			
+
 			mParameterBag->iGreyScale ^= ui::Button("greyscale");
 			ui::SameLine();
 			if (ui::Button("instant black"))
@@ -1044,106 +1216,110 @@ void BatchassApp::drawMain()
 #pragma region shaders
 	if (showShaders)
 	{
+
 		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
 		{
-			sprintf_s(buf, "%d %s", i, mBatchass->getShadersRef()->getShaderName(i).c_str());
-			ui::SetNextWindowSize(ImVec2(w, h));
-			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+			if (i < mParameterBag->MAX && i < mBatchass->getTexturesRef()->getThumbsFboCount())
 			{
-				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
-				ui::PushID(i);
-				ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+				sprintf_s(buf, "%d %s", i, mBatchass->getShadersRef()->getShaderName(i).c_str());
+				ui::SetNextWindowSize(ImVec2(w, h));
+				ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+				{
+					ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
+					ui::PushID(i);
+					ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 
-				ui::Columns(5, "data", false);
-				// left
-				if (mParameterBag->mLeftFragIndex == i)
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 1.0f, 0.5f));
-				}
-				else
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+					ui::Columns(5, "data", false);
+					// left
+					if (mParameterBag->mLeftFragIndex == i)
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 1.0f, 0.5f));
+					}
+					else
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
 
-				}
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.0f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.0f, 0.8f, 0.8f));
-				sprintf_s(buf, "L##s%d", i);
-				if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
-				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to left");
-				ui::PopStyleColor(3);
-				ui::NextColumn();
+					}
+					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.0f, 0.7f, 0.7f));
+					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.0f, 0.8f, 0.8f));
+					sprintf_s(buf, "L##s%d", i);
+					if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
+					if (ui::IsItemHovered()) ui::SetTooltip("Set shader to left");
+					ui::PopStyleColor(3);
+					ui::NextColumn();
 
-				// right
-				if (mParameterBag->mRightFragIndex == i)
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.3f, 1.0f, 0.5f));
-				}
-				else
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-				}
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.3f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.3f, 0.8f, 0.8f));
-				sprintf_s(buf, "R##s%d", i);
-				if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
-				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to right");
-				ui::PopStyleColor(3);
-				ui::NextColumn();
+					// right
+					if (mParameterBag->mRightFragIndex == i)
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.3f, 1.0f, 0.5f));
+					}
+					else
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+					}
+					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.3f, 0.7f, 0.7f));
+					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.3f, 0.8f, 0.8f));
+					sprintf_s(buf, "R##s%d", i);
+					if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
+					if (ui::IsItemHovered()) ui::SetTooltip("Set shader to right");
+					ui::PopStyleColor(3);
+					ui::NextColumn();
 
-				// preview
-				if (mParameterBag->mPreviewFragIndex == i)
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
-				}
-				else
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-				}
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.6f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.6f, 0.8f, 0.8f));
-				sprintf_s(buf, "P##s%d", i);
-				if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
-				if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
-				ui::PopStyleColor(3);
-				ui::NextColumn();
+					// preview
+					if (mParameterBag->mPreviewFragIndex == i)
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
+					}
+					else
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+					}
+					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.6f, 0.7f, 0.7f));
+					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.6f, 0.8f, 0.8f));
+					sprintf_s(buf, "P##s%d", i);
+					if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
+					if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
+					ui::PopStyleColor(3);
+					ui::NextColumn();
 
-				// warp1
-				if (mParameterBag->mWarp1FragIndex == i)
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.16f, 1.0f, 0.5f));
-				}
-				else
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-				}
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.16f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.16f, 0.8f, 0.8f));
-				sprintf_s(buf, "W1##s%d", i);
-				if (ui::Button(buf)) mParameterBag->mWarp1FragIndex = i;
-				if (ui::IsItemHovered()) ui::SetTooltip("Set warp 1 shader");
-				ui::PopStyleColor(3);
-				ui::NextColumn();
+					// warp1
+					if (mParameterBag->mWarp1FragIndex == i)
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.16f, 1.0f, 0.5f));
+					}
+					else
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+					}
+					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.16f, 0.7f, 0.7f));
+					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.16f, 0.8f, 0.8f));
+					sprintf_s(buf, "W1##s%d", i);
+					if (ui::Button(buf)) mParameterBag->mWarp1FragIndex = i;
+					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 1 shader");
+					ui::PopStyleColor(3);
+					ui::NextColumn();
 
-				// warp2
-				if (mParameterBag->mWarp2FragIndex == i)
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.77f, 1.0f, 0.5f));
-				}
-				else
-				{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-				}
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.77f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.77f, 0.8f, 0.8f));
-				sprintf_s(buf, "W2##s%d", i);
-				if (ui::Button(buf)) mParameterBag->mWarp2FragIndex = i;
-				if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
-				ui::PopStyleColor(3);
-				ui::NextColumn();
+					// warp2
+					if (mParameterBag->mWarp2FragIndex == i)
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.77f, 1.0f, 0.5f));
+					}
+					else
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+					}
+					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.77f, 0.7f, 0.7f));
+					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.77f, 0.8f, 0.8f));
+					sprintf_s(buf, "W2##s%d", i);
+					if (ui::Button(buf)) mParameterBag->mWarp2FragIndex = i;
+					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
+					ui::PopStyleColor(3);
+					ui::NextColumn();
 
-				ui::PopID();
+					ui::PopID();
 
-				ui::Columns(1);
+					ui::Columns(1);
+				}
 			}
 			ui::End();
 		}
@@ -1151,6 +1327,48 @@ void BatchassApp::drawMain()
 	}
 
 #pragma endregion shaders
+#pragma region library
+
+	xPos = margin;
+	for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
+	{
+		sprintf_s(buf, "%s##lsh%d", mBatchass->getShadersRef()->getShaderName(i).c_str(), i);
+		ui::SetNextWindowSize(ImVec2(warpWidth, h));
+		ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+		{
+			ui::SetWindowPos(ImVec2((xPos)+margin, yPos));
+			xPos += warpWidth + inBetween;
+			if (xPos > mParameterBag->MAX * (warpWidth + inBetween))
+			{
+				xPos = margin;
+				yPos += h + margin;
+			}
+
+			ui::PushID(i);
+			ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth / 2, mParameterBag->mPreviewFboHeight / 2));
+			// preview
+			if (mParameterBag->mPreviewFragIndex == i)
+			{
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
+			}
+			else
+			{
+				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+			}
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.6f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.6f, 0.8f, 0.8f));
+			sprintf_s(buf, "P##ls%d", i);
+			if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
+			if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
+			ui::PopStyleColor(3);
+			ui::PopID();
+		}
+		ui::End();
+	}
+	xPos = margin;
+	yPos += h + margin;
+
+#pragma endregion library
 #pragma region fbos
 
 	if (showFbos)
@@ -1180,176 +1398,7 @@ void BatchassApp::drawMain()
 		yPos += h + margin;
 	}
 #pragma endregion fbos
-#pragma region channels
-	if (showChannels)
-	{
-		static bool popupTexture_open = false;
-		static int selectedChn = -1;
-		static int selectedTex = -1;
 
-		ui::SetNextWindowSize(ImVec2(w, largePreviewH), ImGuiSetCond_Once);
-		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-
-		ui::Begin("Channels");
-		{
-			ui::Columns(2);
-			ui::Text("Chn"); ui::NextColumn();
-			ui::Text("Tex"); ui::NextColumn();
-
-			ui::Separator();
-			for (int i = 0; i < mParameterBag->iChannels.size() - 1; i++)
-			{
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
-				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
-				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				ui::Text("c%d", i); ui::NextColumn();
-				sprintf_s(buf, "%d", mParameterBag->iChannels[i]);
-				if (ImGui::Button(buf))
-				{
-					popupTexture_open = true;
-					selectedChn = i;
-				}
-				ui::NextColumn();
-				ui::PopStyleColor(3);
-			}
-			ui::Columns(1);
-		}
-		ui::End();
-
-		ImGui::SameLine();
-		if (selectedTex == -1)
-		{
-			ImGui::Text("<None>");
-		}
-		else
-		{
-			sprintf_s(buf, "%d", mParameterBag->iChannels[selectedTex]);
-			ImGui::Text(buf);
-		}
-		if (popupTexture_open)
-		{
-			//sprintf_s(buf, "##wtpopup", selectedChn);
-			ImGui::BeginPopup(&popupTexture_open);
-			for (size_t i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
-			{
-				sprintf_s(buf, "%d##chntpopup", i);
-				if (ImGui::Selectable(buf, false))
-				{
-					selectedTex = i;
-					if (selectedTex > -1) mBatchass->assignTextureToChannel(selectedTex, selectedChn);
-					// reinit
-					popupTexture_open = false;
-					selectedChn = -1;
-					selectedTex = -1;
-				}
-			}
-			ImGui::EndPopup();
-
-		}
-		xPos += w + margin;
-	}
-#pragma endregion channels
-#pragma region MIDI
-
-	// MIDI window
-	if (showMidi)
-	{
-		ui::SetNextWindowSize(ImVec2(largeW, largePreviewH), ImGuiSetCond_Once);
-		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		ui::Begin("MIDI");
-		{
-			if (ui::CollapsingHeader("MidiIn", "20", true, true))
-			{
-				ui::Columns(2, "data", true);
-				ui::Text("Name"); ui::NextColumn();
-				ui::Text("Connect"); ui::NextColumn();
-				ui::Separator();
-
-				for (int i = 0; i < mMidiInputs.size(); i++)
-				{
-					ui::Text(mMidiInputs[i].portName.c_str()); ui::NextColumn();
-					char buf[32];
-					if (mMidiInputs[i].isConnected)
-					{
-						sprintf_s(buf, "Disconnect %d", i);
-					}
-					else
-					{
-						sprintf_s(buf, "Connect %d", i);
-					}
-
-					if (ui::Button(buf))
-					{
-						stringstream ss;
-						if (mMidiInputs[i].isConnected)
-						{
-							if (i == 0)
-							{
-								mMidiIn0.closePort();
-							}
-							if (i == 1)
-							{
-								mMidiIn1.closePort();
-							}
-							if (i == 2)
-							{
-								mMidiIn2.closePort();
-							}
-							mMidiInputs[i].isConnected = false;
-						}
-						else
-						{
-							if (i == 0)
-							{
-								mMidiIn0.openPort(i);
-								mMidiIn0.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-							}
-							if (i == 1)
-							{
-								mMidiIn1.openPort(i);
-								mMidiIn1.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-							}
-							if (i == 2)
-							{
-								mMidiIn2.openPort(i);
-								mMidiIn2.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-							}
-							mMidiInputs[i].isConnected = true;
-							ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName << std::endl;
-						}
-						mLogMsg = ss.str();
-
-					}
-					ui::NextColumn();
-					ui::Separator();
-				}
-				ui::Columns(1);
-
-			}
-			if (ui::CollapsingHeader("Log", "21", true, true))
-			{
-				static ImGuiTextBuffer log;
-				static int lines = 0;
-				ui::Text("Buffer contents: %d lines, %d bytes", lines, log.size());
-				if (ui::Button("Clear")) { log.clear(); lines = 0; }
-				//ui::SameLine();
-
-				if (newLogMsg)
-				{
-					newLogMsg = false;
-					log.append(mLogMsg.c_str());
-					lines++;
-					if (lines > 5) { log.clear(); lines = 0; }
-				}
-				ui::BeginChild("Log");
-				ui::TextUnformatted(log.begin(), log.end());
-				ui::EndChild();
-			}
-		}
-		ui::End();
-		xPos += largeW + margin;
-	}
-#pragma endregion MIDI
 #pragma region OSC
 
 	if (showOSC)
