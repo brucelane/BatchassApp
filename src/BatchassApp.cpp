@@ -1479,7 +1479,10 @@ void BatchassApp::fileDrop(FileDropEvent event)
 	// use the last of the dropped files
 	boost::filesystem::path mPath = event.getFile(event.getNumFiles() - 1);
 	string mFile = mPath.string();
-	if (mFile.find_last_of(".") != std::string::npos) ext = mFile.substr(mFile.find_last_of(".") + 1);
+	int dotIndex = mFile.find_last_of(".");
+	int slashIndex = mFile.find_last_of("\\");
+
+	if (dotIndex != std::string::npos && dotIndex > slashIndex) ext = mFile.substr(mFile.find_last_of(".") + 1);
 	index = (int)(event.getX() / (margin + mParameterBag->mPreviewFboWidth + inBetween));// +1;
 	//mBatchass->log(mFile + " dropped, currentSelectedIndex:" + toString(mParameterBag->currentSelectedIndex) + " x: " + toString(event.getX()) + " PreviewFboWidth: " + toString(mParameterBag->mPreviewFboWidth));
 
