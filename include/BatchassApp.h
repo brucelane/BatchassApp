@@ -183,7 +183,7 @@ private:
 	int							inBetween;
 
 	float						f = 0.0f;
-	char						buf[32];
+	char						buf[64];
 
 	bool showConsole, showGlobal, showTextures, showTest, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showWS, showChannels;
 	bool mouseGlobal;

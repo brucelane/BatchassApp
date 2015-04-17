@@ -46,4 +46,3 @@ uniform float       iFps;          			// frames per second
 uniform float       iTempoTime;
 uniform vec4		iDate;					// (year, month, day, time in seconds)
 uniform int         iGlitch;           		// 1 for glitch
-const 	float 		PI = 3.14159265;
