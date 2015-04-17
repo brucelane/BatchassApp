@@ -106,7 +106,7 @@ void BatchassApp::setup()
 	static float f = 0.0f;
 	char buf[32];
 
-	showConsole = showGlobal = showTextures = showAudio = showShaders = showWS = showMidi = showChannels = true;
+	showConsole = showGlobal = showTextures = showAudio = showWS = showMidi = showChannels = showShaders = true;
 	showTest = showTheme = showOSC = showFbos = false;
 
 	// set ui window and io events callbacks
@@ -725,7 +725,7 @@ void BatchassApp::drawMain()
 	// MIDI window
 	if (showMidi)
 	{
-		ui::SetNextWindowSize(ImVec2(largePreviewW+20, largePreviewH), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(largePreviewW + 20, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("MIDI");
 		{
@@ -1233,11 +1233,11 @@ void BatchassApp::drawMain()
 					// left
 					if (mParameterBag->mLeftFragIndex == i)
 					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 1.0f, 0.5f));
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 1.0f, 0.5f));
 					}
 					else
 					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
 
 					}
 					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.0f, 0.7f, 0.7f));
@@ -1251,11 +1251,11 @@ void BatchassApp::drawMain()
 					// right
 					if (mParameterBag->mRightFragIndex == i)
 					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.3f, 1.0f, 0.5f));
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.3f, 1.0f, 0.5f));
 					}
 					else
 					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
 					}
 					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.3f, 0.7f, 0.7f));
 					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.3f, 0.8f, 0.8f));
@@ -1268,11 +1268,11 @@ void BatchassApp::drawMain()
 					// preview
 					if (mParameterBag->mPreviewFragIndex == i)
 					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
 					}
 					else
 					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
 					}
 					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.6f, 0.7f, 0.7f));
 					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.6f, 0.8f, 0.8f));
@@ -1285,11 +1285,11 @@ void BatchassApp::drawMain()
 					// warp1
 					if (mParameterBag->mWarp1FragIndex == i)
 					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.16f, 1.0f, 0.5f));
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.16f, 1.0f, 0.5f));
 					}
 					else
 					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
 					}
 					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.16f, 0.7f, 0.7f));
 					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.16f, 0.8f, 0.8f));
@@ -1302,11 +1302,11 @@ void BatchassApp::drawMain()
 					// warp2
 					if (mParameterBag->mWarp2FragIndex == i)
 					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.77f, 1.0f, 0.5f));
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.77f, 1.0f, 0.5f));
 					}
 					else
 					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
 					}
 					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.77f, 0.7f, 0.7f));
 					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.77f, 0.8f, 0.8f));
@@ -1319,9 +1319,11 @@ void BatchassApp::drawMain()
 					ui::PopID();
 
 					ui::Columns(1);
+					
 				}
+				ui::End();
 			}
-			ui::End();
+			
 		}
 		yPos += h + margin;
 	}
@@ -1338,7 +1340,7 @@ void BatchassApp::drawMain()
 		{
 			ui::SetWindowPos(ImVec2((xPos)+margin, yPos));
 			xPos += warpWidth + inBetween;
-			if (xPos > mParameterBag->MAX * (warpWidth + inBetween))
+			if (xPos > mParameterBag->MAX * (warpWidth + inBetween) * 2)
 			{
 				xPos = margin;
 				yPos += h + margin;
