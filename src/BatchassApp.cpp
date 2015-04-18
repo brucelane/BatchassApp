@@ -1000,11 +1000,9 @@ void BatchassApp::drawMain()
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// blend modes
-			ctrl = 20;
-			if (ui::SliderFloat("blendmode", &mParameterBag->controlValues[ctrl], 0.0f, 27.0f))
-			{
-				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
-			}
+			//ctrl = 20;
+			ui::SliderInt("blendmode", &mParameterBag->iBlendMode, 0, 27);
+			
 			// steps
 			ctrl = 16;
 			if (ui::SliderFloat("steps", &mParameterBag->controlValues[ctrl], 1.0f, 128.0f))

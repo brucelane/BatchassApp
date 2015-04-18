@@ -179,48 +179,9 @@ float glitchNse(float x)
 	float fl = floor(x);
 	return mix(glitchHash(fl), glitchHash(fl + 1.0), smoothstep(0.0, 1.0, fract(x)));
 }
-void rect(vec4 _p,vec3 _c)
-{
-	vec2 p=gl_FragCoord.xy;
-    if((_p.x<p.x&&p.x<_p.x+_p.z&&_p.y<p.y&&p.y<_p.y+_p.w))gl_FragColor=vec4(_c,0.);
-}
-
-void print(float _i,vec2 _f,vec2 _p,vec3 _c)
-{
-    bool n=(_i<0.)?true:false;
-    _i=abs(_i);
-    if(gl_FragCoord.x<_p.x-5.-(max(ceil(log(_i)/log(10.)),_f.x)+(n?1.:0.))*30.||_p.x+6.+_f.y*30.<gl_FragCoord.x||gl_FragCoord.y<_p.y||_p.y+31.<gl_FragCoord.y)return;
-    
-    if(0.<_f.y){rect(vec4(_p.x-5.,_p.y,11.,11.),vec3(1.));rect(vec4(_p.x-4.,_p.y+1.,9.,9.),_c);}
-    
-    float c=-_f.y,m=0.;
-    for(int i=0;i<16;i++)
-    {
-        float x,y=_p.y;
-        if(0.<=c){x=_p.x-35.-30.*c;}
-        else{x=_p.x-25.-30.*c;}
-        if(int(_f.x)<=int(c)&&_i/pow(10.,c)<1.&&0.<c)
-        {
-            if(n){rect(vec4(x,y+10.,31.,11.),vec3(1.));rect(vec4(x+1.,y+11.,29.,9.),_c);}
-            break;
-        }
-        float l=fract(_i/pow(10.,c+1.));
-        if(l<.1){rect(vec4(x,y,31.,31.),vec3(1.));rect(vec4(x+1.,y+1.,29.,29.),_c);rect(vec4(x+15.,y+10.,1.,11.),vec3(1.));}
-        else if(l<.2){rect(vec4(x+5.,y,21.,31.),vec3(1.));rect(vec4(x,y,31.,11.),vec3(1.));rect(vec4(x,y+20.,6.,11.),vec3(1.));rect(vec4(x+6.,y+1.,19.,29.),_c);rect(vec4(x+1.,y+1.,29.,9.),_c);rect(vec4(x+1.,y+21.,5.,9.),_c);}
-        else if(l<.3){rect(vec4(x,y,31.,31.),vec3(1.));rect(vec4(x+1.,y+1.,29.,29.),_c);rect(vec4(x+15.,y+10.,15.,1.),vec3(1.));rect(vec4(x+1.,y+20.,15.,1.),vec3(1.));}
-        else if(l<.4){rect(vec4(x,y,31.,31.),vec3(1.));rect(vec4(x+1.,y+1.,29.,29.),_c);rect(vec4(x+1.,y+10.,15.,1.),vec3(1.));rect(vec4(x+1.,y+20.,15.,1.),vec3(1.));}
-        else if(l<.5){rect(vec4(x,y+5.,15.,26.),vec3(1.));rect(vec4(x+15.,y,16.,31.),vec3(1.));rect(vec4(x+1.,y+6.,14.,24.),_c);rect(vec4(x+16.,y+1.,14.,29.),_c);rect(vec4(x+15.,y+6.,1.,10.),_c);}
-        else if(l<.6){rect(vec4(x,y,31.,31.),vec3(1.));rect(vec4(x+1.,y+1.,29.,29.),_c);rect(vec4(x+1.,y+10.,15.,1.),vec3(1.));rect(vec4(x+15.,y+20.,15.,1.),vec3(1.));}
-        else if(l<.7){rect(vec4(x,y,31.,31.),vec3(1.));rect(vec4(x+1.,y+1.,29.,29.),_c);rect(vec4(x+10.,y+10.,11.,1.),vec3(1.));rect(vec4(x+10.,y+20.,20.,1.),vec3(1.));}
-        else if(l<.8){rect(vec4(x,y+10.,15.,21.),vec3(1.));rect(vec4(x+15.,y,16.,31.),vec3(1.));rect(vec4(x+1.,y+11.,14.,19.),_c);rect(vec4(x+16.,y+1.,14.,29.),_c);rect(vec4(x+15.,y+20.,1.,10.),_c);}
-        else if(l<.9){rect(vec4(x,y,31.,31.),vec3(1.));rect(vec4(x+1.,y+1.,29.,29.),_c);rect(vec4(x+10.,y+10.,11.,1.),vec3(1.));rect(vec4(x+10.,y+20.,11.,1.),vec3(1.));}
-        else{rect(vec4(x,y,31.,31.),vec3(1.));rect(vec4(x+1.,y+1.,29.,29.),_c);rect(vec4(x+1.,y+10.,20.,1.),vec3(1.));rect(vec4(x+10.,y+20.,11.,1.),vec3(1.));}
-        c+=1.;
-    }
-}
 // global functions end
-// left main lines begin
 
+// left main lines begin
 vec3 shaderLeft(vec2 uv)
 {
 	vec4 left = texture2D(iChannel0, uv);
@@ -233,10 +194,9 @@ vec3 shaderLeft(vec2 uv)
 	}
 	return vec3( left.r, left.g, left.b );
 }
-
 // left main lines end
-// right main lines begin
 
+// right main lines begin
 vec3 shaderRight(vec2 uv)
 {
 	vec4 right = texture2D(iChannel1, uv);
@@ -253,9 +213,301 @@ vec3 shaderRight(vec2 uv)
 }
 
 // right main lines end
+
+// Blend functions begin
+vec3 multiply( vec3 s, vec3 d )
+{
+   return s*d;
+}
+vec3 colorBurn( vec3 s, vec3 d )
+{
+   return 1.0 - (1.0 - d) / s;
+}
+vec3 linearBurn( vec3 s, vec3 d )
+{
+   return s + d - 1.0;
+}
+vec3 darkerColor( vec3 s, vec3 d )
+{
+   return (s.x + s.y + s.z < d.x + d.y + d.z) ? s : d;
+}
+vec3 lighten( vec3 s, vec3 d )
+{
+   return max(s,d);
+}
+vec3 darken( vec3 s, vec3 d )
+{
+   return min(s,d);
+}
+vec3 screen( vec3 s, vec3 d )
+{
+   return s + d - s * d;
+}
+
+vec3 colorDodge( vec3 s, vec3 d )
+{
+   return d / (1.0 - s);
+}
+
+vec3 linearDodge( vec3 s, vec3 d )
+{
+   return s + d;
+}
+
+vec3 lighterColor( vec3 s, vec3 d )
+{
+   return (s.x + s.y + s.z > d.x + d.y + d.z) ? s : d;
+}
+
+float overlay( float s, float d )
+{
+   return (d < 0.5) ? 2.0 * s * d : 1.0 - 2.0 * (1.0 - s) * (1.0 - d);
+}
+
+vec3 overlay( vec3 s, vec3 d )
+{
+   vec3 c;
+   c.x = overlay(s.x,d.x);
+   c.y = overlay(s.y,d.y);
+   c.z = overlay(s.z,d.z);
+   return c;
+}
+
+float softLight( float s, float d )
+{
+   return (s < 0.5) ? d - (1.0 - 2.0 * s) * d * (1.0 - d) 
+      : (d < 0.25) ? d + (2.0 * s - 1.0) * d * ((16.0 * d - 12.0) * d + 3.0) 
+                : d + (2.0 * s - 1.0) * (sqrt(d) - d);
+}
+
+vec3 softLight( vec3 s, vec3 d )
+{
+   vec3 c;
+   c.x = softLight(s.x,d.x);
+   c.y = softLight(s.y,d.y);
+   c.z = softLight(s.z,d.z);
+   return c;
+}
+
+float hardLight( float s, float d )
+{
+   return (s < 0.5) ? 2.0 * s * d : 1.0 - 2.0 * (1.0 - s) * (1.0 - d);
+}
+
+vec3 hardLight( vec3 s, vec3 d )
+{
+   vec3 c;
+   c.x = hardLight(s.x,d.x);
+   c.y = hardLight(s.y,d.y);
+   c.z = hardLight(s.z,d.z);
+   return c;
+}
+
+float vividLight( float s, float d )
+{
+   return (s < 0.5) ? 1.0 - (1.0 - d) / (2.0 * s) : d / (2.0 * (1.0 - s));
+}
+
+vec3 vividLight( vec3 s, vec3 d )
+{
+   vec3 c;
+   c.x = vividLight(s.x,d.x);
+   c.y = vividLight(s.y,d.y);
+   c.z = vividLight(s.z,d.z);
+   return c;
+}
+
+vec3 linearLight( vec3 s, vec3 d )
+{
+   return 2.0 * s + d - 1.0;
+}
+
+float pinLight( float s, float d )
+{
+   return (2.0 * s - 1.0 > d) ? 2.0 * s - 1.0 : (s < 0.5 * d) ? 2.0 * s : d;
+}
+
+vec3 pinLight( vec3 s, vec3 d )
+{
+   vec3 c;
+   c.x = pinLight(s.x,d.x);
+   c.y = pinLight(s.y,d.y);
+   c.z = pinLight(s.z,d.z);
+   return c;
+}
+
+vec3 hardMix( vec3 s, vec3 d )
+{
+   return floor(s + d);
+}
+
+vec3 difference( vec3 s, vec3 d )
+{
+   return abs(d - s);
+}
+
+vec3 exclusion( vec3 s, vec3 d )
+{
+   return s + d - 2.0 * s * d;
+}
+
+vec3 subtract( vec3 s, vec3 d )
+{
+   return s - d;
+}
+
+vec3 divide( vec3 s, vec3 d )
+{
+   return s / d;
+}
+
+// rgb<-->hsv functions by Sam Hocevar
+// http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+vec3 rgb2hsv(vec3 c)
+{
+   vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+   vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+   vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+   
+   float d = q.x - min(q.w, q.y);
+   float e = 1.0e-10;
+   return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+
+vec3 hsv2rgb(vec3 c)
+{
+   vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+   vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+   return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+vec3 hue( vec3 s, vec3 d )
+{
+   d = rgb2hsv(d);
+   d.x = rgb2hsv(s).x;
+   return hsv2rgb(d);
+}
+
+vec3 color( vec3 s, vec3 d )
+{
+   s = rgb2hsv(s);
+   s.z = rgb2hsv(d).z;
+   return hsv2rgb(s);
+}
+
+vec3 saturation( vec3 s, vec3 d )
+{
+   d = rgb2hsv(d);
+   d.y = rgb2hsv(s).y;
+   return hsv2rgb(d);
+}
+
+vec3 luminosity( vec3 s, vec3 d )
+{
+   float dLum = dot(d, vec3(0.3, 0.59, 0.11));
+   float sLum = dot(s, vec3(0.3, 0.59, 0.11));
+   float lum = sLum - dLum;
+   vec3 c = d + lum;
+   float minC = min(min(c.x, c.y), c.z);
+   float maxC = max(max(c.x, c.y), c.z);
+   if(minC < 0.0) return sLum + ((c - sLum) * sLum) / (sLum - minC);
+   else if(maxC > 1.0) return sLum + ((c - sLum) * (1.0 - sLum)) / (maxC - sLum);
+   else return c;
+}
+// Blend functions end
+
 vec3 mainFunction( vec2 uv )
 {
-   return mix( shaderLeft(uv), shaderRight(uv), iCrossfade );
+   vec3 c = vec3(0.0);
+   switch ( iBlendmode )
+   {
+   case 0: 
+      c = mix( shaderLeft(uv), shaderRight(uv), iCrossfade );
+      break;
+   case 1: 
+      c = multiply( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 2: 
+      c = colorBurn( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 3: 
+      c = linearBurn( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 4: 
+      c = darkerColor( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 5: 
+      c = lighten( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 6: 
+      c = screen( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 7: 
+      c = colorDodge( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 8: 
+      c = linearDodge( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 9: 
+      c = lighterColor( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 10: 
+      c = overlay( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 11: 
+      c = softLight( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 12: 
+      c = hardLight( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 13: 
+      c = vividLight( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 14: 
+      c = linearLight( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 15: 
+      c = pinLight( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 16: 
+      c = hardMix( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 17: 
+      c = difference( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 18: 
+      c = exclusion( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 19: 
+      c = subtract( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 20: 
+      c = divide( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 21: 
+      c = hue( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 22: 
+      c = color( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 23: 
+      c = saturation( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 24: 
+      c = luminosity( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 25: 
+      c = darken( shaderLeft(uv), shaderRight(uv) );
+      break;
+   case 26: 
+      c = shaderLeft(uv);
+      break;
+   default: // in any other case.
+      c = shaderRight(uv);
+      break;
+   }
+   return c;
+   //return mix( shaderLeft(uv), shaderRight(uv), iCrossfade );
 }
 // main start
 void main(void)
@@ -344,11 +596,7 @@ void main(void)
 			col = mix( col, iColor, fIsDigit5);
 		}
 	}
-
 	gl_FragColor = iAlpha * vec4( col, 1.0 );
-	if (iDebug == 1)
-	{
-    	print(iFps,vec2(2.,0.),vec2(620.,0.),vec3(1.,.3,.0));
-	}
+
 }
 // main end
