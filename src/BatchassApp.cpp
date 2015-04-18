@@ -106,8 +106,8 @@ void BatchassApp::setup()
 	static float f = 0.0f;
 	//char buf[32];
 
-	showConsole = showGlobal = showTextures = showAudio = showWS = showMidi = showChannels = true;
-	showTest = showTheme = showOSC = showFbos = showShaders = false;
+	showConsole = showGlobal = showTextures = showAudio = showWS = showMidi = showChannels = showShaders = true;
+	showTest = showTheme = showOSC = showFbos = false;
 
 	// set ui window and io events callbacks
 	ui::connectWindow(getWindow());
@@ -556,7 +556,7 @@ void BatchassApp::drawMain()
 		static int selectedChn = -1;
 		static int selectedTex = -1;
 
-		ui::SetNextWindowSize(ImVec2(w*2, largePreviewH), ImGuiSetCond_Once);
+		ui::SetNextWindowSize(ImVec2(w * 2, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 
 		ui::Begin("Channels");
@@ -615,7 +615,7 @@ void BatchassApp::drawMain()
 			ImGui::EndPopup();
 
 		}
-		xPos += w*2 + margin;
+		xPos += w * 2 + margin;
 	}
 #pragma endregion channels
 #pragma region WebSockets
@@ -855,6 +855,8 @@ void BatchassApp::drawMain()
 			mParameterBag->mPreviewEnabled ^= ui::Button("Preview");
 			ui::SameLine();
 			mParameterBag->iDebug ^= ui::Button("Debug");
+			ui::SameLine();
+			mParameterBag->mRenderThumbs ^= ui::Button("Thumbs");
 		}
 
 		if (ui::CollapsingHeader("Mode", NULL, true, true))
@@ -1213,238 +1215,125 @@ void BatchassApp::drawMain()
 	}
 #pragma endregion textures
 
-#pragma region shaders
+
+#pragma region library
 	if (showShaders)
 	{
 
+		xPos = margin;
 		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
 		{
-			if (i < mParameterBag->MAX && i < mBatchass->getTexturesRef()->getThumbsFboCount())
+			sprintf_s(buf, "%s##lsh%d", mBatchass->getShadersRef()->getShaderName(i).c_str(), i);
+			ui::SetNextWindowSize(ImVec2(warpWidth, h));
+			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 			{
-				sprintf_s(buf, "%d %s", i, mBatchass->getShadersRef()->getShaderName(i).c_str());
-				ui::SetNextWindowSize(ImVec2(w, h));
-				ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+				ui::SetWindowPos(ImVec2((xPos)+margin, yPos));
+				xPos += warpWidth + inBetween;
+				if (xPos > mParameterBag->MAX * (warpWidth ) * 1.8)
 				{
-					ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
-					ui::PushID(i);
-					ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
-
-					ui::Columns(5, "data", false);
-					// left
-					if (mParameterBag->mLeftFragIndex == i)
-					{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 1.0f, 0.5f));
-					}
-					else
-					{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-
-					}
-					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.0f, 0.7f, 0.7f));
-					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.0f, 0.8f, 0.8f));
-					sprintf_s(buf, "L##s%d", i);
-					if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
-					if (ui::IsItemHovered()) ui::SetTooltip("Set shader to left");
-					ui::PopStyleColor(3);
-					ui::NextColumn();
-
-					// right
-					if (mParameterBag->mRightFragIndex == i)
-					{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.3f, 1.0f, 0.5f));
-					}
-					else
-					{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-					}
-					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.3f, 0.7f, 0.7f));
-					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.3f, 0.8f, 0.8f));
-					sprintf_s(buf, "R##s%d", i);
-					if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
-					if (ui::IsItemHovered()) ui::SetTooltip("Set shader to right");
-					ui::PopStyleColor(3);
-					ui::NextColumn();
-
-					// preview
-					if (mParameterBag->mPreviewFragIndex == i)
-					{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
-					}
-					else
-					{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-					}
-					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.6f, 0.7f, 0.7f));
-					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.6f, 0.8f, 0.8f));
-					sprintf_s(buf, "P##s%d", i);
-					if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
-					if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
-					ui::PopStyleColor(3);
-					ui::NextColumn();
-
-					// warp1
-					if (mParameterBag->mWarp1FragIndex == i)
-					{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.16f, 1.0f, 0.5f));
-					}
-					else
-					{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-					}
-					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.16f, 0.7f, 0.7f));
-					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.16f, 0.8f, 0.8f));
-					sprintf_s(buf, "W1##s%d", i);
-					if (ui::Button(buf)) mParameterBag->mWarp1FragIndex = i;
-					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 1 shader");
-					ui::PopStyleColor(3);
-					ui::NextColumn();
-
-					// warp2
-					if (mParameterBag->mWarp2FragIndex == i)
-					{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.77f, 1.0f, 0.5f));
-					}
-					else
-					{
-					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-					}
-					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.77f, 0.7f, 0.7f));
-					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.77f, 0.8f, 0.8f));
-					sprintf_s(buf, "W2##s%d", i);
-					if (ui::Button(buf)) mParameterBag->mWarp2FragIndex = i;
-					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
-					ui::PopStyleColor(3);
-					ui::NextColumn();
-
-					ui::PopID();
-
-					ui::Columns(1);
-					
+					xPos = margin;
+					yPos += h + margin;
 				}
-				ui::End();
+
+				ui::PushID(i);
+				ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth / 2, mParameterBag->mPreviewFboHeight / 2));
+
+				ui::Columns(2, "lr", false);
+				// left
+				if (mParameterBag->mLeftFragIndex == i)
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 1.0f, 0.5f));
+				}
+				else
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+
+				}
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.0f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.0f, 0.8f, 0.8f));
+				sprintf_s(buf, "L##s%d", i);
+				if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to left");
+				ui::PopStyleColor(3);
+				ui::NextColumn();
+
+				// right
+				if (mParameterBag->mRightFragIndex == i)
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.3f, 1.0f, 0.5f));
+				}
+				else
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+				}
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.3f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.3f, 0.8f, 0.8f));
+				sprintf_s(buf, "R##s%d", i);
+				if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to right");
+				ui::PopStyleColor(3);
+				ui::NextColumn();
+
+
+				// warp1
+				if (mParameterBag->mWarp1FragIndex == i)
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.16f, 1.0f, 0.5f));
+				}
+				else
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+				}
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.16f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.16f, 0.8f, 0.8f));
+				sprintf_s(buf, "W1##s%d", i);
+				if (ui::Button(buf)) mParameterBag->mWarp1FragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Set warp 1 shader");
+				ui::PopStyleColor(3);
+				ui::NextColumn();
+
+				// warp2
+				if (mParameterBag->mWarp2FragIndex == i)
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.77f, 1.0f, 0.5f));
+				}
+				else
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+				}
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.77f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.77f, 0.8f, 0.8f));
+				sprintf_s(buf, "W2##s%d", i);
+				if (ui::Button(buf)) mParameterBag->mWarp2FragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
+				ui::PopStyleColor(3);
+				ui::NextColumn();
+				// preview
+				if (mParameterBag->mPreviewFragIndex == i)
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
+				}
+				else
+				{
+					ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+				}
+				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.6f, 0.7f, 0.7f));
+				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.6f, 0.8f, 0.8f));
+				sprintf_s(buf, "P##s%d", i);
+				if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
+				if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
+				ui::PopStyleColor(3);
+				ui::NextColumn();
+
+				ui::PopID();
+
+				ui::Columns(1);
 			}
-			
+			ui::End();
 		}
+		xPos = margin;
 		yPos += h + margin;
 	}
-
-#pragma endregion shaders
-#pragma region library
-
-	xPos = margin;
-	for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
-	{
-		sprintf_s(buf, "%s##lsh%d", mBatchass->getShadersRef()->getShaderName(i).c_str(), i);
-		ui::SetNextWindowSize(ImVec2(warpWidth, h));
-		ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
-		{
-			ui::SetWindowPos(ImVec2((xPos)+margin, yPos));
-			xPos += warpWidth + inBetween;
-			if (xPos > mParameterBag->MAX * (warpWidth + inBetween) * 2)
-			{
-				xPos = margin;
-				yPos += h + margin;
-			}
-
-			ui::PushID(i);
-			ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth / 2, mParameterBag->mPreviewFboHeight / 2));
-
-			ui::Columns(2, "lr", false);
-			// left
-			if (mParameterBag->mLeftFragIndex == i)
-			{
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 1.0f, 0.5f));
-			}
-			else
-			{
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-
-			}
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.0f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.0f, 0.8f, 0.8f));
-			sprintf_s(buf, "L##s%d", i);
-			if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
-			if (ui::IsItemHovered()) ui::SetTooltip("Set shader to left");
-			ui::PopStyleColor(3);
-			ui::NextColumn();
-
-			// right
-			if (mParameterBag->mRightFragIndex == i)
-			{
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.3f, 1.0f, 0.5f));
-			}
-			else
-			{
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-			}
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.3f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.3f, 0.8f, 0.8f));
-			sprintf_s(buf, "R##s%d", i);
-			if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
-			if (ui::IsItemHovered()) ui::SetTooltip("Set shader to right");
-			ui::PopStyleColor(3);
-			ui::NextColumn();
-
-			
-			// warp1
-			if (mParameterBag->mWarp1FragIndex == i)
-			{
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.16f, 1.0f, 0.5f));
-			}
-			else
-			{
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-			}
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.16f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.16f, 0.8f, 0.8f));
-			sprintf_s(buf, "W1##s%d", i);
-			if (ui::Button(buf)) mParameterBag->mWarp1FragIndex = i;
-			if (ui::IsItemHovered()) ui::SetTooltip("Set warp 1 shader");
-			ui::PopStyleColor(3);
-			ui::NextColumn();
-
-			// warp2
-			if (mParameterBag->mWarp2FragIndex == i)
-			{
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.77f, 1.0f, 0.5f));
-			}
-			else
-			{
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-			}
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.77f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.77f, 0.8f, 0.8f));
-			sprintf_s(buf, "W2##s%d", i);
-			if (ui::Button(buf)) mParameterBag->mWarp2FragIndex = i;
-			if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
-			ui::PopStyleColor(3);
-			ui::NextColumn();
-			// preview
-			if (mParameterBag->mPreviewFragIndex == i)
-			{
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
-			}
-			else
-			{
-				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-			}
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.6f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.6f, 0.8f, 0.8f));
-			sprintf_s(buf, "P##s%d", i);
-			if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
-			if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
-			ui::PopStyleColor(3);
-			ui::NextColumn();
-
-			ui::PopID();
-
-			ui::Columns(1);
-		}
-		ui::End();
-	}
-	xPos = margin;
-	yPos += h + margin;
-
 #pragma endregion library
 #pragma region fbos
 
