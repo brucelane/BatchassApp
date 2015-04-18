@@ -37,6 +37,7 @@ uniform float       iFps;          			// frames per second
 uniform float       iTempoTime;
 uniform vec4		iDate;					// (year, month, day, time in seconds)
 uniform int         iGlitch;           		// 1 for glitch
+uniform float       iChromatic;
 const 	float 		PI = 3.14159265;
 // uniforms end
 
@@ -223,9 +224,9 @@ void print(float _i,vec2 _f,vec2 _p,vec3 _c)
 vec3 shaderLeft(vec2 uv)
 {
 	vec4 left = texture2D(iChannel0, uv);
-	if (iBlendmode == 1) 
+	if (iChromatic > 0.0) 
 	{
-		vec2 offset = vec2(iBackgroundColor.r/50.0,.0);
+		vec2 offset = vec2(iChromatic/50.,.0);
 		left.r = texture2D(iChannel0, uv+offset.xy).r;
 		left.g = texture2D(iChannel0, uv          ).g;
 		left.b = texture2D(iChannel0, uv+offset.yx).b;
@@ -240,9 +241,9 @@ vec3 shaderRight(vec2 uv)
 {
 	vec4 right = texture2D(iChannel1, uv);
 	// chromatic aberation
-	if (iBlendmode == 1) 
+	if (iChromatic > 0.0) 
 	{
-		vec2 offset = vec2(iBackgroundColor.r/50.0,.0);
+		vec2 offset = vec2(iChromatic/50.,.0);
 		right.r = texture2D(iChannel1, uv+offset.xy).r;
 		right.g = texture2D(iChannel1, uv          ).g;
 		right.b = texture2D(iChannel1, uv+offset.yx).b;

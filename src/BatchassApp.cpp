@@ -894,8 +894,6 @@ void BatchassApp::drawMain()
 		}
 		if (ui::CollapsingHeader("Effects", NULL, true, true))
 		{
-			if (ui::Button("chromatic")) { mParameterBag->controlValues[20] = !mParameterBag->controlValues[20]; }
-			ui::SameLine();
 			mParameterBag->mOriginUpperLeft ^= ui::Button("o upleft");
 			ui::SameLine();
 			mParameterBag->iRepeat ^= ui::Button("repeat");
@@ -923,6 +921,19 @@ void BatchassApp::drawMain()
 			int ctrl;
 			stringstream aParams;
 			aParams << "{\"anim\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
+
+			// iChromatic
+			ctrl = 10;
+			if (ui::Button("a##chromatic")) { mBatchass->lockChromatic(); }
+			ui::SameLine();
+			if (ui::Button("t##chromatic")) { mBatchass->tempoChromatic(); }
+			ui::SameLine();
+			if (ui::Button("x##chromatic")) { mBatchass->resetChromatic(); }
+			ui::SameLine();
+			if (ui::SliderFloat("chromatic/min/max", &mParameterBag->controlValues[ctrl], mBatchass->minChromatic, mBatchass->maxChromatic))
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
 
 			// ratio
 			ctrl = 11;
