@@ -270,7 +270,11 @@ void BatchassApp::drawMain()
 				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mAudioFboIndex), rect);
 				break;
 			case MODE_WARP:
-				//mBatchass->getWarpsRef()->draw();
+				if (mBatchass->getWarpsRef()->isEditModeEnabled())
+				{
+mBatchass->getWarpsRef()->draw();
+				}
+
 				break;
 			case MODE_SPHERE:
 				mSphere->draw();
@@ -313,7 +317,7 @@ void BatchassApp::drawMain()
 	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);
 
 	//imgui
-	if (removeUI)
+	if (removeUI || mBatchass->getWarpsRef()->isEditModeEnabled())
 	{
 		return;
 	}
