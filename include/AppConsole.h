@@ -52,11 +52,6 @@ namespace Reymenta
 			return console->TextEditCallback(data);
 		}
 		int     TextEditCallback(ImGuiTextEditCallbackData* data);
-		/*~AppConsole()
-		{
-			ClearLog();
-			for (size_t i = 0; i < Items.size(); i++)
-				ImGui::MemFree(History[i]);
-		}*/
+
 	};
 }

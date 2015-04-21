@@ -583,7 +583,7 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
 				ui::Text("c%d", i); ui::NextColumn();
 				sprintf_s(buf, "%d", mParameterBag->iChannels[i]);
-				if (ui::Button(buf))
+				if (ImGui::Button(buf))
 				{
 					popupTexture_open = true;
 					selectedChn = i;
@@ -595,24 +595,24 @@ void BatchassApp::drawMain()
 		}
 		ui::End();
 
-		ui::SameLine();
+		ImGui::SameLine();
 		if (selectedTex == -1)
 		{
-			ui::Text("<None>");
+			ImGui::Text("<None>");
 		}
 		else
 		{
 			sprintf_s(buf, "%d", mParameterBag->iChannels[selectedTex]);
-			ui::Text(buf);
+			ImGui::Text(buf);
 		}
 		if (popupTexture_open)
 		{
 			//sprintf_s(buf, "##wtpopup", selectedChn);
-			ui::BeginPopup(&popupTexture_open);
+			ImGui::BeginPopup(&popupTexture_open);
 			for (size_t i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
 			{
 				sprintf_s(buf, "%d##chntpopup", i);
-				if (ui::Selectable(buf, false))
+				if (ImGui::Selectable(buf, false))
 				{
 					selectedTex = i;
 					if (selectedTex > -1) mBatchass->assignTextureToChannel(selectedTex, selectedChn);
@@ -622,7 +622,7 @@ void BatchassApp::drawMain()
 					selectedTex = -1;
 				}
 			}
-			ui::EndPopup();
+			ImGui::EndPopup();
 
 		}
 		xPos += w * 2 + margin;
@@ -718,7 +718,7 @@ void BatchassApp::drawMain()
 			}
 
 			ui::SliderFloat("mult x", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
-			ui::PlotHistogram("Histogram", mAudio->getSmallSpectrum(), 7, 0, NULL, 0.0f, 255.0f, ImVec2(0, 30));
+			ImGui::PlotHistogram("Histogram", mAudio->getSmallSpectrum(), 7, 0, NULL, 0.0f, 255.0f, ImVec2(0, 30));
 
 			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
 			ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
@@ -837,10 +837,10 @@ void BatchassApp::drawMain()
 
 	ui::SetNextWindowSize(ImVec2(largeW, displayHeight), ImGuiSetCond_Once);
 	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-	sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
+	sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
 	ui::Begin(buf);
 	{
-		ui::PushItemWidth(mParameterBag->mPreviewFboWidth);
+		ImGui::PushItemWidth(mParameterBag->mPreviewFboWidth);
 		// mode
 		static int mode = mParameterBag->mMode;
 
@@ -1132,9 +1132,9 @@ void BatchassApp::drawMain()
 
 		}
 
-		ui::End();
 
 	}
+	ui::End();
 
 #pragma endregion Global
 	// next line
@@ -1162,7 +1162,7 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
 
 				sprintf_s(buf, "In:%s##wm%d", warpInputs[mParameterBag->mWarpFbos[i].textureIndex], i);
-				if (ui::Button(buf))
+				if (ImGui::Button(buf))
 				{
 					popup_open = true;
 					selected_index = i;
@@ -1172,15 +1172,15 @@ void BatchassApp::drawMain()
 			}
 			ui::End();
 		}
-		ui::SameLine();
-		ui::Text(selected_fbo == -1 ? "<None>" : warpInputs[selected_fbo]);
+		ImGui::SameLine();
+		ImGui::Text(selected_fbo == -1 ? "<None>" : warpInputs[selected_fbo]);
 		if (popup_open)
 		{
 			// needed? sprintf_s(buf, "##wmpopup", selected_index);
-			ui::BeginPopup(&popup_open);
+			ImGui::BeginPopup(&popup_open);
 			for (size_t i = 0; i < IM_ARRAYSIZE(warpInputs); i++)
 			{
-				if (ui::Selectable(warpInputs[i], false))
+				if (ImGui::Selectable(warpInputs[i], false))
 				{
 					selected_fbo = i;
 					if (selected_fbo > -1) mBatchass->assignFboToWarp(selected_index, selected_fbo);
@@ -1190,7 +1190,7 @@ void BatchassApp::drawMain()
 					selected_fbo = -1;
 				}
 			}
-			ui::EndPopup();
+			ImGui::EndPopup();
 
 		}
 		yPos += h + margin;
