@@ -272,7 +272,7 @@ void BatchassApp::drawMain()
 			case MODE_WARP:
 				if (mBatchass->getWarpsRef()->isEditModeEnabled())
 				{
-mBatchass->getWarpsRef()->draw();
+					mBatchass->getWarpsRef()->draw();
 				}
 
 				break;
@@ -1006,7 +1006,7 @@ mBatchass->getWarpsRef()->draw();
 			// blend modes
 			//ctrl = 20;
 			ui::SliderInt("blendmode", &mParameterBag->iBlendMode, 0, 27);
-			
+
 			// steps
 			ctrl = 16;
 			if (ui::SliderFloat("steps", &mParameterBag->controlValues[ctrl], 1.0f, 128.0f))
@@ -1242,7 +1242,7 @@ mBatchass->getWarpsRef()->draw();
 			{
 				ui::SetWindowPos(ImVec2((xPos)+margin, yPos));
 				xPos += warpWidth + inBetween;
-				if (xPos > mParameterBag->MAX * (warpWidth ) * 1.8)
+				if (xPos > mParameterBag->MAX * (warpWidth)* 1.8)
 				{
 					xPos = margin;
 					yPos += h + margin;
