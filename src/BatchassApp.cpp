@@ -96,12 +96,11 @@ void BatchassApp::setup()
 	inBetween = 3;
 	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15 mPreviewWidth = 160;mPreviewHeight = 120;
 	w = mParameterBag->mPreviewFboWidth + margin;
-	h = mParameterBag->mPreviewFboHeight * 2;
+	h = mParameterBag->mPreviewFboHeight * 3;
 	largeW = (mParameterBag->mPreviewFboWidth + margin) * 4;
 	largeH = (mParameterBag->mPreviewFboHeight + margin) * 5;
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
 	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2.2;
-	smallWidth = mParameterBag->mPreviewFboWidth / 1.0 + margin;
 	displayHeight = mParameterBag->mMainDisplayHeight - 50;
 	static float f = 0.0f;
 	//char buf[32];
@@ -338,7 +337,7 @@ void BatchassApp::drawMain()
 	style.FramePadding = ImVec2(2, 2);
 	style.ItemSpacing = ImVec2(3, 3);
 	style.ItemInnerSpacing = ImVec2(3, 3);
-	style.WindowMinSize = ImVec2(smallWidth, mParameterBag->mPreviewFboHeight);
+	style.WindowMinSize = ImVec2(w, mParameterBag->mPreviewFboHeight);
 	style.Alpha = 0.6f;
 	style.Colors[ImGuiCol_Text] = ImVec4(0.89f, 0.92f, 0.94f, 1.00f);
 	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
@@ -1151,10 +1150,10 @@ void BatchassApp::drawMain()
 		for (int i = 0; i < mBatchass->getWarpsRef()->getWarpsCount(); i++)
 		{
 			sprintf_s(buf, "Warp %d", i);
-			ui::SetNextWindowSize(ImVec2(smallWidth, h));
+			ui::SetNextWindowSize(ImVec2(w, h));
 			ui::Begin(buf);
 			{
-				ui::SetWindowPos(ImVec2((i * (smallWidth + inBetween)) + margin, yPos));
+				ui::SetWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarpFbos[i].textureIndex), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
@@ -1201,8 +1200,8 @@ void BatchassApp::drawMain()
 	{
 		for (int i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
 		{
-			ui::SetNextWindowSize(ImVec2(smallWidth, h));
-			ui::SetNextWindowPos(ImVec2((i * (smallWidth + inBetween)) + margin, yPos));
+			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::SetNextWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
 			ui::Begin(textureNames[i], NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 			{
 				ui::PushID(i);
@@ -1228,12 +1227,12 @@ void BatchassApp::drawMain()
 		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
 		{
 			sprintf_s(buf, "%s##lsh%d", mBatchass->getShadersRef()->getShaderName(i).c_str(), i);
-			ui::SetNextWindowSize(ImVec2(smallWidth, h));
+			ui::SetNextWindowSize(ImVec2(w, h));
 			ui::SetNextWindowPos(ImVec2(xPos+margin, yPos));
 			ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 			{
-				xPos += smallWidth + inBetween;
-				if (xPos > mParameterBag->MAX * (smallWidth)* 1.8)
+				xPos += w + inBetween;
+				if (xPos > mParameterBag->MAX * w * 1.8)
 				{
 					xPos = margin;
 					yPos += h + margin;
@@ -1242,7 +1241,7 @@ void BatchassApp::drawMain()
 				ui::PushID(i);
 				ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
 
-				ui::Columns(2, "lr", false);
+				//ui::Columns(2, "lr", false);
 				// left
 				if (mParameterBag->mLeftFragIndex == i)
 				{
@@ -1259,8 +1258,8 @@ void BatchassApp::drawMain()
 				if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
 				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to left");
 				ui::PopStyleColor(3);
-				ui::NextColumn();
-
+				//ui::NextColumn();
+				ui::SameLine();
 				// right
 				if (mParameterBag->mRightFragIndex == i)
 				{
@@ -1276,8 +1275,8 @@ void BatchassApp::drawMain()
 				if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
 				if (ui::IsItemHovered()) ui::SetTooltip("Set shader to right");
 				ui::PopStyleColor(3);
-				ui::NextColumn();
-
+				//ui::NextColumn();
+				ui::SameLine();
 
 				// warp1
 				if (mParameterBag->mWarp1FragIndex == i)
@@ -1294,7 +1293,8 @@ void BatchassApp::drawMain()
 				if (ui::Button(buf)) mParameterBag->mWarp1FragIndex = i;
 				if (ui::IsItemHovered()) ui::SetTooltip("Set warp 1 shader");
 				ui::PopStyleColor(3);
-				ui::NextColumn();
+				//ui::NextColumn();
+				ui::SameLine();
 
 				// warp2
 				if (mParameterBag->mWarp2FragIndex == i)
@@ -1311,7 +1311,8 @@ void BatchassApp::drawMain()
 				if (ui::Button(buf)) mParameterBag->mWarp2FragIndex = i;
 				if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
 				ui::PopStyleColor(3);
-				ui::NextColumn();
+				//ui::NextColumn();
+				ui::SameLine();
 				// preview
 				if (mParameterBag->mPreviewFragIndex == i)
 				{
@@ -1327,11 +1328,11 @@ void BatchassApp::drawMain()
 				if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
 				if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
 				ui::PopStyleColor(3);
-				ui::NextColumn();
+				//ui::NextColumn();
 
 				ui::PopID();
 
-				ui::Columns(1);
+				//ui::Columns(1);
 			}
 			ui::End();
 		}
@@ -1345,8 +1346,8 @@ void BatchassApp::drawMain()
 	{
 		for (int i = 0; i < mBatchass->getTexturesRef()->getFboCount(); i++)
 		{
-			ui::SetNextWindowSize(ImVec2(smallWidth, h));
-			ui::SetNextWindowPos(ImVec2((i * (smallWidth + inBetween)) + margin, yPos));
+			ui::SetNextWindowSize(ImVec2(w, h));
+			ui::SetNextWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
 			ui::Begin(fboNames[i], NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 			{
 				//if (i > 0) ui::SameLine();

@@ -171,7 +171,6 @@ private:
 	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
 	int							w;
 	int							h;
-	int							smallWidth;
 	int							displayHeight;
 	int							xPos;
 	int							yPos;
