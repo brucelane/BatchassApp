@@ -17,7 +17,7 @@ uniform float       iRatio;
 uniform vec2        iRenderXY;           	// move x y 
 uniform float       iZoom;               	// zoom
 uniform int        	iBlendmode;          	// blendmode for channels
-uniform float		iRotationSpeed;	  		// Rotation Speed
+uniform float		    iRotationSpeed;	  		// Rotation Speed
 uniform float       iCrossfade;          	// CrossFade 2 shaders
 uniform float       iPixelate;           	// pixelate
 uniform int         iGreyScale;          	// 1 for grey scale mode
@@ -35,12 +35,12 @@ uniform int         iDebug;           		// 1 to show debug
 uniform int         iShowFps;           	// 1 to show fps
 uniform float       iFps;          			// frames per second
 uniform float       iTempoTime;
-uniform vec4		iDate;					// (year, month, day, time in seconds)
+uniform vec4		    iDate;					// (year, month, day, time in seconds)
 uniform int         iGlitch;           		// 1 for glitch
 uniform float       iChromatic;				// chromatic if > 0.
 uniform float       iTrixels;           	// trixels if > 0.
-
-const 	float 		PI = 3.14159265;
+uniform float       iGridSize;            // gridSize if > 0.
+const 	float 		  PI = 3.14159265;
 // uniforms end
 
 // global functions begin
@@ -251,11 +251,11 @@ vec4 trixels( vec2 inUV, bool chn0 )
     {
         if (chn0)
         {
-			rtn = texture2D(iChannel0, inUV.xy);
+			     rtn = texture2D(iChannel0, inUV.xy);
         }
         else
         {
-        	rtn = texture2D(iChannel1, inUV.xy);
+        	 rtn = texture2D(iChannel1, inUV.xy);
         }
         
     }
@@ -263,6 +263,41 @@ vec4 trixels( vec2 inUV, bool chn0 )
 
    return rtn;
 }
+// Squirclimation https://www.shadertoy.com/view/Ml23DW begin
+vec4 grid( vec2 inUV, bool chn0 )
+{    
+    vec2 uv = (floor(gl_FragCoord.xy/iGridSize)*iGridSize)/ iResolution.xy;
+    vec3 texColor;
+    if (chn0)
+    {
+       texColor = texture2D(iChannel0, uv).xyz;
+    }
+    else
+    {
+       texColor = texture2D(iChannel1, uv).xyz;
+    } 
+    float diff = pow(distance(texColor,vec3(0.0,1.0,0.0)),8.0); 
+    diff = smoothstep(0.0,1.5,diff);
+    texColor = mix(iBackgroundColor,texColor,diff);
+    
+    float texLum = dot(vec3(0.2126,0.7152,0.0722),texColor);
+    
+    vec3 color = iBackgroundColor;
+    
+    vec2 ppos = (inUV - uv)/(vec2(iGridSize)/iResolution.xy);
+  
+    float power = texLum*texLum*16.0;
+    float radius = 0.5;
+    float dist = pow(abs(ppos.x-0.5),power) + pow(abs(ppos.y - 0.5),power);
+    
+    if( dist < pow(radius,power))
+    {
+      color = texColor;
+    }
+    
+    return vec4( color.r, color.g, color.b, 1.0 ); 
+}
+// Squirclimation end
 // global functions end
 
 // left main lines begin
@@ -277,11 +312,16 @@ vec3 shaderLeft(vec2 uv)
 		left.g = texture2D(iChannel0, uv          ).g;
 		left.b = texture2D(iChannel0, uv+offset.yx).b;
 	}
-	// Trixels
-	if (iTrixels > 0.0) 
-	{
-      	left = trixels( uv, true );
-	}
+  // Trixels
+  if (iTrixels > 0.0) 
+  {
+        left = trixels( uv, true );
+  }
+  // Grid
+  if (iGridSize > 0.0) 
+  {
+        left = grid( uv, true );
+  }
 	return vec3( left.r, left.g, left.b );
 }
 // left main lines end
@@ -303,6 +343,11 @@ vec3 shaderRight(vec2 uv)
 	{
       	right = trixels( uv, false );
 	}
+  // Grid
+  if (iGridSize > 0.0) 
+  {
+        right = grid( uv, false );
+  }
 
 	return vec3( right.r, right.g, right.b );
 }

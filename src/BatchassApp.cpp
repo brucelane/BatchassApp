@@ -1054,6 +1054,12 @@ void BatchassApp::drawMain()
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
+			// trixels
+			ctrl = 21;
+			if (ui::SliderFloat("grid", &mParameterBag->controlValues[ctrl], 0.00f, 20.0f))
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
 
 			aParams << "]}";
 			string strAParams = aParams.str();
