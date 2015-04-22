@@ -1034,7 +1034,7 @@ void BatchassApp::drawMain()
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// blend modes
-			ui::SliderInt("blendmode", &mParameterBag->iBlendMode, 0, 27);
+			ui::SliderInt("blendmode", &mParameterBag->iBlendMode, 0, 28);
 
 			// steps
 			ctrl = 16;
@@ -1045,6 +1045,12 @@ void BatchassApp::drawMain()
 			// pixelate
 			ctrl = 15;
 			if (ui::SliderFloat("pixelate", &mParameterBag->controlValues[ctrl], 0.01f, 1.0f))
+			{
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
+			// trixels
+			ctrl = 20;
+			if (ui::SliderFloat("trixels", &mParameterBag->controlValues[ctrl], 0.00f, 1.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}

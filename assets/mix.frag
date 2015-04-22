@@ -37,7 +37,9 @@ uniform float       iFps;          			// frames per second
 uniform float       iTempoTime;
 uniform vec4		iDate;					// (year, month, day, time in seconds)
 uniform int         iGlitch;           		// 1 for glitch
-uniform float       iChromatic;
+uniform float       iChromatic;				// chromatic if > 0.
+uniform float       iTrixels;           	// trixels if > 0.
+
 const 	float 		PI = 3.14159265;
 // uniforms end
 
@@ -179,18 +181,106 @@ float glitchNse(float x)
 	float fl = floor(x);
 	return mix(glitchHash(fl), glitchHash(fl + 1.0), smoothstep(0.0, 1.0, fract(x)));
 }
+vec4 trixels( vec2 inUV, bool chn0 )
+{
+	// trixels https://www.shadertoy.com/view/4lj3Dm
+	vec4 rtn;
+    //float divider = cos(iGlobalTime/1.5)/2.0 + 0.5;
+    //if(inUV.x > divider + 0.001)
+    if(inUV.x < iTrixels)
+    {
+        float height = iResolution.x/30.0;
+        float halfHeight = height*0.5;
+        float halfBase = height/sqrt(3.0);
+        float base = halfBase*2.0;
+
+        float screenX = gl_FragCoord.x;
+        float screenY = gl_FragCoord.y;    
+
+        float upSlope = height/halfBase;
+        float downSlope = -height/halfBase;
+
+        float oddRow = mod(floor(screenY/height),2.0);
+        screenX -= halfBase*oddRow;
+        
+        float oddCollumn = mod(floor(screenX/halfBase), 2.0);
+
+        float localX = mod(screenX, halfBase);
+        float localY = mod(screenY, height);
+
+        if(oddCollumn == 0.0 )
+        {
+            if(localY >= localX*upSlope)
+            {
+                screenX -= halfBase;
+            }
+        }
+        else
+        {
+            if(localY <= height+localX*downSlope)
+            {
+                screenX -= halfBase;
+            }
+        }
+        
+        
+        float startX = floor(screenX/halfBase)*halfBase;
+        float startY = floor(screenY/height)*height;
+        vec4 blend = vec4(0.0,0.0,0.0,0.0);
+        for(float x = 0.0; x < 3.0; x += 1.0)
+        {
+            for(float y = 0.0; y < 3.0; y += 1.0)
+            {
+                vec2 screenPos = vec2(startX+x*halfBase,startY+y*halfHeight);
+                vec2 uv1 = screenPos / iResolution.xy;
+                if (chn0)
+                {
+					blend += texture2D(iChannel0, uv1);
+                }
+                else
+                {
+                	blend += texture2D(iChannel1, uv1);
+                }
+                
+            }
+        }
+        rtn = (blend / 9.0);
+		
+    }
+    else if(inUV.x > iTrixels)
+    {
+        if (chn0)
+        {
+			rtn = texture2D(iChannel0, inUV.xy);
+        }
+        else
+        {
+        	rtn = texture2D(iChannel1, inUV.xy);
+        }
+        
+    }
+    // trixels end
+
+   return rtn;
+}
 // global functions end
 
 // left main lines begin
 vec3 shaderLeft(vec2 uv)
 {
 	vec4 left = texture2D(iChannel0, uv);
+	// chromatic aberation
 	if (iChromatic > 0.0) 
 	{
 		vec2 offset = vec2(iChromatic/50.,.0);
 		left.r = texture2D(iChannel0, uv+offset.xy).r;
 		left.g = texture2D(iChannel0, uv          ).g;
 		left.b = texture2D(iChannel0, uv+offset.yx).b;
+	}
+	// Trixels
+	if (iTrixels > 0.0) 
+	{
+      	left = trixels( uv, true );
 	}
 	return vec3( left.r, left.g, left.b );
 }
@@ -207,6 +297,11 @@ vec3 shaderRight(vec2 uv)
 		right.r = texture2D(iChannel1, uv+offset.xy).r;
 		right.g = texture2D(iChannel1, uv          ).g;
 		right.b = texture2D(iChannel1, uv+offset.yx).b;
+	}
+	// Trixels
+	if (iTrixels > 0.0) 
+	{
+      	right = trixels( uv, false );
 	}
 
 	return vec3( right.r, right.g, right.b );
@@ -517,6 +612,7 @@ void main(void)
 	uv.y -= iRenderXY.y;
 	uv *= iZoom;
 
+    // glitch
 	if (iGlitch == 1) 
 	{
 		// glitch the point around
@@ -531,15 +627,7 @@ void main(void)
 		vec2 divs = vec2(iResolution.x * iPixelate / iResolution.y*60.0, iPixelate*60.0);
 		uv = floor(uv * divs)/ divs;
 	}
-	/*
-	vec2 divs = vec2(iResolution.x * iRatio / iResolution.y, iRatio);
 
-
-	if ( iPixelate < 1.0 )
-	{
-		vec2 divs = vec2(gl_TexCoord[0].s * iPixelate*60.0 / gl_TexCoord[0].t, iPixelate*60.0);
-		uv = floor(uv * divs)/ divs;
-	}*/
 	vec3 col;
 	if ( iCrossfade > 0.95 )
 	{
