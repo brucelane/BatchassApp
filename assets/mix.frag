@@ -344,10 +344,10 @@ vec3 shaderRight(vec2 uv)
       	right = trixels( uv, false );
 	}
   // Grid
-  if (iGridSize > 0.0) 
+  /*if (iGridSize > 0.0) 
   {
         right = grid( uv, false );
-  }
+  }*/
 
 	return vec3( right.r, right.g, right.b );
 }

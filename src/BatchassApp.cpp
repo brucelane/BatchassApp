@@ -18,6 +18,8 @@ void BatchassApp::prepareSettings(Settings* settings)
 	// utils
 	mBatchass = Batchass::create(mParameterBag);
 	mBatchass->log("start");
+	// start profiling
+	auto start = Clock::now();
 
 	w = mBatchass->getWindowsResolution();
 
@@ -39,10 +41,17 @@ void BatchassApp::prepareSettings(Settings* settings)
 		settings->setBorderless();
 		settings->setResizable(false);
 	}
+	auto end = Clock::now();
+	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	auto nsdur = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	//std::cout << msdur.count() << "ms, " << nsdur.count() << "µs" << std::endl;
+	mBatchass->log("prepareSettings: " + toString(msdur.count()));
 }
 
 void BatchassApp::setup()
 {
+	// start profiling
+	auto start = Clock::now();
 	//0SetWindowPos
 	mBatchass->log("setup");
 	mIsShutDown = false;
@@ -86,6 +95,10 @@ void BatchassApp::setup()
 	mTimer = 0.0f;
 
 	newLogMsg = false;
+	auto end = Clock::now();
+	auto mididur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	mBatchass->log("setup before: " + toString(mididur.count()));
+	start = Clock::now();
 
 	// Setup the MinimalUI user interface
 	//mUI = UI::create(mParameterBag, mBatchass->getShadersRef(), mBatchass->getTexturesRef(), mMainWindow);
@@ -103,7 +116,6 @@ void BatchassApp::setup()
 	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2.2;
 	displayHeight = mParameterBag->mMainDisplayHeight - 50;
 	static float f = 0.0f;
-	//char buf[32];
 
 	showConsole = showGlobal = showTextures = showAudio = showWS = showMidi = showChannels = showShaders = true;
 	showTest = showTheme = showOSC = showFbos = false;
@@ -117,6 +129,12 @@ void BatchassApp::setup()
 	mSeconds = 0;
 	// RTE mBatchass->getShadersRef()->setupLiveShader();
 	mBatchass->tapTempo();
+	// end profiling
+	end = Clock::now();
+	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	auto nsdur = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	//std::cout << msdur.count() << "ms, " << nsdur.count() << "µs" << std::endl;
+	mBatchass->log("setup: " + toString(msdur.count()));
 
 }
 void BatchassApp::setupMidi()
@@ -1056,7 +1074,7 @@ void BatchassApp::drawMain()
 			}
 			// trixels
 			ctrl = 21;
-			if (ui::SliderFloat("grid", &mParameterBag->controlValues[ctrl], 0.00f, 20.0f))
+			if (ui::SliderFloat("grid", &mParameterBag->controlValues[ctrl], 0.00f, 60.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
