@@ -185,84 +185,65 @@ vec4 trixels( vec2 inUV, bool chn0 )
 {
 	// trixels https://www.shadertoy.com/view/4lj3Dm
 	vec4 rtn;
-    //float divider = cos(iGlobalTime/1.5)/2.0 + 0.5;
-    //if(inUV.x > divider + 0.001)
-    if(inUV.x < iTrixels)
+
+    float height = iResolution.x/(1.01 - iTrixels)/90.0;
+    float halfHeight = height*0.5;
+    float halfBase = height/sqrt(3.0);
+    float base = halfBase*2.0;
+
+    float screenX = gl_FragCoord.x;
+    float screenY = gl_FragCoord.y;    
+
+    float upSlope = height/halfBase;
+    float downSlope = -height/halfBase;
+
+    float oddRow = mod(floor(screenY/height),2.0);
+    screenX -= halfBase*oddRow;
+    
+    float oddCollumn = mod(floor(screenX/halfBase), 2.0);
+
+    float localX = mod(screenX, halfBase);
+    float localY = mod(screenY, height);
+
+    if(oddCollumn == 0.0 )
     {
-        float height = iResolution.x/30.0;
-        float halfHeight = height*0.5;
-        float halfBase = height/sqrt(3.0);
-        float base = halfBase*2.0;
-
-        float screenX = gl_FragCoord.x;
-        float screenY = gl_FragCoord.y;    
-
-        float upSlope = height/halfBase;
-        float downSlope = -height/halfBase;
-
-        float oddRow = mod(floor(screenY/height),2.0);
-        screenX -= halfBase*oddRow;
-        
-        float oddCollumn = mod(floor(screenX/halfBase), 2.0);
-
-        float localX = mod(screenX, halfBase);
-        float localY = mod(screenY, height);
-
-        if(oddCollumn == 0.0 )
+        if(localY >= localX*upSlope)
         {
-            if(localY >= localX*upSlope)
-            {
-                screenX -= halfBase;
-            }
+            screenX -= halfBase;
         }
-        else
-        {
-            if(localY <= height+localX*downSlope)
-            {
-                screenX -= halfBase;
-            }
-        }
-        
-        
-        float startX = floor(screenX/halfBase)*halfBase;
-        float startY = floor(screenY/height)*height;
-        vec4 blend = vec4(0.0,0.0,0.0,0.0);
-        for(float x = 0.0; x < 3.0; x += 1.0)
-        {
-            for(float y = 0.0; y < 3.0; y += 1.0)
-            {
-                vec2 screenPos = vec2(startX+x*halfBase,startY+y*halfHeight);
-                vec2 uv1 = screenPos / iResolution.xy;
-                if (chn0)
-                {
-					blend += texture2D(iChannel0, uv1);
-                }
-                else
-                {
-                	blend += texture2D(iChannel1, uv1);
-                }
-                
-            }
-        }
-        rtn = (blend / 9.0);
-		
     }
-    else if(inUV.x > iTrixels)
+    else
     {
-        if (chn0)
+        if(localY <= height+localX*downSlope)
         {
-			     rtn = texture2D(iChannel0, inUV.xy);
+            screenX -= halfBase;
         }
-        else
-        {
-        	 rtn = texture2D(iChannel1, inUV.xy);
-        }
-        
     }
-    // trixels end
-
-   return rtn;
+    
+    float startX = floor(screenX/halfBase)*halfBase;
+    float startY = floor(screenY/height)*height;
+    vec4 blend = vec4(0.0,0.0,0.0,0.0);
+    for(float x = 0.0; x < 3.0; x += 1.0)
+    {
+        for(float y = 0.0; y < 3.0; y += 1.0)
+        {
+            vec2 screenPos = vec2(startX+x*halfBase,startY+y*halfHeight);
+            vec2 uv1 = screenPos / iResolution.xy;
+            if (chn0)
+            {
+				blend += texture2D(iChannel0, uv1);
+            }
+            else
+            {
+            	blend += texture2D(iChannel1, uv1);
+            }
+            
+        }
+    }
+    rtn = (blend / 9.0);
+   	return rtn;
 }
+// trixels end
 // Squirclimation https://www.shadertoy.com/view/Ml23DW begin
 vec4 grid( vec2 inUV, bool chn0 )
 {    
@@ -344,10 +325,10 @@ vec3 shaderRight(vec2 uv)
       	right = trixels( uv, false );
 	}
   // Grid
-  /*if (iGridSize > 0.0) 
+  if (iGridSize > 0.0) 
   {
         right = grid( uv, false );
-  }*/
+  }
 
 	return vec3( right.r, right.g, right.b );
 }
@@ -647,7 +628,6 @@ vec3 mainFunction( vec2 uv )
       break;
    }
    return c;
-   //return mix( shaderLeft(uv), shaderRight(uv), iCrossfade );
 }
 // main start
 void main(void)
