@@ -100,10 +100,6 @@ void BatchassApp::setup()
 	mBatchass->log("setup before: " + toString(mididur.count()));
 	start = Clock::now();
 
-	// Setup the MinimalUI user interface
-	//mUI = UI::create(mParameterBag, mBatchass->getShadersRef(), mBatchass->getTexturesRef(), mMainWindow);
-	//mUI->setup();
-	mouseGlobal = false;
 	// imgui
 	margin = 3;
 	inBetween = 3;
@@ -115,6 +111,7 @@ void BatchassApp::setup()
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
 	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2.2;
 	displayHeight = mParameterBag->mMainDisplayHeight - 50;
+	mouseGlobal = false;
 	static float f = 0.0f;
 
 	showConsole = showGlobal = showTextures = showAudio = showWS = showMidi = showChannels = showShaders = true;
@@ -133,7 +130,6 @@ void BatchassApp::setup()
 	end = Clock::now();
 	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 	auto nsdur = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-	//std::cout << msdur.count() << "ms, " << nsdur.count() << "µs" << std::endl;
 	mBatchass->log("setup: " + toString(msdur.count()));
 
 }
@@ -313,7 +309,7 @@ void BatchassApp::drawMain()
 				break;
 			case MODE_VERTEXSPHERE:
 				mVertexSphere->draw();
-				gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mVertexSphereFboIndex), rect);
+				//OK gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mVertexSphereFboIndex), rect);
 				break;
 			case MODE_ABP:
 				//mABP->draw();
@@ -1484,7 +1480,7 @@ void BatchassApp::drawRender()
 	gl::setViewport(allRenderWindows[0].mWRef->getBounds());
 	gl::enableAlphaBlending();
 	//20140703 gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);//NEW 20140620, needed?
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);// , false);
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 	switch (mParameterBag->mMode)
 	{
 	case MODE_AUDIO:
@@ -1500,7 +1496,8 @@ void BatchassApp::drawRender()
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMeshFboIndex));
 		break;
 	case MODE_VERTEXSPHERE:
-		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mVertexSphereFboIndex));
+		mVertexSphere->draw();
+		//OK gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mVertexSphereFboIndex));
 		break;
 	case MODE_ABP:
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mABPFboIndex));

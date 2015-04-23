@@ -50,7 +50,9 @@ namespace Reymenta
 		Quatf mQuat;
 		//gl::GlslProg mShader;
 		//fbo
-		//gl::Fbo				mFbo;
-		bool							mRotate;
+		//gl::Fbo					mFbo;
+		bool						mRotate;
+		gl::GlslProg				mShader;
+		gl::Texture					mTexture;
 	};
 }

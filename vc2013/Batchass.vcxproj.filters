@@ -477,5 +477,17 @@
     <None Include="..\assets\mix.frag">
       <Filter>assets</Filter>
     </None>
+    <None Include="..\assets\pointsphere.frag">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="..\assets\pointsphere.vert">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="..\assets\spectrum.frag">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="..\assets\spectrum.vert">
+      <Filter>assets</Filter>
+    </None>
   </ItemGroup>
 </Project>

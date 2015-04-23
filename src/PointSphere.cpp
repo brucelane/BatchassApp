@@ -74,8 +74,8 @@ void PointSphere::draw()
 	gl::enable(GL_TEXTURE_2D);
 	mTextures->getFboTexture(mParameterBag->mMixFboIndex).bind(0);
 	mSphereShader.bind();
-	//mSphereShader.uniform("normScale", (mMousePos.x)/5.0f);
-	mSphereShader.uniform("normScale", float(mParameterBag->iFreqs[0]/10.0));// aggressivity);
+	
+	mSphereShader.uniform("normScale", float(mParameterBag->iFreqs[0]/10.0));
 	mSphereShader.uniform("colorMap", 0);
 	mSphereShader.uniform("displacementMap", 0);
 	mSphereShader.uniform("iZoom", mParameterBag->controlValues[13]);
