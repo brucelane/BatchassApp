@@ -694,7 +694,7 @@ void BatchassApp::drawMain()
 			ui::EndChild();
 		}
 		ui::End();
-		yPos += largePreviewH + margin;
+		xPos += largePreviewW + 20 + margin;
 	}
 #pragma endregion WebSockets
 
@@ -1048,7 +1048,7 @@ void BatchassApp::drawMain()
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// blend modes
-			ui::SliderInt("blendmode", &mParameterBag->iBlendMode, 0, 28);
+			ui::SliderInt("blendmode", &mParameterBag->iBlendMode, 0, mParameterBag->maxBlendMode);
 
 			// steps
 			ctrl = 20;
@@ -1277,7 +1277,7 @@ void BatchassApp::drawMain()
 				ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 				{
 					xPos += w + inBetween;
-					if (xPos > mParameterBag->MAX * w * 1.8)
+					if (xPos > mParameterBag->MAX * w * 1.0)
 					{
 						xPos = margin;
 						yPos += h + margin;
@@ -1334,7 +1334,7 @@ void BatchassApp::drawMain()
 					}
 					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.16f, 0.7f, 0.7f));
 					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.16f, 0.8f, 0.8f));
-					sprintf_s(buf, "W1##s%d", i);
+					sprintf_s(buf, "1##s%d", i);
 					if (ui::Button(buf)) mParameterBag->mWarp1FragIndex = i;
 					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 1 shader");
 					ui::PopStyleColor(3);
@@ -1352,7 +1352,7 @@ void BatchassApp::drawMain()
 					}
 					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.77f, 0.7f, 0.7f));
 					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.77f, 0.8f, 0.8f));
-					sprintf_s(buf, "W2##s%d", i);
+					sprintf_s(buf, "2##s%d", i);
 					if (ui::Button(buf)) mParameterBag->mWarp2FragIndex = i;
 					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
 					ui::PopStyleColor(3);
