@@ -78,7 +78,7 @@ void PointSphere::draw()
 	mSphereShader.uniform("normScale", float(mParameterBag->iFreqs[0]/10.0));
 	mSphereShader.uniform("colorMap", 0);
 	mSphereShader.uniform("displacementMap", 0);
-	mSphereShader.uniform("iZoom", mParameterBag->controlValues[13]);
+	mSphereShader.uniform("iZoom", mParameterBag->controlValues[22]);
 	float radius = 100.0f;
 
 	for (int longitude = -180; longitude<180; longitude += 20)

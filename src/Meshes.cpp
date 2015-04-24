@@ -113,7 +113,7 @@ void Meshes::update()
 {
 	mGridSize = Vec2i(mParameterBag->mRenderXY.x + 2.01 * 16, mParameterBag->mRenderXY.y + 2.01 * 16);
 	mGridSpacing = Vec2f(mParameterBag->mRenderXY.x + 2.01 * 2.5f, mParameterBag->mRenderXY.y + 2.01 * 2.5f);
-	mScale = Vec3f::one() * mParameterBag->controlValues[13];
+	mScale = Vec3f::one() * mParameterBag->controlValues[22];
 	// Reset the meshes if the segment count changes
 	if (mDivisionPrev != mDivision ||
 		mResolutionPrev != mResolution) {

@@ -181,7 +181,7 @@ float glitchNse(float x)
 	float fl = floor(x);
 	return mix(glitchHash(fl), glitchHash(fl + 1.0), smoothstep(0.0, 1.0, fract(x)));
 }
-vec4 trixels( vec2 inUV, bool chn0 )
+vec4 trixels( vec2 inUV, sampler2D tex )
 {
 	// trixels https://www.shadertoy.com/view/4lj3Dm
 	vec4 rtn;
@@ -229,15 +229,7 @@ vec4 trixels( vec2 inUV, bool chn0 )
         {
             vec2 screenPos = vec2(startX+x*halfBase,startY+y*halfHeight);
             vec2 uv1 = screenPos / iResolution.xy;
-            if (chn0)
-            {
-				blend += texture2D(iChannel0, uv1);
-            }
-            else
-            {
-            	blend += texture2D(iChannel1, uv1);
-            }
-            
+			blend += texture2D(tex, uv1);         
         }
     }
     rtn = (blend / 9.0);
@@ -245,18 +237,13 @@ vec4 trixels( vec2 inUV, bool chn0 )
 }
 // trixels end
 // Squirclimation https://www.shadertoy.com/view/Ml23DW begin
-vec4 grid( vec2 inUV, bool chn0 )
+vec4 grid( vec2 inUV, sampler2D tex )
 {    
     vec2 uv = (floor(gl_FragCoord.xy/iGridSize)*iGridSize)/ iResolution.xy;
     vec3 texColor;
-    if (chn0)
-    {
-       texColor = texture2D(iChannel0, uv).xyz;
-    }
-    else
-    {
-       texColor = texture2D(iChannel1, uv).xyz;
-    } 
+
+    texColor = texture2D(tex, uv).xyz;
+    
     float diff = pow(distance(texColor,vec3(0.0,1.0,0.0)),8.0); 
     diff = smoothstep(0.0,1.5,diff);
     texColor = mix(iBackgroundColor,texColor,diff);
@@ -296,12 +283,12 @@ vec3 shaderLeft(vec2 uv)
   // Trixels
   if (iTrixels > 0.0) 
   {
-        left = trixels( uv, true );
+        left = trixels( uv, iChannel0 );
   }
   // Grid
   if (iGridSize > 0.0) 
   {
-        left = grid( uv, true );
+        left = grid( uv, iChannel0 );
   }
 	return vec3( left.r, left.g, left.b );
 }
@@ -322,13 +309,13 @@ vec3 shaderRight(vec2 uv)
 	// Trixels
 	if (iTrixels > 0.0) 
 	{
-      	right = trixels( uv, false );
+      	right = trixels( uv, iChannel1 );
 	}
-  // Grid
-  if (iGridSize > 0.0) 
-  {
-        right = grid( uv, false );
-  }
+  	// Grid
+  	if (iGridSize > 0.0) 
+  	{
+        right = grid( uv, iChannel1 );
+  	}
 
 	return vec3( right.r, right.g, right.b );
 }

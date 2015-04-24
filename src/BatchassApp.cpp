@@ -1008,7 +1008,7 @@ void BatchassApp::drawMain()
 			}
 
 			// zoom
-			ctrl = 13;
+			ctrl = 22;
 			if (ui::Button("a##zoom"))
 			{
 				mBatchass->lockZoom();
@@ -1051,7 +1051,7 @@ void BatchassApp::drawMain()
 			ui::SliderInt("blendmode", &mParameterBag->iBlendMode, 0, 28);
 
 			// steps
-			ctrl = 16;
+			ctrl = 20;
 			if (ui::SliderFloat("steps", &mParameterBag->controlValues[ctrl], 1.0f, 128.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
@@ -1063,13 +1063,13 @@ void BatchassApp::drawMain()
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// trixels
-			ctrl = 20;
+			ctrl = 16;
 			if (ui::SliderFloat("trixels", &mParameterBag->controlValues[ctrl], 0.00f, 1.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			// trixels
-			ctrl = 21;
+			ctrl = 17;
 			if (ui::SliderFloat("grid", &mParameterBag->controlValues[ctrl], 0.00f, 60.0f))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
@@ -1574,7 +1574,7 @@ void BatchassApp::fileDrop(FileDropEvent event)
 		int rtn = mBatchass->getShadersRef()->loadPixelFragmentShaderAtIndex(mFile, index);
 		if (rtn > -1 && rtn < mBatchass->getShadersRef()->getCount())
 		{
-			mParameterBag->controlValues[13] = 1.0f;
+			mParameterBag->controlValues[22] = 1.0f;
 			// send content via OSC
 			/*fs::path fr = mFile;
 			string name = "unknown";
@@ -1656,7 +1656,7 @@ void BatchassApp::fileDrop(FileDropEvent event)
 
 	if (mShaders->loadPixelFrag(mFile))
 	{
-	mParameterBag->controlValues[13] = 1.0f;
+	mParameterBag->controlValues[22] = 1.0f;
 	timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ save(); });
 	}
 	if (mCodeEditor) mCodeEditor->fileDrop(event);
