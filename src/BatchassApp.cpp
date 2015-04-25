@@ -922,7 +922,7 @@ void BatchassApp::drawMain()
 		if (ui::CollapsingHeader("Mouse", NULL, true, true))
 		{
 			ui::Text("Mouse Position: (%.1f,%.1f)", ui::GetIO().MousePos.x, ui::GetIO().MousePos.y); ui::SameLine();
-			ui::Text("Mouse %d", ui::GetIO().MouseDown[0]); ui::SameLine();
+			ui::Text("Clic %d", ui::GetIO().MouseDown[0]); 
 			mouseGlobal ^= ui::Button("mouse gbl");
 			if (mouseGlobal)
 			{
@@ -932,7 +932,7 @@ void BatchassApp::drawMain()
 			}
 			else
 			{
-				ui::SameLine();
+				
 				mParameterBag->iMouse.z = ui::Button("mouse click");
 			}
 			ui::SliderFloat("MouseX", &mParameterBag->mRenderPosXY.x, 0, mParameterBag->mFboWidth);
