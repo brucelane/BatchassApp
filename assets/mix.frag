@@ -641,13 +641,13 @@ void main(void)
 	}
 
 	vec3 col;
-	if ( iCrossfade > 0.95 )
+	if ( iCrossfade > 0.99 )
 	{
 		col = shaderRight(uv);
 	}
 	else
 	{
-		if ( iCrossfade < 0.05 )
+		if ( iCrossfade < 0.01 )
 		{
 			col = shaderLeft(uv);
 		}
