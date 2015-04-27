@@ -2,11 +2,11 @@
 
 using namespace Reymenta;
 
-AppConsole::AppConsole(ParameterBagRef aParameterBag, BatchassRef aBatchass)
+AppConsole::AppConsole(ParameterBagRef aParameterBag, BatchassRef aBatchass, WebSocketsRef aWebSockets)
 {
 	mParameterBag = aParameterBag;
 	mBatchass = aBatchass;
-
+	mWebSockets = aWebSockets;
 	ClearLog();
 	HistoryPos = -1;
 	Commands.push_back("HELP");
@@ -19,6 +19,9 @@ AppConsole::AppConsole(ParameterBagRef aParameterBag, BatchassRef aBatchass)
 	Commands.push_back("MODEWARP");
 	Commands.push_back("MODESPHERE");
 	Commands.push_back("MODEMESH");
+	Commands.push_back("WSCNX");
+	Commands.push_back("WSPING");
+	Commands.push_back("WSCNF");
 }
 void AppConsole::ClearLog()
 {
@@ -179,13 +182,30 @@ void AppConsole::ExecCommand(const char* command_line)
 	{
 		mBatchass->changeMode(mParameterBag->MODE_MESH);
 	}
+	else if (ui::ImStricmp(command_line, "WSCNX") == 0)
+	{
+		mWebSockets->clientConnect();
+	}
+	else if (ui::ImStricmp(command_line, "WSPING") == 0)
+	{
+		mWebSockets->ping();
+	}
+	else if (ui::ImStricmp(command_line, "WSCNF") == 0)
+	{
+		if (mParameterBag->mIsWebSocketsServer)
+		{
+			AddLog("Server: %s\n", mParameterBag->mWebSocketsHost.c_str());
+		}
+		else
+		{
+			AddLog("Client %s\n", mParameterBag->mWebSocketsHost.c_str());
+		}
+	}
 	else
 	{
 		AddLog("Unknown command: '%s'\n", command_line);
 	}
 }
-
-
 
 int AppConsole::TextEditCallback(ImGuiTextEditCallbackData* data)
 {

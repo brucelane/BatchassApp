@@ -76,6 +76,10 @@ void BatchassApp::setup()
 	mMainWindow->setTitle("Batchass");
 	mMainWindow->connectDraw(&BatchassApp::drawMain, this);
 	mMainWindow->connectClose(&BatchassApp::shutdown, this);
+	auto end = Clock::now();
+	auto mididur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	mBatchass->log("setup before: " + toString(mididur.count()));
+	start = Clock::now();
 
 	// instanciate the audio class
 	mAudio = AudioWrapper::create(mParameterBag, mBatchass->getTexturesRef());
@@ -90,15 +94,11 @@ void BatchassApp::setup()
 	// instanciate the spout class
 	mSpout = SpoutWrapper::create(mParameterBag, mBatchass->getTexturesRef());
 	// instanciate the console class
-	mConsole = AppConsole::create(mParameterBag, mBatchass);
+	mConsole = AppConsole::create(mParameterBag, mBatchass, mWebSockets);
 
 	mTimer = 0.0f;
 
 	newLogMsg = false;
-	auto end = Clock::now();
-	auto mididur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	mBatchass->log("setup before: " + toString(mididur.count()));
-	start = Clock::now();
 
 	// imgui
 	margin = 3;
@@ -685,6 +685,8 @@ void BatchassApp::drawMain()
 			if (mParameterBag->newWSMsg)
 			{
 				mParameterBag->newWSMsg = false;
+				mConsole->AddLog(mParameterBag->WSMsg.c_str());
+
 				WSlog.append(mParameterBag->WSMsg.c_str());
 				lines++;
 				if (lines > 5) { WSlog.clear(); lines = 0; }
@@ -941,20 +943,61 @@ void BatchassApp::drawMain()
 		}
 		if (ui::CollapsingHeader("Effects", NULL, true, true))
 		{
+			int h = 0;
+			(mParameterBag->mOriginUpperLeft) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
 			mParameterBag->mOriginUpperLeft ^= ui::Button("upleft");
+			ui::PopStyleColor(3);
+			h++;
 			ui::SameLine();
+
+			(mParameterBag->iRepeat) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
 			mParameterBag->iRepeat ^= ui::Button("repeat");
+			ui::PopStyleColor(3);
+			h++;
 			ui::SameLine();
+
+			(mParameterBag->controlValues[45]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));			
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
 			if (ui::Button("glitch")) { mParameterBag->controlValues[45] = !mParameterBag->controlValues[45]; }
+			ui::PopStyleColor(3);
+			h++;
 
+			(mParameterBag->controlValues[46]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
 			if (ui::Button("toggle")) { mParameterBag->controlValues[46] = !mParameterBag->controlValues[46]; }
+			ui::PopStyleColor(3);
+			h++;
 			ui::SameLine();
-			if (ui::Button("vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
-			ui::SameLine();
-			if (ui::Button("invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
 
-			mParameterBag->iGreyScale ^= ui::Button("greyscale");
+			(mParameterBag->controlValues[47]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
+			if (ui::Button("vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
+			ui::PopStyleColor(3);
+			h++;
 			ui::SameLine();
+
+			(mParameterBag->controlValues[48]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
+			if (ui::Button("invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
+			ui::PopStyleColor(3);
+			h++;
+
+			(mParameterBag->iGreyScale) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
+			mParameterBag->iGreyScale ^= ui::Button("greyscale");
+			ui::PopStyleColor(3);
+			h++;
+			ui::SameLine();
+
 			if (ui::Button("instant black"))
 			{
 				mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3] = mParameterBag->controlValues[4] = 0.0;
