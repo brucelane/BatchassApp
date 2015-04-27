@@ -665,11 +665,6 @@ void main(void)
 	{
 		col.rgb = col.gbr;
 	}
-	// grey scale mode
-	if (iGreyScale == 1)
-	{
-		col = greyScale( col );
-	}
 	col *= iExposure;
 	if (iInvert == 1) col = 1.-col;
 	if (iVignette == 1)
@@ -677,8 +672,13 @@ void main(void)
 		vec2 p = 1.0 + -2.0 * uv;
 		col = mix( col, vec3( iBackgroundColor ), dot( p, p )*iRotationSpeed );
 	}
+  // grey scale mode
+  if (iGreyScale == 1)
+  {
+    col = greyScale( col );
+  }
 
-	vec2 vFontSize = vec2(16.0, 20.0);
+	/*vec2 vFontSize = vec2(16.0, 20.0);
 	vec2 vPixelCoord0 = vec2(5.0, 5.0);
 	float fDigits = 3.0;
 	float fDecimalPlaces = 0.0;
@@ -695,7 +695,7 @@ void main(void)
 			float fIsDigit5 = PrintValue(vPixelCoord0, vFontSize, iGlobalTime, fDigits, 2.0);
 			col = mix( col, iColor, fIsDigit5);
 		}
-	}
+	}*/
 	gl_FragColor = iAlpha * vec4( col, 1.0 );
 
 }

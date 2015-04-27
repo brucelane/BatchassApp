@@ -28,7 +28,8 @@ void BatchassApp::prepareSettings(Settings* settings)
 	// disables frame rate limiting
 	//settings->setFrameRate(10000.0f);
 	settings->setFrameRate(60.0f);
-	settings->setWindowPos(Vec2i(w - mParameterBag->mMainWindowWidth, 0));
+	//settings->setWindowPos(Vec2i(w - mParameterBag->mMainWindowWidth, 0));
+	settings->setWindowPos(Vec2i(0, 0));
 
 	settings->setResizable(false);
 	settings->setBorderless();
