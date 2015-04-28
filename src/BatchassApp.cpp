@@ -326,9 +326,6 @@ void BatchassApp::drawMain()
 	{
 		if (mParameterBag->mMode == MODE_MESH){ if (mMeshes->isSetup()) mMeshes->draw(); }
 	}
-	gl::setViewport(getWindowBounds());
-	gl::setMatricesWindow(getWindowSize());
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);
 
 	//imgui
 	if (removeUI || mBatchass->getWarpsRef()->isEditModeEnabled())
