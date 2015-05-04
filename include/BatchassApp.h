@@ -54,8 +54,6 @@ along with Cinder-MIDI.  If not, see <http://www.gnu.org/licenses/>.
 #include "SpoutWrapper.h"
 // ABP
 #include "Abp.h"
-// UI
-//#include "UI.h"
 // Utils
 #include "Batchass.h"
 // Console
@@ -132,9 +130,6 @@ private:
 	midi::Input					mMidiIn1;
 	midi::Input					mMidiIn2;
 	midi::Input					mMidiIn3;
-	// log
-	string						mLogMsg;
-	bool						newLogMsg;
 	// misc
 	int							mSeconds;
 	// windows
@@ -184,8 +179,8 @@ private:
 	float						f = 0.0f;
 	char						buf[64];
 
-	bool showConsole, showGlobal, showTextures, showTest, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showInfo, showChannels;
-	bool mouseGlobal;
-	void ShowAppConsole(bool* opened);
+	bool						showConsole, showGlobal, showTextures, showTest, showMidi, showFbos, showTheme, showAudio, showShaders, showOSC, showInfo, showChannels;
+	bool						mouseGlobal;
+	void						ShowAppConsole(bool* opened);
 
 };

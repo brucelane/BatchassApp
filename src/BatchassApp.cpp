@@ -99,8 +99,6 @@ void BatchassApp::setup()
 
 	mTimer = 0.0f;
 
-	newLogMsg = false;
-
 	// imgui
 	margin = 3;
 	inBetween = 3;
@@ -137,7 +135,6 @@ void BatchassApp::setup()
 void BatchassApp::setupMidi()
 {
 	stringstream ss;
-	newLogMsg = true;
 	ss << "setupMidi: ";
 
 	if (mMidiIn0.getNumPorts() > 0)
@@ -167,7 +164,6 @@ void BatchassApp::setupMidi()
 				}
 				mMidiInputs[i].isConnected = true;
 				ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName;
-				mWebSockets->write(ss.str());
 			}
 			else
 			{
@@ -181,13 +177,14 @@ void BatchassApp::setupMidi()
 		ss << "No MIDI Ports found!!!!" << std::endl;
 	}
 	ss << std::endl;
-	mLogMsg = ss.str();
+
+	mParameterBag->newMsg = true;
+	mParameterBag->mMsg = ss.str();
 }
 void BatchassApp::midiListener(midi::Message msg){
 	float normalizedValue;
 	string controlType = "unknown";
 
-	newLogMsg = true;
 	int name;
 	int newValue;
 
@@ -215,7 +212,8 @@ void BatchassApp::midiListener(midi::Message msg){
 	stringstream ss;
 	ss << "ctrl: " << name << " value: " << newValue << " normalized: " << normalizedValue;
 	ss << " midi port: " << msg.port << " ch: " << msg.channel << " status: " << msg.status << std::endl;
-	mLogMsg = ss.str();
+	mParameterBag->newMsg = true;
+	mParameterBag->mMsg = ss.str();
 	mOSC->updateAndSendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
 	// CHECK why? mOSC->sendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
 	mWebSockets->write("{\"params\" :[{" + controlType);
@@ -573,11 +571,7 @@ void BatchassApp::drawMain()
 	ui::End();
 	xPos += largePreviewW + margin;
 #pragma endregion mix
-	// console
-	ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
-	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-	if (showConsole) ShowAppConsole(&showConsole);
-	xPos += largePreviewW + margin;
+
 #pragma region channels
 	if (showChannels)
 	{
@@ -770,8 +764,8 @@ void BatchassApp::drawMain()
 
 		}
 		ui::End();
-
-		yPos += largePreviewH + margin;
+		xPos += largePreviewW + 20 + margin;
+		//yPos += largePreviewH + margin;
 	}
 #pragma endregion Audio
 
@@ -843,33 +837,14 @@ void BatchassApp::drawMain()
 							mMidiInputs[i].isConnected = true;
 							ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName << std::endl;
 						}
-						mLogMsg = ss.str();
-
+						mParameterBag->mMsg = ss.str();
+						mParameterBag->newMsg = true;
 					}
 					ui::NextColumn();
 					ui::Separator();
 				}
 				ui::Columns(1);
 
-			}
-			if (ui::CollapsingHeader("Log", "21", true, true))
-			{
-				static ImGuiTextBuffer log;
-				static int lines = 0;
-				ui::Text("Buffer contents: %d lines, %d bytes", lines, log.size());
-				if (ui::Button("Clear")) { log.clear(); lines = 0; }
-				//ui::SameLine();
-
-				if (newLogMsg)
-				{
-					newLogMsg = false;
-					log.append(mLogMsg.c_str());
-					lines++;
-					if (lines > 5) { log.clear(); lines = 0; }
-				}
-				ui::BeginChild("Log");
-				ui::TextUnformatted(log.begin(), log.end());
-				ui::EndChild();
 			}
 		}
 		ui::End();
@@ -1424,6 +1399,19 @@ void BatchassApp::drawMain()
 		yPos += h + margin;
 	}
 #pragma endregion fbos
+	// console
+	if (showConsole)
+	{
+		ui::SetNextWindowSize(ImVec2( (w + margin) * mParameterBag->MAX, largePreviewH), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ShowAppConsole(&showConsole);
+		if (mParameterBag->newMsg)
+		{
+			mParameterBag->newMsg = false;
+			mConsole->AddLog(mParameterBag->mMsg.c_str());
+		}
+	}
+	xPos += largePreviewH + margin;
 
 #pragma region OSC
 
@@ -1447,24 +1435,7 @@ void BatchassApp::drawMain()
 			ui::InputText("address", str0, IM_ARRAYSIZE(str0));
 			ui::InputInt("track", &i0);
 			ui::InputFloat("clip", &f0, 0.01f, 1.0f);
-			if (ui::Button("Send")) { mOSC->sendOSCIntMessage(str0, i0); }
-
-			static ImGuiTextBuffer OSClog;
-			static int lines = 0;
-			if (ui::Button("Clear")) { OSClog.clear(); lines = 0; }
-			ui::SameLine();
-			ui::Text("Buffer contents: %d lines, %d bytes", lines, OSClog.size());
-
-			if (mParameterBag->newOSCMsg)
-			{
-				mParameterBag->newOSCMsg = false;
-				OSClog.append(mParameterBag->OSCMsg.c_str());
-				lines++;
-				if (lines > 5) { OSClog.clear(); lines = 0; }
-			}
-			ui::BeginChild("OSClog");
-			ui::TextUnformatted(OSClog.begin(), OSClog.end());
-			ui::EndChild();
+			if (ui::Button("Send")) { mOSC->sendOSCIntMessage(str0, i0); }	
 		}
 		ui::End();
 		xPos += largeW + margin;
