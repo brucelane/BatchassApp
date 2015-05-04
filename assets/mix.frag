@@ -619,10 +619,19 @@ vec3 mainFunction( vec2 uv )
 // main start
 void main(void)
 {
-	vec2 uv = gl_FragCoord.xy / iResolution.xy;//gl_TexCoord[0].st;
+	vec2 uv = gl_FragCoord.xy / iResolution.xy;
 	uv.x -= iRenderXY.x;
 	uv.y -= iRenderXY.y;
-	uv *= iZoom;
+	
+  // rotate
+  float rad = radians(360.0 * fract(iGlobalTime*iRotationSpeed));
+  mat2 rotate = mat2(cos(rad),sin(rad),-sin(rad),cos(rad));
+  uv = rotate * (uv - 0.5) + 0.5;
+  
+  // zoom centered
+  float xZ = (uv.x - 0.5)*iZoom*2.0;
+  float yZ = (uv.y - 0.5)*iZoom*2.0;
+  vec2 cZ = vec2(xZ, yZ);
 
     // glitch
 	if (iGlitch == 1) 
@@ -643,17 +652,17 @@ void main(void)
 	vec3 col;
 	if ( iCrossfade > 0.99 )
 	{
-		col = shaderRight(uv);
+		col = shaderRight(uv-cZ);
 	}
 	else
 	{
 		if ( iCrossfade < 0.01 )
 		{
-			col = shaderLeft(uv);
+			col = shaderLeft(uv-cZ);
 		}
 		else
 		{
-			col = mainFunction( uv );
+			col = mainFunction( uv-cZ );
 
 		}
 	}
@@ -678,24 +687,6 @@ void main(void)
     col = greyScale( col );
   }
 
-	/*vec2 vFontSize = vec2(16.0, 20.0);
-	vec2 vPixelCoord0 = vec2(5.0, 5.0);
-	float fDigits = 3.0;
-	float fDecimalPlaces = 0.0;
-	// Show FPS
-	if (iDebug == 1)
-	{
-		if (iShowFps == 1)
-		{
-			float fIsDigit4 = PrintValue(vPixelCoord0, vFontSize, iFps, fDigits, fDecimalPlaces);
-			col = mix( col, iColor, fIsDigit4);
-		}
-		else
-		{
-			float fIsDigit5 = PrintValue(vPixelCoord0, vFontSize, iGlobalTime, fDigits, 2.0);
-			col = mix( col, iColor, fIsDigit5);
-		}
-	}*/
 	gl_FragColor = iAlpha * vec4( col, 1.0 );
 
 }
