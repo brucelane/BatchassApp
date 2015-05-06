@@ -104,17 +104,17 @@ void BatchassApp::setup()
 	inBetween = 3;
 	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15 mPreviewWidth = 160;mPreviewHeight = 120;
 	w = mParameterBag->mPreviewFboWidth + margin;
-	h = mParameterBag->mPreviewFboHeight * 3;
+	h = mParameterBag->mPreviewFboHeight * 2;
 	largeW = (mParameterBag->mPreviewFboWidth + margin) * 4;
 	largeH = (mParameterBag->mPreviewFboHeight + margin) * 5;
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
-	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2.2;
+	largePreviewH = (mParameterBag->mPreviewHeight + margin) * 2.4;
 	displayHeight = mParameterBag->mMainDisplayHeight - 50;
 	mouseGlobal = false;
 	static float f = 0.0f;
 
-	showConsole = showGlobal = showTextures = showAudio = showInfo = showMidi = showChannels = showShaders = true;
-	showTest = showTheme = showOSC = showFbos = false;
+	showConsole = showGlobal = showTextures = showAudio = showMidi = showChannels = showShaders = showFbos = true;
+	showTest = showTheme = showOSC = false;
 
 	// set ui window and io events callbacks
 	ui::connectWindow(getWindow());
@@ -525,12 +525,12 @@ void BatchassApp::drawMain()
 		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mMixFboIndex);
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 		// crossfade
-		if (ui::SliderFloat("Xfade", &mParameterBag->controlValues[18], 0.01f, 1.0f))
+		if (ui::DragFloat("Xfade", &mParameterBag->controlValues[18], 0.01f, 0.001f, 1.0f))
 		{
 		}
 		// renderXY mouse
-		ui::SliderFloat("RdrX", &mParameterBag->mRenderXY.x, -1.0f, 1.0f);
-		ui::SliderFloat("RdrY", &mParameterBag->mRenderXY.y, -1.0f, 1.0f);
+		ui::DragFloat("RdrX", &mParameterBag->mRenderXY.x, 0.01f, -1.0f, 1.0f);
+		ui::DragFloat("RdrY", &mParameterBag->mRenderXY.y, 0.01f, -1.0f, 1.0f);
 		ui::PopStyleColor(3);
 		ui::PopItemWidth();
 
@@ -645,8 +645,7 @@ void BatchassApp::drawMain()
 	}
 #pragma endregion channels
 #pragma region Info
-	if (showInfo)
-	{
+
 		ui::SetNextWindowSize(ImVec2(largePreviewW + 20, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
@@ -683,12 +682,10 @@ void BatchassApp::drawMain()
 				
 				ui::Checkbox("Audio", &showAudio);
 				ui::SameLine();
-				ui::Checkbox("Info", &showInfo);
-				ui::SameLine();
 				ui::Checkbox("Cmd", &showConsole);
-				
-				ui::Checkbox("OSC", &showOSC);
 				ui::SameLine();
+				ui::Checkbox("OSC", &showOSC);
+				
 				ui::Checkbox("MIDI", &showMidi);
 				ui::SameLine();
 				ui::Checkbox("Test", &showTest);
@@ -701,25 +698,24 @@ void BatchassApp::drawMain()
 				}
 			
 			
-				ui::SliderInt("RenderX", &mParameterBag->mRenderX, 0, 3000); ui::SameLine();
-				ui::SliderInt("RenderWidth", &mParameterBag->mRenderWidth, 1024, 3840); ui::SameLine();
-				ui::SliderInt("RenderHeight", &mParameterBag->mRenderHeight, 600, 1280);
 				if (ui::Button("Create")) { createRenderWindow(); }
 				ui::SameLine();
 				if (ui::Button("Delete")) { deleteRenderWindows(); }
 				ui::SameLine();
-				//if (ui::Button("Preview")) { mParameterBag->mPreviewEnabled = !mParameterBag->mPreviewEnabled; }
 				mParameterBag->mPreviewEnabled ^= ui::Button("Preview");
-				ui::SameLine();
+
 				mParameterBag->iDebug ^= ui::Button("Debug");
 				ui::SameLine();
 				mParameterBag->mRenderThumbs ^= ui::Button("Thumbs");
+				/*ui::SliderInt("RenderX", &mParameterBag->mRenderX, 0, 3000);
+				ui::SliderInt("RenderWidth", &mParameterBag->mRenderWidth, 1024, 3840);
+				ui::SliderInt("RenderHeight", &mParameterBag->mRenderHeight, 600, 1280);*/
 				ui::PopItemWidth();
 
 		}
 		ui::End();
 		xPos += largePreviewW + 20 + margin;
-	}
+
 #pragma endregion Info
 
 #pragma region Audio
@@ -1001,7 +997,7 @@ void BatchassApp::drawMain()
 			ui::SameLine();
 			if (ui::Button("x##zoom")) { mBatchass->resetZoom(); }
 			ui::SameLine();
-			if (ui::SliderFloat("zoom", &mParameterBag->controlValues[ctrl], mBatchass->minZoom, mBatchass->maxZoom))
+			if (ui::DragFloat("zoom", &mParameterBag->controlValues[ctrl], 0.1f,mBatchass->minZoom, mBatchass->maxZoom))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}

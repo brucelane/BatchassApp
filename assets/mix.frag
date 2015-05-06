@@ -624,10 +624,10 @@ void main(void)
 	uv.y -= iRenderXY.y;
 	
   // rotate
-  float rad = radians(360.0 * fract(iGlobalTime*iRotationSpeed));
-  mat2 rotate = mat2(cos(rad),sin(rad),-sin(rad),cos(rad));
-  uv = rotate * (uv - 0.5) + 0.5;
-  
+  //float rad = radians(360.0 * fract(iGlobalTime*iRotationSpeed));
+  //mat2 rotate = mat2(cos(rad),sin(rad),-sin(rad),cos(rad));
+  //uv = rotate * (uv - 0.5) + 0.5;
+
   // zoom centered
   float xZ = (uv.x - 0.5)*iZoom*2.0;
   float yZ = (uv.y - 0.5)*iZoom*2.0;

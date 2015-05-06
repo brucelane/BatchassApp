@@ -184,7 +184,7 @@ void AppConsole::ExecCommand(const char* command_line)
 	}
 	else if (ui::ImStricmp(command_line, "WSCNX") == 0)
 	{
-		mWebSockets->clientConnect();
+		mWebSockets->connect();
 	}
 	else if (ui::ImStricmp(command_line, "WSPING") == 0)
 	{
@@ -194,11 +194,11 @@ void AppConsole::ExecCommand(const char* command_line)
 	{
 		if (mParameterBag->mIsWebSocketsServer)
 		{
-			AddLog("Server: %s\n", mParameterBag->mWebSocketsHost.c_str());
+			AddLog("Server %s\n", mParameterBag->mWebSocketsHost.c_str());
 		}
 		else
 		{
-			AddLog("Client %s\n", mParameterBag->mWebSocketsHost.c_str());
+			AddLog("Client %s %s\n", mParameterBag->mWebSocketsHost.c_str(), (mWebSockets->isClientConnected() ? "true" : "false"));
 		}
 	}
 	else
