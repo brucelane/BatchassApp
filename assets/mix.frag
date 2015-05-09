@@ -40,6 +40,7 @@ uniform int         iGlitch;           		// 1 for glitch
 uniform float       iChromatic;				// chromatic if > 0.
 uniform float       iTrixels;           	// trixels if > 0.
 uniform float       iGridSize;            // gridSize if > 0.
+uniform bool        iFlipH;               // flip horizontally
 const 	float 		  PI = 3.14159265;
 // uniforms end
 
@@ -622,7 +623,11 @@ void main(void)
 	vec2 uv = gl_FragCoord.xy / iResolution.xy;
 	uv.x -= iRenderXY.x;
 	uv.y -= iRenderXY.y;
-	
+	// flip horizontally
+  if (iFlipH)
+  {
+    uv.x = 1.0 - uv.x;
+  }
   // rotate
   //float rad = radians(360.0 * fract(iGlobalTime*iRotationSpeed));
   //mat2 rotate = mat2(cos(rad),sin(rad),-sin(rad),cos(rad));
@@ -633,7 +638,7 @@ void main(void)
   float yZ = (uv.y - 0.5)*iZoom*2.0;
   vec2 cZ = vec2(xZ, yZ);
 
-    // glitch
+  // glitch
 	if (iGlitch == 1) 
 	{
 		// glitch the point around

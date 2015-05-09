@@ -113,8 +113,8 @@ void BatchassApp::setup()
 	mouseGlobal = false;
 	static float f = 0.0f;
 
-	showConsole = showGlobal = showTextures = showAudio = showMidi = showChannels = showShaders = showFbos = true;
-	showTest = showTheme = showOSC = false;
+	showConsole = showGlobal = showTextures = showAudio = showMidi = showChannels = showShaders = true;
+	showTest = showTheme = showOSC = showFbos = false;
 
 	// set ui window and io events callbacks
 	ui::connectWindow(getWindow());
@@ -410,7 +410,7 @@ void BatchassApp::drawMain()
 			// left zoom
 			ui::SliderFloat("lZoom", &mParameterBag->iZoomLeft, mBatchass->minZoom, mBatchass->maxZoom);
 
-			ui::Columns(4);
+			/*ui::Columns(4);
 			ui::Text("ID"); ui::NextColumn();
 			ui::Text("idx"); ui::NextColumn();
 			ui::Text("mode"); ui::NextColumn();
@@ -428,7 +428,7 @@ void BatchassApp::drawMain()
 				}
 
 			}
-			ui::Columns(1);
+			ui::Columns(1);*/
 
 		}
 		else
@@ -521,9 +521,12 @@ void BatchassApp::drawMain()
 		ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.1f, 0.7f, 0.7f));
 		ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.1f, 0.8f, 0.8f));
 
-		sprintf_s(buf, "FV##f%d", 42);
+		sprintf_s(buf, "FV##fv%d", 42);
 		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mMixFboIndex);
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+		sprintf_s(buf, "FH##fh%d", 42);
+		mParameterBag->iFlipHorizontally ^= ui::Button(buf);
+		if (ui::IsItemHovered()) ui::SetTooltip("Flip horizontally");
 		// crossfade
 		if (ui::DragFloat("Xfade", &mParameterBag->controlValues[18], 0.01f, 0.001f, 1.0f))
 		{
@@ -1022,7 +1025,7 @@ void BatchassApp::drawMain()
 			ui::SameLine();
 			if (ui::Button("x##rotationspeed")) { mBatchass->resetRotationSpeed(); }
 			ui::SameLine();
-			if (ui::SliderFloat("rotationSpeed", &mParameterBag->controlValues[ctrl], mBatchass->minRotationSpeed, mBatchass->maxRotationSpeed))
+			if (ui::DragFloat("rotationSpeed", &mParameterBag->controlValues[ctrl], 0.01f, mBatchass->minRotationSpeed, mBatchass->maxRotationSpeed))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
@@ -1398,7 +1401,9 @@ void BatchassApp::drawMain()
 	// console
 	if (showConsole)
 	{
-		ui::SetNextWindowSize(ImVec2( (w + margin) * mParameterBag->MAX, largePreviewH), ImGuiSetCond_Once);
+		yPos += h + margin;
+		yPos += h + margin;
+		ui::SetNextWindowSize(ImVec2((w + margin) * mParameterBag->MAX, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ShowAppConsole(&showConsole);
 		if (mParameterBag->newMsg)
