@@ -524,6 +524,7 @@ void BatchassApp::drawMain()
 		sprintf_s(buf, "FV##fv%d", 42);
 		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mMixFboIndex);
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+		ui::SameLine();
 		sprintf_s(buf, "FH##fh%d", 42);
 		mParameterBag->iFlipHorizontally ^= ui::Button(buf);
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip horizontally");
@@ -553,9 +554,6 @@ void BatchassApp::drawMain()
 		ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.1f, 0.7f, 0.7f));
 		ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.1f, 0.8f, 0.8f));
 
-		sprintf_s(buf, "FV##f%d", 39);
-		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mCurrentPreviewFboIndex);
-		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically"); ui::SameLine();
 		if (mParameterBag->mPreviewEnabled)
 		{
 			sprintf_s(buf, "On##pvwe");
@@ -565,6 +563,8 @@ void BatchassApp::drawMain()
 			sprintf_s(buf, "Off##pvwe");
 		}
 		mParameterBag->mPreviewEnabled ^= ui::Button(buf);
+		if (ui::IsItemHovered()) ui::SetTooltip("Preview enabled");
+
 		ui::PopStyleColor(3);
 		ui::Text(mBatchass->getTexturesRef()->getPreviewTime());
 
@@ -704,8 +704,6 @@ void BatchassApp::drawMain()
 				if (ui::Button("Create")) { createRenderWindow(); }
 				ui::SameLine();
 				if (ui::Button("Delete")) { deleteRenderWindows(); }
-				ui::SameLine();
-				mParameterBag->mPreviewEnabled ^= ui::Button("Preview");
 
 				mParameterBag->iDebug ^= ui::Button("Debug");
 				ui::SameLine();
