@@ -92,6 +92,8 @@ public:
 	void	activate();
 	//! Override to receive window deactivate events
 	void	deactivate();
+	void	updateParams(int iarg0, float farg1);
+
 private:
 	// parameters
 	ParameterBagRef				mParameterBag;

@@ -62,7 +62,7 @@ void BatchassApp::setup()
 		BatchassApp::shutdown();
 	});
 	// instanciate the OSC class
-	mOSC = OSC::create(mParameterBag);
+	if (mParameterBag->mOSCEnabled) mOSC = OSC::create(mParameterBag);
 	// instanciate the json wrapper class
 	mJson = JSONWrapper::create();
 
@@ -214,9 +214,60 @@ void BatchassApp::midiListener(midi::Message msg){
 	ss << " midi port: " << msg.port << " ch: " << msg.channel << " status: " << msg.status << std::endl;
 	mParameterBag->newMsg = true;
 	mParameterBag->mMsg = ss.str();
-	mOSC->updateAndSendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
-	// CHECK why? mOSC->sendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
+	if (mParameterBag->mOSCEnabled)
+	{
+		mOSC->updateAndSendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
+	}
+	else
+	{
+		updateParams(name, normalizedValue);
+	}
 	mWebSockets->write("{\"params\" :[{" + controlType);
+}
+void BatchassApp::updateParams(int iarg0, float farg1)
+{
+	if (iarg0 > 0 && iarg0 < 9)
+	{
+		// sliders 
+		mParameterBag->controlValues[iarg0] = farg1;
+	}
+	if (iarg0 > 10 && iarg0 < 19)
+	{
+		// rotary 
+		mParameterBag->controlValues[iarg0] = farg1;
+	}
+	// buttons
+	if (iarg0 > 20 && iarg0 < 29)
+	{
+		// select index
+		mParameterBag->selectedWarp = iarg0 - 21;
+	}
+	if (iarg0 > 30 && iarg0 < 39)
+	{
+		// select input
+		mParameterBag->mWarpFbos[mParameterBag->selectedWarp].textureIndex = iarg0 - 31;
+		// activate
+		mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active = !mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active;
+	}
+	if (iarg0 > 40 && iarg0 < 49)
+	{
+		// low row 
+		mParameterBag->controlValues[iarg0] = farg1;
+	}
+	if (iarg0 == 61 && farg1 > 0)
+	{
+		// left arrow
+		mParameterBag->iBlendMode--;
+		if (mParameterBag->iBlendMode < 0) mParameterBag->iBlendMode = mParameterBag->maxBlendMode;
+	}
+	if (iarg0 == 62 && farg1 > 0)
+	{
+		// left arrow
+		mParameterBag->iBlendMode++;
+		if (mParameterBag->iBlendMode > mParameterBag->maxBlendMode) mParameterBag->iBlendMode = 0;
+	}
+
+
 }
 void BatchassApp::createRenderWindow()
 {
@@ -300,10 +351,14 @@ void BatchassApp::drawMain()
 				}
 				break;
 			case MODE_KINECT:
-				for (int i = 0; i < 20; i++)
+				if (mParameterBag->mOSCEnabled)
 				{
-					gl::drawLine(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), Vec2f(mOSC->skeleton[i].z, mOSC->skeleton[i].w));
-					gl::drawSolidCircle(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), 5.0f, 16);
+					for (int i = 0; i < 20; i++)
+					{
+						gl::drawLine(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), Vec2f(mOSC->skeleton[i].z, mOSC->skeleton[i].w));
+						gl::drawSolidCircle(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), 5.0f, 16);
+					}
+
 				}
 				break;
 			case MODE_VERTEXSPHERE:
@@ -1081,10 +1136,14 @@ void BatchassApp::drawMain()
 				{
 					sParams << ",{\"name\" : " << i + 1 << ",\"value\" : " << color[i] << "}";
 					mParameterBag->controlValues[i + 1] = color[i];
-					if (i == 0) mOSC->sendOSCColorMessage("/fr", mParameterBag->controlValues[1]);
-					if (i == 1) mOSC->sendOSCColorMessage("/fg", mParameterBag->controlValues[2]);
-					if (i == 2) mOSC->sendOSCColorMessage("/fb", mParameterBag->controlValues[3]);
-					if (i == 3) mOSC->sendOSCColorMessage("/fa", mParameterBag->controlValues[4]);
+					if (mParameterBag->mOSCEnabled)
+					{
+						if (i == 0) mOSC->sendOSCColorMessage("/fr", mParameterBag->controlValues[1]);
+						if (i == 1) mOSC->sendOSCColorMessage("/fg", mParameterBag->controlValues[2]);
+						if (i == 2) mOSC->sendOSCColorMessage("/fb", mParameterBag->controlValues[3]);
+						if (i == 3) mOSC->sendOSCColorMessage("/fa", mParameterBag->controlValues[4]);
+
+					}
 					colorChanged = true;
 				}
 			}
@@ -1414,7 +1473,7 @@ void BatchassApp::drawMain()
 
 #pragma region OSC
 
-	if (showOSC)
+	if (showOSC && mParameterBag->mOSCEnabled)
 	{
 		ui::SetNextWindowSize(ImVec2(largeW, largeH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
@@ -1561,7 +1620,7 @@ void BatchassApp::fileDrop(FileDropEvent event)
 			{
 
 			std::string fs = loadString(loadFile(mFile));
-			mOSC->sendOSCStringMessage("/fs", 0, fs, name);
+			if (mParameterBag->mOSCEnabled) mOSC->sendOSCStringMessage("/fs", 0, fs, name);
 			}*/
 			// save thumb
 			timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ saveThumb(); });
@@ -1665,7 +1724,7 @@ void BatchassApp::shutdown()
 void BatchassApp::update()
 {
 	mWebSockets->update();
-	mOSC->update();
+	if (mParameterBag->mOSCEnabled) mOSC->update();
 	mParameterBag->iFps = getAverageFps();
 	mParameterBag->sFps = toString(floor(mParameterBag->iFps));
 	getWindow()->setTitle("(" + mParameterBag->sFps + " fps) Batchass");
