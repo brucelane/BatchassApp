@@ -473,14 +473,14 @@ void BatchassApp::drawMain()
 			ui::Separator();
 			for (int i = 0; i < mParameterBag->mWarpFbos.size() - 1; i++)
 			{
-				if (mParameterBag->mWarpFbos[i].textureIndex == 3)
-				{
-					ui::Text("%d", i); ui::NextColumn();
-					ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
-					ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
-					ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
+			if (mParameterBag->mWarpFbos[i].textureIndex == 3)
+			{
+			ui::Text("%d", i); ui::NextColumn();
+			ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
+			ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
+			ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
 
-				}
+			}
 
 			}
 			ui::Columns(1);*/
@@ -505,14 +505,14 @@ void BatchassApp::drawMain()
 			ui::Separator();
 			for (int i = 0; i < mParameterBag->mWarpFbos.size() - 1; i++)
 			{
-				if (mParameterBag->mWarpFbos[i].textureIndex == 4)
-				{
-					ui::Text("%d", i); ui::NextColumn();
-					ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
-					ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
-					ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
+			if (mParameterBag->mWarpFbos[i].textureIndex == 4)
+			{
+			ui::Text("%d", i); ui::NextColumn();
+			ui::Text("%d", mParameterBag->mWarpFbos[i].textureIndex); ui::NextColumn();
+			ui::Text("%d", mParameterBag->mWarpFbos[i].textureMode); ui::NextColumn();
+			ui::Text("%d", mParameterBag->mWarpFbos[i].active); ui::NextColumn();
 
-				}
+			}
 
 			}
 			ui::Columns(1);*/
@@ -704,73 +704,73 @@ void BatchassApp::drawMain()
 #pragma endregion channels
 #pragma region Info
 
-		ui::SetNextWindowSize(ImVec2(largePreviewW + 20, largePreviewH), ImGuiSetCond_Once);
-		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
-		sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
-		ui::Begin(buf);
+	ui::SetNextWindowSize(ImVec2(largePreviewW + 20, largePreviewH), ImGuiSetCond_Once);
+	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+	sprintf_s(buf, "Fps %c %d###fps", "|/-\\"[(int)(ImGui::GetTime() / 0.25f) & 3], (int)mParameterBag->iFps);
+	ui::Begin(buf);
+	{
+		ImGui::PushItemWidth(mParameterBag->mPreviewFboWidth);
+		// mode
+		static int mode = mParameterBag->mMode;
+
+		const char* modes[] = { "Mix", "Warp", "Audio", "Sphere", "Mesh", "Live", "ABP", "VertexSphere" };
+		ui::Combo("Mode", &mode, modes, IM_ARRAYSIZE(modes));
+
+		if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
+		// fps
+		static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
+		static int values_offset = 0;
+		static float refresh_time = -1.0f;
+		if (ui::GetTime() > refresh_time + 1.0f / 6.0f)
 		{
-			ImGui::PushItemWidth(mParameterBag->mPreviewFboWidth);
-			// mode
-			static int mode = mParameterBag->mMode;
-
-			const char* modes[] = { "Mix", "Warp", "Audio", "Sphere", "Mesh", "Live", "ABP", "VertexSphere" };
-			ui::Combo("Mode", &mode, modes, IM_ARRAYSIZE(modes));
-
-			if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
-			// fps
-			static ImVector<float> values; if (values.empty()) { values.resize(100); memset(&values.front(), 0, values.size()*sizeof(float)); }
-			static int values_offset = 0;
-			static float refresh_time = -1.0f;
-			if (ui::GetTime() > refresh_time + 1.0f / 6.0f)
-			{
-				refresh_time = ui::GetTime();
-				values[values_offset] = mParameterBag->iFps;
-				values_offset = (values_offset + 1) % values.size();
-			}
-			if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
-			ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
-			if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
-
-				// Checkbox
-				ui::Checkbox("Tex", &showTextures);
-				ui::SameLine();
-				ui::Checkbox("Fbos", &showFbos);
-				ui::SameLine();
-				ui::Checkbox("Shada", &showShaders);
-				
-				ui::Checkbox("Audio", &showAudio);
-				ui::SameLine();
-				ui::Checkbox("Cmd", &showConsole);
-				ui::SameLine();
-				ui::Checkbox("OSC", &showOSC);
-				
-				ui::Checkbox("MIDI", &showMidi);
-				ui::SameLine();
-				ui::Checkbox("Test", &showTest);
-				if (ui::Button("Save Params"))
-				{
-					// save warp settings
-					mBatchass->getWarpsRef()->save("warps1.xml");
-					// save params
-					mParameterBag->save();
-				}
-			
-			
-				if (ui::Button("Create")) { createRenderWindow(); }
-				ui::SameLine();
-				if (ui::Button("Delete")) { deleteRenderWindows(); }
-
-				mParameterBag->iDebug ^= ui::Button("Debug");
-				ui::SameLine();
-				mParameterBag->mRenderThumbs ^= ui::Button("Thumbs");
-				/*ui::SliderInt("RenderX", &mParameterBag->mRenderX, 0, 3000);
-				ui::SliderInt("RenderWidth", &mParameterBag->mRenderWidth, 1024, 3840);
-				ui::SliderInt("RenderHeight", &mParameterBag->mRenderHeight, 600, 1280);*/
-				ui::PopItemWidth();
-
+			refresh_time = ui::GetTime();
+			values[values_offset] = mParameterBag->iFps;
+			values_offset = (values_offset + 1) % values.size();
 		}
-		ui::End();
-		xPos += largePreviewW + 20 + margin;
+		if (mParameterBag->iFps < 12.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+		ui::PlotLines("FPS", &values.front(), (int)values.size(), values_offset, mParameterBag->sFps.c_str(), 0.0f, 300.0f, ImVec2(0, 30));
+		if (mParameterBag->iFps < 12.0) ui::PopStyleColor();
+
+		// Checkbox
+		ui::Checkbox("Tex", &showTextures);
+		ui::SameLine();
+		ui::Checkbox("Fbos", &showFbos);
+		ui::SameLine();
+		ui::Checkbox("Shada", &showShaders);
+
+		ui::Checkbox("Audio", &showAudio);
+		ui::SameLine();
+		ui::Checkbox("Cmd", &showConsole);
+		ui::SameLine();
+		ui::Checkbox("OSC", &showOSC);
+
+		ui::Checkbox("MIDI", &showMidi);
+		ui::SameLine();
+		ui::Checkbox("Test", &showTest);
+		if (ui::Button("Save Params"))
+		{
+			// save warp settings
+			mBatchass->getWarpsRef()->save("warps1.xml");
+			// save params
+			mParameterBag->save();
+		}
+
+
+		if (ui::Button("Create")) { createRenderWindow(); }
+		ui::SameLine();
+		if (ui::Button("Delete")) { deleteRenderWindows(); }
+
+		mParameterBag->iDebug ^= ui::Button("Debug");
+		ui::SameLine();
+		mParameterBag->mRenderThumbs ^= ui::Button("Thumbs");
+		/*ui::SliderInt("RenderX", &mParameterBag->mRenderX, 0, 3000);
+		ui::SliderInt("RenderWidth", &mParameterBag->mRenderWidth, 1024, 3840);
+		ui::SliderInt("RenderHeight", &mParameterBag->mRenderHeight, 600, 1280);*/
+		ui::PopItemWidth();
+
+	}
+	ui::End();
+	xPos += largePreviewW + 20 + margin;
 
 #pragma endregion Info
 
@@ -916,7 +916,7 @@ void BatchassApp::drawMain()
 		if (ui::CollapsingHeader("Mouse", NULL, true, true))
 		{
 			ui::Text("Mouse Position: (%.1f,%.1f)", ui::GetIO().MousePos.x, ui::GetIO().MousePos.y); ui::SameLine();
-			ui::Text("Clic %d", ui::GetIO().MouseDown[0]); 
+			ui::Text("Clic %d", ui::GetIO().MouseDown[0]);
 			mouseGlobal ^= ui::Button("mouse gbl");
 			if (mouseGlobal)
 			{
@@ -926,7 +926,7 @@ void BatchassApp::drawMain()
 			}
 			else
 			{
-				
+
 				mParameterBag->iMouse.z = ui::Button("mouse click");
 			}
 			ui::SliderFloat("MouseX", &mParameterBag->mRenderPosXY.x, 0, mParameterBag->mFboWidth);
@@ -952,7 +952,7 @@ void BatchassApp::drawMain()
 			h++;
 			ui::SameLine();
 
-			(mParameterBag->controlValues[45]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));			
+			(mParameterBag->controlValues[45]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
 			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
 			if (ui::Button("glitch")) { mParameterBag->controlValues[45] = !mParameterBag->controlValues[45]; }
@@ -1002,7 +1002,7 @@ void BatchassApp::drawMain()
 			ui::SliderInt("mUIRefresh", &mParameterBag->mUIRefresh, 1, 255);
 			int ctrl;
 			stringstream aParams;
-			aParams << "{\"anim\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
+			aParams << "{\"params\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
 
 			// iChromatic
 			ctrl = 10;
@@ -1053,7 +1053,7 @@ void BatchassApp::drawMain()
 			ui::SameLine();
 			if (ui::Button("x##zoom")) { mBatchass->resetZoom(); }
 			ui::SameLine();
-			if (ui::DragFloat("zoom", &mParameterBag->controlValues[ctrl], 0.1f,mBatchass->minZoom, mBatchass->maxZoom))
+			if (ui::DragFloat("zoom", &mParameterBag->controlValues[ctrl], 0.1f, mBatchass->minZoom, mBatchass->maxZoom))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
@@ -1122,7 +1122,7 @@ void BatchassApp::drawMain()
 		{
 			stringstream sParams;
 			bool colorChanged = false;
-			sParams << "{\"colors\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
+			sParams << "{\"params\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
 			// foreground color
 			color[0] = mParameterBag->controlValues[1];
 			color[1] = mParameterBag->controlValues[2];
@@ -1277,6 +1277,19 @@ void BatchassApp::drawMain()
 				sprintf_s(buf, "FV##t%d", i);
 				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipTexture(i);
 				if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+				//BEGIN
+				ui::SameLine();
+
+				sprintf_s(buf, "WS##s%d", i);
+				if (ui::Button(buf))
+				{
+					sprintf_s(buf, "IMG=%d.jpg", i);
+					mWebSockets->write(buf);
+				}
+				if (ui::IsItemHovered()) ui::SetTooltip("Send texture file name via WebSockets");
+
+				//ui::NextColumn();
+				//END
 				ui::PopStyleColor(3);
 				ui::PopID();
 			}
@@ -1493,7 +1506,7 @@ void BatchassApp::drawMain()
 			ui::InputText("address", str0, IM_ARRAYSIZE(str0));
 			ui::InputInt("track", &i0);
 			ui::InputFloat("clip", &f0, 0.01f, 1.0f);
-			if (ui::Button("Send")) { mOSC->sendOSCIntMessage(str0, i0); }	
+			if (ui::Button("Send")) { mOSC->sendOSCIntMessage(str0, i0); }
 		}
 		ui::End();
 		xPos += largeW + margin;
