@@ -63,7 +63,6 @@ using namespace ci;
 using namespace ci::app;
 using namespace std;
 using namespace Reymenta;
-//using namespace MinimalUI;
 
 #define IM_ARRAYSIZE(_ARR)			((int)(sizeof(_ARR)/sizeof(*_ARR)))
 

@@ -813,6 +813,7 @@ void BatchassApp::drawMain()
 			ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
 			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
 			ui::Text("Time %.2f", mParameterBag->iGlobalTime);
+			ui::Text("Track %s %.2f", mParameterBag->mTrackName.c_str(), mParameterBag->liveMeter);
 
 		}
 		ui::End();
@@ -1526,11 +1527,10 @@ void BatchassApp::drawRender()
 	// clear
 	gl::clear();
 	// shaders			
-	//gl::setViewport(getWindowBounds());
+
 	gl::setViewport(allRenderWindows[0].mWRef->getBounds());
 	gl::enableAlphaBlending();
-	//20140703 gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight, mParameterBag->mOriginUpperLeft);//NEW 20140620, needed?
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+	if (mParameterBag->mMode != MODE_VERTEXSPHERE) gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
 	switch (mParameterBag->mMode)
 	{
 	case MODE_AUDIO:
@@ -1736,6 +1736,18 @@ void BatchassApp::shutdown()
 
 void BatchassApp::update()
 {
+	if (mParameterBag->mTrackName == "INTRO")
+	{
+		if (mParameterBag->mBeat == 80 || mParameterBag->mBeat == 94 || mParameterBag->mBeat == 96)
+		{
+			mParameterBag->controlValues[14] += 0.1f;
+		}
+		else
+		{
+			mParameterBag->controlValues[14] = 1.0f;
+		}
+		if (mParameterBag->liveMeter>0.85) mParameterBag->controlValues[14] = 3.0f;
+	}
 	mWebSockets->update();
 	if (mParameterBag->mOSCEnabled) mOSC->update();
 	mParameterBag->iFps = getAverageFps();
