@@ -104,7 +104,7 @@ void BatchassApp::setup()
 	inBetween = 3;
 	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15 mPreviewWidth = 160;mPreviewHeight = 120;
 	w = mParameterBag->mPreviewFboWidth + margin;
-	h = mParameterBag->mPreviewFboHeight * 2;
+	h = mParameterBag->mPreviewFboHeight * 2.3;
 	largeW = (mParameterBag->mPreviewFboWidth + margin) * 4;
 	largeH = (mParameterBag->mPreviewFboHeight + margin) * 5;
 	largePreviewW = mParameterBag->mPreviewWidth + margin;
@@ -936,55 +936,57 @@ void BatchassApp::drawMain()
 		}
 		if (ui::CollapsingHeader("Effects", NULL, true, true))
 		{
-			int h = 0;
+			int hue = 0;
 
-			(mParameterBag->iRepeat) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
+			(mParameterBag->iRepeat) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
 			mParameterBag->iRepeat ^= ui::Button("repeat");
 			ui::PopStyleColor(3);
-			h++;
+			hue++;
 			ui::SameLine();
 
-			(mParameterBag->controlValues[45]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
+			(mParameterBag->controlValues[45]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
 			if (ui::Button("glitch")) { mParameterBag->controlValues[45] = !mParameterBag->controlValues[45]; }
 			ui::PopStyleColor(3);
-			h++;
+			hue++;
+			ui::SameLine();
 
-			(mParameterBag->controlValues[46]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
+			(mParameterBag->controlValues[46]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
 			if (ui::Button("toggle")) { mParameterBag->controlValues[46] = !mParameterBag->controlValues[46]; }
 			ui::PopStyleColor(3);
-			h++;
+			hue++;
 			ui::SameLine();
 
-			(mParameterBag->controlValues[47]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
+			(mParameterBag->controlValues[47]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
 			if (ui::Button("vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
 			ui::PopStyleColor(3);
-			h++;
-			ui::SameLine();
+			hue++;
 
-			(mParameterBag->controlValues[48]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
+
+			(mParameterBag->controlValues[48]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
 			if (ui::Button("invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
 			ui::PopStyleColor(3);
-			h++;
-
-			(mParameterBag->iGreyScale) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
-			mParameterBag->iGreyScale ^= ui::Button("greyscale");
-			ui::PopStyleColor(3);
-			h++;
+			hue++;
 			ui::SameLine();
 
-			if (ui::Button("instant black"))
+			(mParameterBag->iGreyScale) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
+			mParameterBag->iGreyScale ^= ui::Button("greyscale");
+			ui::PopStyleColor(3);
+			hue++;
+			ui::SameLine();
+
+			if (ui::Button("blackout"))
 			{
 				mParameterBag->controlValues[1] = mParameterBag->controlValues[2] = mParameterBag->controlValues[3] = mParameterBag->controlValues[4] = 0.0;
 				mParameterBag->controlValues[5] = mParameterBag->controlValues[6] = mParameterBag->controlValues[7] = mParameterBag->controlValues[8] = 0.0;
@@ -1268,9 +1270,6 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				sprintf_s(buf, "FV##t%d", i);
-				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipTexture(i);
-				if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 				//BEGIN
 				ui::SameLine();
 
@@ -1368,6 +1367,21 @@ void BatchassApp::drawMain()
 					ui::PopStyleColor(3);
 					//ui::NextColumn();
 					ui::SameLine();
+					// preview
+					if (mParameterBag->mPreviewFragIndex == i)
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
+					}
+					else
+					{
+						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
+					}
+					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.6f, 0.7f, 0.7f));
+					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.6f, 0.8f, 0.8f));
+					sprintf_s(buf, "P##s%d", i);
+					if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
+					if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
+					ui::PopStyleColor(3);
 
 					// warp1
 					if (mParameterBag->mWarp1FragIndex == i)
@@ -1404,22 +1418,11 @@ void BatchassApp::drawMain()
 					ui::PopStyleColor(3);
 					//ui::NextColumn();
 					ui::SameLine();
-					// preview
-					if (mParameterBag->mPreviewFragIndex == i)
-					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.6f, 1.0f, 0.5f));
-					}
-					else
-					{
-						ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.0f, 0.1f, 0.1f));
-					}
-					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.6f, 0.7f, 0.7f));
-					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.6f, 0.8f, 0.8f));
-					sprintf_s(buf, "P##s%d", i);
-					if (ui::Button(buf)) mParameterBag->mPreviewFragIndex = i;
-					if (ui::IsItemHovered()) ui::SetTooltip("Preview shader");
-					ui::PopStyleColor(3);
-					//ui::NextColumn();
+					//
+					sprintf_s(buf, "X##s%d", i);
+					if (ui::Button(buf)) mBatchass->getShadersRef()->removePixelFragmentShaderAtIndex( i);
+					if (ui::IsItemHovered()) ui::SetTooltip("Remove shader");
+
 
 					ui::PopID();
 
@@ -1476,6 +1479,12 @@ void BatchassApp::drawMain()
 			mConsole->AddLog(mParameterBag->mMsg.c_str());
 		}
 	}
+	if (showTest)
+	{
+		ui::ShowTestWindow();
+		ui::ShowStyleEditor();
+
+	}	
 	xPos += largePreviewH + margin;
 
 #pragma region OSC
@@ -1507,12 +1516,7 @@ void BatchassApp::drawMain()
 	}
 #pragma endregion OSC
 
-	if (showTest)
-	{
-		ui::ShowTestWindow();
-		ui::ShowStyleEditor();
 
-	}
 	gl::disableAlphaBlending();
 }
 void BatchassApp::drawRender()
