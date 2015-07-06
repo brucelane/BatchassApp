@@ -937,13 +937,6 @@ void BatchassApp::drawMain()
 		if (ui::CollapsingHeader("Effects", NULL, true, true))
 		{
 			int h = 0;
-			(mParameterBag->mOriginUpperLeft) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
-			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
-			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(h / 7.0f, 0.8f, 0.8f));
-			mParameterBag->mOriginUpperLeft ^= ui::Button("upleft");
-			ui::PopStyleColor(3);
-			h++;
-			ui::SameLine();
 
 			(mParameterBag->iRepeat) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(h / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(h / 7.0f, 0.7f, 0.7f));
@@ -1530,7 +1523,7 @@ void BatchassApp::drawRender()
 
 	gl::setViewport(allRenderWindows[0].mWRef->getBounds());
 	gl::enableAlphaBlending();
-	if (mParameterBag->mMode != MODE_VERTEXSPHERE) gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight);
+	if (mParameterBag->mMode != MODE_VERTEXSPHERE) gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, false);//20150702 was true
 	switch (mParameterBag->mMode)
 	{
 	case MODE_AUDIO:
@@ -1746,7 +1739,7 @@ void BatchassApp::update()
 		{
 			mParameterBag->controlValues[14] = 1.0f;
 		}
-		if (mParameterBag->liveMeter>0.85) mParameterBag->controlValues[14] = 3.0f;
+		if (mParameterBag->liveMeter > 0.85) mParameterBag->controlValues[14] = 3.0f;
 	}
 	mWebSockets->update();
 	if (mParameterBag->mOSCEnabled) mOSC->update();
@@ -1854,6 +1847,12 @@ void BatchassApp::keyDown(KeyEvent event)
 	if (mParameterBag->mMode == mParameterBag->MODE_WARP)
 	{
 		mBatchass->getWarpsRef()->keyDown(event);
+		switch (event.getCode())
+		{
+		case ci::app::KeyEvent::KEY_c:
+			mBatchass->createWarp();
+			break;
+		}
 	}
 	else
 	{
@@ -1884,9 +1883,6 @@ void BatchassApp::keyDown(KeyEvent event)
 			break;
 		case ci::app::KeyEvent::KEY_m:
 			mBatchass->changeMode(mParameterBag->MODE_MESH);
-			break;
-		case ci::app::KeyEvent::KEY_o:
-			mParameterBag->mOriginUpperLeft = !mParameterBag->mOriginUpperLeft;
 			break;
 		case ci::app::KeyEvent::KEY_r:
 			mParameterBag->controlValues[1] += 0.2;
