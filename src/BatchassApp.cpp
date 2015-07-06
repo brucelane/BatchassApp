@@ -1271,8 +1271,7 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
 				//BEGIN
-				ui::SameLine();
-
+				//ui::SameLine();
 				sprintf_s(buf, "WS##s%d", i);
 				if (ui::Button(buf))
 				{
@@ -1306,17 +1305,17 @@ void BatchassApp::drawMain()
 
 		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
 		{
-			if (filter.PassFilter(mBatchass->getShadersRef()->getShaderName(i).c_str()))
-				ui::BulletText("%s", mBatchass->getShadersRef()->getShaderName(i).c_str());
+			if (filter.PassFilter(mBatchass->getShadersRef()->getShader(i).name.c_str()))
+				ui::BulletText("%s", mBatchass->getShadersRef()->getShader(i).name.c_str());
 		}
 
 		xPos = margin;
 		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
 		{
-			if (filter.PassFilter(mBatchass->getShadersRef()->getShaderName(i).c_str()))
+			if (filter.PassFilter(mBatchass->getShadersRef()->getShader(i).name.c_str()))
 			{
 
-				sprintf_s(buf, "%s##lsh%d", mBatchass->getShadersRef()->getShaderName(i).c_str(), i);
+				sprintf_s(buf, "%d##lsh%d", mBatchass->getShadersRef()->getShader(i).ms, i);
 				ui::SetNextWindowSize(ImVec2(w, h));
 				ui::SetNextWindowPos(ImVec2(xPos + margin, yPos));
 				ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
@@ -1398,7 +1397,6 @@ void BatchassApp::drawMain()
 					if (ui::Button(buf)) mParameterBag->mWarp1FragIndex = i;
 					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 1 shader");
 					ui::PopStyleColor(3);
-					//ui::NextColumn();
 					ui::SameLine();
 
 					// warp2
@@ -1416,9 +1414,9 @@ void BatchassApp::drawMain()
 					if (ui::Button(buf)) mParameterBag->mWarp2FragIndex = i;
 					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
 					ui::PopStyleColor(3);
-					//ui::NextColumn();
 					ui::SameLine();
-					//
+
+					// remove
 					sprintf_s(buf, "X##s%d", i);
 					if (ui::Button(buf)) mBatchass->getShadersRef()->removePixelFragmentShaderAtIndex( i);
 					if (ui::IsItemHovered()) ui::SetTooltip("Remove shader");
@@ -1426,7 +1424,6 @@ void BatchassApp::drawMain()
 
 					ui::PopID();
 
-					//ui::Columns(1);
 				}
 				ui::End();
 			} // if filtered
