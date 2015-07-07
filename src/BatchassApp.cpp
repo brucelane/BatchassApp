@@ -12,14 +12,14 @@ TODO
 
 void BatchassApp::prepareSettings(Settings* settings)
 {
+	// start profiling
+	auto start = Clock::now();
 	int w;
 	// parameters
 	mParameterBag = ParameterBag::create();
 	// utils
 	mBatchass = Batchass::create(mParameterBag);
 	mBatchass->log("start");
-	// start profiling
-	auto start = Clock::now();
 
 	w = mBatchass->getWindowsResolution();
 
@@ -44,8 +44,6 @@ void BatchassApp::prepareSettings(Settings* settings)
 	}
 	auto end = Clock::now();
 	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	auto nsdur = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-	//std::cout << msdur.count() << "ms, " << nsdur.count() << "µs" << std::endl;
 	mBatchass->log("prepareSettings: " + toString(msdur.count()));
 }
 
@@ -128,8 +126,8 @@ void BatchassApp::setup()
 	// end profiling
 	end = Clock::now();
 	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	auto nsdur = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 	mBatchass->log("setup: " + toString(msdur.count()));
+
 
 }
 void BatchassApp::setupMidi()
@@ -235,6 +233,8 @@ void BatchassApp::updateParams(int iarg0, float farg1)
 	{
 		// rotary 
 		mParameterBag->controlValues[iarg0] = farg1;
+		// audio multfactor
+		if (iarg0 == 13) mParameterBag->controlValues[iarg0] = (farg1 + 0.01) * 10;
 	}
 	// buttons
 	if (iarg0 > 20 && iarg0 < 29)
@@ -806,7 +806,7 @@ void BatchassApp::drawMain()
 				values_offset = (values_offset + 1) % values.size();
 			}
 
-			ui::SliderFloat("mult x", &mParameterBag->mAudioMultFactor, 0.01f, 10.0f);
+			ui::SliderFloat("mult x", &mParameterBag->controlValues[13], 0.01f, 10.0f);
 			ImGui::PlotHistogram("Histogram", mAudio->getSmallSpectrum(), 7, 0, NULL, 0.0f, 255.0f, ImVec2(0, 30));
 
 			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
@@ -1312,10 +1312,10 @@ void BatchassApp::drawMain()
 		xPos = margin;
 		for (int i = 0; i < mBatchass->getShadersRef()->getCount(); i++)
 		{
-			if (filter.PassFilter(mBatchass->getShadersRef()->getShader(i).name.c_str()))
+			if (filter.PassFilter(mBatchass->getShadersRef()->getShader(i).name.c_str()) && mBatchass->getShadersRef()->getShader(i).active)
 			{
 
-				sprintf_s(buf, "%d##lsh%d", mBatchass->getShadersRef()->getShader(i).ms, i);
+				sprintf_s(buf, "%d##lsh%d", mBatchass->getShadersRef()->getShader(i).microseconds, i);
 				ui::SetNextWindowSize(ImVec2(w, h));
 				ui::SetNextWindowPos(ImVec2(xPos + margin, yPos));
 				ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
@@ -1326,9 +1326,9 @@ void BatchassApp::drawMain()
 						xPos = margin;
 						yPos += h + margin;
 					}
-
 					ui::PushID(i);
 					ui::Image((void*)mBatchass->getTexturesRef()->getShaderThumbTextureId(i), Vec2i(mParameterBag->mPreviewFboWidth, mParameterBag->mPreviewFboHeight));
+					if (ui::IsItemHovered()) ui::SetTooltip(mBatchass->getShadersRef()->getShader(i).name.c_str());
 
 					//ui::Columns(2, "lr", false);
 					// left
@@ -1414,13 +1414,15 @@ void BatchassApp::drawMain()
 					if (ui::Button(buf)) mParameterBag->mWarp2FragIndex = i;
 					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
 					ui::PopStyleColor(3);
-					ui::SameLine();
 
 					// remove
-					sprintf_s(buf, "X##s%d", i);
-					if (ui::Button(buf)) mBatchass->getShadersRef()->removePixelFragmentShaderAtIndex( i);
-					if (ui::IsItemHovered()) ui::SetTooltip("Remove shader");
-
+					if (i > 3)
+					{
+						ui::SameLine();
+						sprintf_s(buf, "X##s%d", i);
+						if (ui::Button(buf)) mBatchass->getShadersRef()->removePixelFragmentShaderAtIndex(i);
+						if (ui::IsItemHovered()) ui::SetTooltip("Remove shader");
+					}
 
 					ui::PopID();
 
@@ -1481,7 +1483,7 @@ void BatchassApp::drawMain()
 		ui::ShowTestWindow();
 		ui::ShowStyleEditor();
 
-	}	
+	}
 	xPos += largePreviewH + margin;
 
 #pragma region OSC
