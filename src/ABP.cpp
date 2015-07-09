@@ -69,8 +69,8 @@ void ABP::updateBricks()
 	float new_y;
 	float bendFactor;
 	float volumeFactor;
-	mBend = mParameterBag->mBend;
-	if (mParameterBag->liveMeter > 0.7)
+	mBend = mParameterBag->mBend ;
+	/*if (mParameterBag->liveMeter > 0.7)
 	{
 		float between08and1 = mParameterBag->liveMeter - 0.7;
 		volumeFactor = lmap<float>(between08and1, 0.0, 0.3, 0.1, 0.8);
@@ -78,8 +78,8 @@ void ABP::updateBricks()
 	else
 	{
 		volumeFactor = 0.01;
-	}
-
+	}*/
+	volumeFactor = mParameterBag->controlValues[14];
 	mTextures->getFbo(mParameterBag->mABPFboIndex).bindFramebuffer();
 	gl::clear();
 	gl::setViewport(mTextures->getFbo(mParameterBag->mABPFboIndex).getBounds());
@@ -164,14 +164,14 @@ void ABP::update()
 	//mRotationMatrix *= rotate(0.06f, normalize(vec3(0.16666f, 0.333333f, 0.666666f)));
 	mRepetitions = mLockRepetitions ? (sin(getElapsedFrames() / 100.0f) + 1) * 20 : mRepetitions;
 	mBend = mLockBend ? sin(getElapsedFrames() / 100.0f) * 10.0f : mBend;
-	if (mParameterBag->mBeat < 64)
+	if (mParameterBag->iBeat < 64)
 	{
-		mRepetitions = (mParameterBag->mBeat / 8) + 1;
+		mRepetitions = (mParameterBag->iBeat / 8) + 1;
 	}
 	else
 	{
 
-		if (mParameterBag->mBeat % 8 == 0)
+		if (mParameterBag->iBeat % 8 == 0)
 		{
 			if (bricks.size() < 20 && !alreadyCreated)
 			{
@@ -184,19 +184,19 @@ void ABP::update()
 		{
 			alreadyCreated = false;
 		}
-		if (mParameterBag->mBeat % 8 == 0)
+		if (mParameterBag->iBeat % 8 == 0)
 		{
-			if (mParameterBag->mBeat > 92)
+			if (mParameterBag->iBeat > 92)
 			{
 				mGlobalMode = true;
 				mR = 1.0f;
 				mB = 0.0f;
 			}
-			if (mParameterBag->mBeat > 280 && mParameterBag->mBeat < 292)
+			if (mParameterBag->iBeat > 280 && mParameterBag->iBeat < 292)
 			{
 				mShape = 1;
 			}
-			if (mParameterBag->mBeat > 316)
+			if (mParameterBag->iBeat > 316)
 			{
 				mRotation += 0.2;
 				if (mRotation > 6.35) mRotation = 0;
@@ -204,11 +204,11 @@ void ABP::update()
 		}
 		else
 		{
-			mR = 0.5f;
-			mB = 0.8f;
-			if (mParameterBag->mBeat > 510 && mParameterBag->mBeat % 2 == 0)
+			mR = 0.6f;
+			mB = 0.9f;
+			if (mParameterBag->iBeat > 510 && mParameterBag->iBeat % 2 == 0)
 			{
-				mRotation += 0.2 + mParameterBag->controlValues[19]; //was 0.2
+				mRotation += 0.5 + mParameterBag->controlValues[12]; //was 0.2
 				if (mRotation > 6.35) mRotation = 0;
 			}
 		}

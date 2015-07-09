@@ -41,6 +41,9 @@ uniform float       iChromatic;				// chromatic if > 0.
 uniform float       iTrixels;           	// trixels if > 0.
 uniform float       iGridSize;            // gridSize if > 0.
 uniform bool        iFlipH;               // flip horizontally
+uniform int         iBeat;               // measure from ableton
+uniform float       iSeed;              // random 
+
 const 	float 		  PI = 3.14159265;
 // uniforms end
 

@@ -216,10 +216,8 @@ void BatchassApp::midiListener(midi::Message msg){
 	{
 		mOSC->updateAndSendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
 	}
-	else
-	{
-		updateParams(name, normalizedValue);
-	}
+	updateParams(name, normalizedValue);
+
 	mWebSockets->write("{\"params\" :[{" + controlType);
 }
 void BatchassApp::updateParams(int iarg0, float farg1)
@@ -235,6 +233,8 @@ void BatchassApp::updateParams(int iarg0, float farg1)
 		mParameterBag->controlValues[iarg0] = farg1;
 		// audio multfactor
 		if (iarg0 == 13) mParameterBag->controlValues[iarg0] = (farg1 + 0.01) * 10;
+		// exposure
+		if (iarg0 == 14) mParameterBag->controlValues[iarg0] = (farg1 + 0.01) * mBatchass->maxExposure;
 	}
 	// buttons
 	if (iarg0 > 20 && iarg0 < 29)
@@ -783,7 +783,7 @@ void BatchassApp::drawMain()
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("Audio##ap");
 		{
-			ui::Text("Beat %d", mParameterBag->mBeat);
+			ui::Text("Beat %d", mParameterBag->iBeat);
 			ui::SameLine();
 			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
 
@@ -1734,7 +1734,7 @@ void BatchassApp::update()
 {
 	if (mParameterBag->mTrackName == "INTRO")
 	{
-		if (mParameterBag->mBeat == 80 || mParameterBag->mBeat == 94 || mParameterBag->mBeat == 96)
+		if (mParameterBag->iBeat == 80 || mParameterBag->iBeat == 94 || mParameterBag->iBeat == 96)
 		{
 			mParameterBag->controlValues[14] += 0.1f;
 		}
