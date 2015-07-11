@@ -192,6 +192,13 @@ void BatchassApp::midiListener(midi::Message msg){
 		controlType = "/cc";
 		name = msg.control;
 		newValue = msg.value;
+		if (mParameterBag->mOSCEnabled)
+		{
+			mOSC->updateAndSendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
+		}
+		updateParams(name, normalizedValue);
+
+		//mWebSockets->write("{\"params\" :[{" + controlType);
 		break;
 	case MIDI_NOTE_ON:
 		controlType = "/on";
@@ -204,21 +211,21 @@ void BatchassApp::midiListener(midi::Message msg){
 		newValue = msg.velocity;
 		break;
 	default:
+		controlType = "/other";
+		name = msg.status;
+		newValue = msg.value;
 		break;
 	}
 	normalizedValue = lmap<float>(newValue, 0.0, 127.0, 0.0, 1.0);
-	stringstream ss;
-	ss << "ctrl: " << name << " value: " << newValue << " normalized: " << normalizedValue;
-	ss << " midi port: " << msg.port << " ch: " << msg.channel << " status: " << msg.status << std::endl;
-	mParameterBag->newMsg = true;
-	mParameterBag->mMsg = ss.str();
-	if (mParameterBag->mOSCEnabled)
+	if (controlType != "/other")
 	{
-		mOSC->updateAndSendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
+		stringstream ss;
+		ss << "ctrl: " << name << " value: " << newValue << " normalized: " << normalizedValue;
+		ss << " midi port: " << msg.port << " ch: " << msg.channel << " status: " << msg.status << std::endl;
+		mParameterBag->newMsg = true;
+		mParameterBag->mMsg = ss.str();
 	}
-	updateParams(name, normalizedValue);
 
-	mWebSockets->write("{\"params\" :[{" + controlType);
 }
 void BatchassApp::updateParams(int iarg0, float farg1)
 {
