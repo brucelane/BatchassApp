@@ -126,6 +126,15 @@ private:
 	vector<midiInput>			mMidiInputs;
 	void						setupMidi();
 	void						midiListener(midi::Message msg);
+	string						midiControlType;
+	int							midiControl;
+	int							midiPitch;
+	int							midiVelocity;
+	float						midiNormalizedValue;
+	int							midiValue;
+	int							midiChannel;
+
+
 	// midi inputs: couldn't make a vector
 	midi::Input					mMidiIn0;
 	midi::Input					mMidiIn1;

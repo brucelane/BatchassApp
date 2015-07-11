@@ -178,54 +178,42 @@ void BatchassApp::setupMidi()
 
 	mParameterBag->newMsg = true;
 	mParameterBag->mMsg = ss.str();
+	midiControlType = "none";
+	midiControl = midiPitch = midiVelocity = midiNormalizedValue = midiValue = midiChannel = 0;
 }
-void BatchassApp::midiListener(midi::Message msg){
-	float normalizedValue;
-	string controlType = "unknown";
-
-	int name;
-	int newValue;
-
+void BatchassApp::midiListener(midi::Message msg)
+{
+	midiChannel = msg.channel;
 	switch (msg.status)
 	{
 	case MIDI_CONTROL_CHANGE:
-		controlType = "/cc";
-		name = msg.control;
-		newValue = msg.value;
+		midiControlType = "/cc";
+		midiControl = msg.control;
+		midiValue = msg.value;
+		midiNormalizedValue = lmap<float>(midiValue, 0.0, 127.0, 0.0, 1.0);
 		if (mParameterBag->mOSCEnabled)
 		{
-			mOSC->updateAndSendOSCFloatMessage(controlType, name, normalizedValue, msg.channel);
+			mOSC->updateAndSendOSCFloatMessage(midiControlType, midiControl, midiNormalizedValue, midiChannel);
 		}
-		updateParams(name, normalizedValue);
+		updateParams(midiControl, midiNormalizedValue);
 
 		//mWebSockets->write("{\"params\" :[{" + controlType);
 		break;
 	case MIDI_NOTE_ON:
-		controlType = "/on";
-		name = msg.pitch;
-		newValue = msg.velocity;
+		midiControlType = "/on";
+		midiPitch = msg.pitch;
+		midiVelocity = msg.velocity;
+		midiNormalizedValue = lmap<float>(midiVelocity, 0.0, 127.0, 0.0, 1.0);
 		break;
 	case MIDI_NOTE_OFF:
-		controlType = "/off";
-		name = msg.pitch;
-		newValue = msg.velocity;
+		midiControlType = "/off";
+		midiPitch = msg.pitch;
+		midiVelocity = msg.velocity;
+		midiNormalizedValue = lmap<float>(midiVelocity, 0.0, 127.0, 0.0, 1.0);
 		break;
 	default:
-		controlType = "/other";
-		name = msg.status;
-		newValue = msg.value;
 		break;
 	}
-	normalizedValue = lmap<float>(newValue, 0.0, 127.0, 0.0, 1.0);
-	if (controlType != "/other")
-	{
-		stringstream ss;
-		ss << "ctrl: " << name << " value: " << newValue << " normalized: " << normalizedValue;
-		ss << " midi port: " << msg.port << " ch: " << msg.channel << " status: " << msg.status << std::endl;
-		mParameterBag->newMsg = true;
-		mParameterBag->mMsg = ss.str();
-	}
-
 }
 void BatchassApp::updateParams(int iarg0, float farg1)
 {
@@ -906,6 +894,22 @@ void BatchassApp::drawMain()
 				ui::Columns(1);
 
 			}
+			//midiControlType ;
+			//midiControl = midiPitch = midiNormalizedValue = midiValue =  ;
+			ui::Text("Ch %d ", midiChannel);
+			ui::SameLine();
+			ui::Text(midiControlType.c_str());
+			ui::SameLine();
+			ui::Text(" CC %d ", midiControl);
+
+			ui::Text("Pitch %d ", midiPitch);
+			ui::SameLine();
+			ui::Text("Vel %d ", midiVelocity);
+
+			ui::Text("Val %d ", midiValue);
+			ui::SameLine();
+			ui::Text("NVal %.1f ", midiNormalizedValue); 
+			
 		}
 		ui::End();
 		xPos += largePreviewW + 20 + margin;
@@ -975,7 +979,6 @@ void BatchassApp::drawMain()
 			if (ui::Button("vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
 			ui::PopStyleColor(3);
 			hue++;
-
 
 			(mParameterBag->controlValues[48]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
