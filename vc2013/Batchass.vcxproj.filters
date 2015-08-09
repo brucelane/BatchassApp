@@ -22,12 +22,6 @@
     <Filter Include="Blocks\imGui\src">
       <UniqueIdentifier>{E95975FD-B864-45C4-8B41-F991197F7816}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Blocks\Kinect Common Bridge">
-      <UniqueIdentifier>{8DBBC5FF-41FC-433D-BDD3-7722B4CD2235}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Blocks\Kinect Common Bridge\src">
-      <UniqueIdentifier>{A0F11D36-41B7-448D-8E25-F55D02CAEF9A}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Blocks\Midi2">
       <UniqueIdentifier>{8911EAC7-1849-4AD6-9212-8F7C0A72FE7D}</UniqueIdentifier>
     </Filter>
@@ -110,12 +104,6 @@
     </ClInclude>
     <ClCompile Include="..\src\BatchassApp.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="..\..\..\blocks\Cinder-KCB\src\Kinect.h">
-      <Filter>Blocks\Kinect Common Bridge\src</Filter>
-    </ClInclude>
-    <ClCompile Include="..\..\..\blocks\Cinder-KCB\src\Kinect.cpp">
-      <Filter>Blocks\Kinect Common Bridge\src</Filter>
     </ClCompile>
     <ClInclude Include="..\..\..\blocks\Cinder-MIDI2\include\MidiConstants.h">
       <Filter>Blocks\Midi2\include</Filter>
