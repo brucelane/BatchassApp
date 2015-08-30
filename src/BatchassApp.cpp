@@ -908,8 +908,8 @@ void BatchassApp::drawMain()
 
 			ui::Text("Val %d ", midiValue);
 			ui::SameLine();
-			ui::Text("NVal %.1f ", midiNormalizedValue); 
-			
+			ui::Text("NVal %.1f ", midiNormalizedValue);
+
 		}
 		ui::End();
 		xPos += largePreviewW + 20 + margin;
@@ -1478,7 +1478,6 @@ void BatchassApp::drawMain()
 	if (showConsole)
 	{
 		yPos += h + margin;
-		yPos += h + margin;
 		ui::SetNextWindowSize(ImVec2((w + margin) * mParameterBag->MAX, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ShowAppConsole(&showConsole);
@@ -1857,8 +1856,14 @@ void BatchassApp::mouseWheel(MouseEvent event)
 }
 void BatchassApp::keyDown(KeyEvent event)
 {
+	int textureIndex = mParameterBag->iChannels[mParameterBag->selectedChannel];
+	int keyCode = event.getCode();
+	bool handled = false;
+	mParameterBag->newMsg = true;
+	mParameterBag->mMsg = toString(event.getChar()) + " " + toString(event.getCode());
 	if (mParameterBag->mMode == mParameterBag->MODE_WARP)
 	{
+		handled = true;
 		mBatchass->getWarpsRef()->keyDown(event);
 		switch (event.getCode())
 		{
@@ -1867,7 +1872,12 @@ void BatchassApp::keyDown(KeyEvent event)
 			break;
 		}
 	}
-	else
+	if (!handled && (keyCode > 255 && keyCode < 265))
+	{
+		handled = true;
+		mParameterBag->selectedChannel = keyCode - 256;
+	}
+	if (!handled)
 	{
 
 		switch (event.getCode())
@@ -1940,11 +1950,58 @@ void BatchassApp::keyDown(KeyEvent event)
 			mMidiIn2.closePort();
 			quit();
 			break;
+		case ci::app::KeyEvent::KEY_0:
+		case 256:
+			mParameterBag->selectedChannel = 0;
+			break;
+		case ci::app::KeyEvent::KEY_1:
+		case 257:
+			mParameterBag->selectedChannel = 1;
+			break;
+		case ci::app::KeyEvent::KEY_2:
+		case 258:
+			mParameterBag->selectedChannel = 2;
+			break;
+		case ci::app::KeyEvent::KEY_3:
+		case 259:
+			mParameterBag->selectedChannel = 3;
+			break;
+		case ci::app::KeyEvent::KEY_4:
+		case 260:
+			mParameterBag->selectedChannel = 4;
+			break;
+		case ci::app::KeyEvent::KEY_5:
+		case 261:
+			mParameterBag->selectedChannel = 5;
+			break;
+		case ci::app::KeyEvent::KEY_6:
+		case 262:
+			mParameterBag->selectedChannel = 6;
+			break;
+		case ci::app::KeyEvent::KEY_7:
+		case 263:
+			mParameterBag->selectedChannel = 7;
+			break;
+		case ci::app::KeyEvent::KEY_8:
+		case 264:
+			mParameterBag->selectedChannel = 8;
+			break;
+		case ci::app::KeyEvent::KEY_PLUS:
+		case 270:
+			textureIndex++;
+			mBatchass->assignTextureToChannel(textureIndex, mParameterBag->selectedChannel);
+			break;
+		case ci::app::KeyEvent::KEY_MINUS:
+		case 269:
+			textureIndex--;
+			mBatchass->assignTextureToChannel(textureIndex, mParameterBag->selectedChannel);
+			break;
 
 		default:
 			break;
 		}
 	}
+	//mConsole->ExecCommand("Console", opened);
 }
 
 // From imgui by Omar Cornut

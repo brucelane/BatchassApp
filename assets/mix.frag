@@ -242,21 +242,19 @@ vec4 trixels( vec2 inUV, sampler2D tex )
 // trixels end
 // Squirclimation https://www.shadertoy.com/view/Ml23DW begin
 vec4 grid( vec2 inUV, sampler2D tex )
-{    
-    vec2 uv = (floor(gl_FragCoord.xy/iGridSize)*iGridSize)/ iResolution.xy;
-    vec3 texColor;
-
-    texColor = texture2D(tex, uv).xyz;
-    
+{       
+    vec2 q = (gl_FragCoord.xy)/ iResolution.xy;   
+    vec2 p = (floor(gl_FragCoord.xy/iGridSize)*iGridSize)/ iResolution.xy;
+    vec3 texColor = texture2D(tex,p).xyz;
     float diff = pow(distance(texColor,vec3(0.0,1.0,0.0)),8.0); 
     diff = smoothstep(0.0,1.5,diff);
-    texColor = mix(iBackgroundColor,texColor,diff);
+    texColor = mix(iColor,texColor,diff);
     
     float texLum = dot(vec3(0.2126,0.7152,0.0722),texColor);
     
     vec3 color = iBackgroundColor;
     
-    vec2 ppos = (inUV - uv)/(vec2(iGridSize)/iResolution.xy);
+    vec2 ppos = (q - p)/(vec2(iGridSize)/iResolution.xy);
   
     float power = texLum*texLum*16.0;
     float radius = 0.5;
@@ -265,8 +263,7 @@ vec4 grid( vec2 inUV, sampler2D tex )
     if( dist < pow(radius,power))
     {
       color = texColor;
-    }
-    
+    }   
     return vec4( color.r, color.g, color.b, 1.0 ); 
 }
 // Squirclimation end
