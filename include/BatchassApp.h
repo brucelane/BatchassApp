@@ -24,10 +24,7 @@ along with Cinder-MIDI.  If not, see <http://www.gnu.org/licenses/>.
 #include "cinder/gl/gl.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/gl/GlslProg.h"
-#include "OSCSender.h"
-#include "MidiIn.h"
-#include "MidiMessage.h"
-#include "MidiConstants.h"
+
 #include <list>
 
 // window manager
@@ -36,12 +33,8 @@ along with Cinder-MIDI.  If not, see <http://www.gnu.org/licenses/>.
 #include "CinderImGui.h"
 // parameters
 #include "ParameterBag.h"
-// OSC
-#include "OSCWrapper.h"
 // json
 #include "JSONWrapper.h"
-// WebSockets
-#include "WebSocketsWrapper.h"
 // audio
 #include "AudioWrapper.h"
 // meshes
@@ -91,17 +84,11 @@ public:
 	void	activate();
 	//! Override to receive window deactivate events
 	void	deactivate();
-	void	updateParams(int iarg0, float farg1);
-
 private:
 	// parameters
 	ParameterBagRef				mParameterBag;
-	// osc
-	OSCRef						mOSC;
 	// json
 	JSONWrapperRef				mJson;
-	// WebSockets
-	WebSocketsRef				mWebSockets;
 	// audio
 	AudioWrapperRef				mAudio;
 	// mesh helper
@@ -118,28 +105,10 @@ private:
 	BatchassRef					mBatchass;
 	// console
 	AppConsoleRef				mConsole;
-	// minimalUI
-	//UIRef						mUI;
+
 	// timeline
 	Anim<float>					mTimer;
-	// midi
-	vector<midiInput>			mMidiInputs;
-	void						setupMidi();
-	void						midiListener(midi::Message msg);
-	string						midiControlType;
-	int							midiControl;
-	int							midiPitch;
-	int							midiVelocity;
-	float						midiNormalizedValue;
-	int							midiValue;
-	int							midiChannel;
 
-
-	// midi inputs: couldn't make a vector
-	midi::Input					mMidiIn0;
-	midi::Input					mMidiIn1;
-	midi::Input					mMidiIn2;
-	midi::Input					mMidiIn3;
 	// misc
 	int							mSeconds;
 	// windows

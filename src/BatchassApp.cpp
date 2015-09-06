@@ -59,13 +59,9 @@ void BatchassApp::setup()
 	ci::app::App::get()->getSignalShutdown().connect([&]() {
 		BatchassApp::shutdown();
 	});
-	// instanciate the OSC class
-	if (mParameterBag->mOSCEnabled) mOSC = OSC::create(mParameterBag);
+
 	// instanciate the json wrapper class
 	mJson = JSONWrapper::create();
-
-	// instanciate the WebSockets class
-	mWebSockets = WebSockets::create(mParameterBag, mBatchass);
 
 	// setup shaders and textures
 	mBatchass->setup();
@@ -93,7 +89,7 @@ void BatchassApp::setup()
 	// instanciate the spout class
 	mSpout = SpoutWrapper::create(mParameterBag, mBatchass->getTexturesRef());
 	// instanciate the console class
-	mConsole = AppConsole::create(mParameterBag, mBatchass, mWebSockets);
+	mConsole = AppConsole::create(mParameterBag, mBatchass);
 
 	mTimer = 0.0f;
 
@@ -118,8 +114,6 @@ void BatchassApp::setup()
 	ui::connectWindow(getWindow());
 	ui::initialize();
 
-	// midi
-	setupMidi();
 	mSeconds = 0;
 	// RTE mBatchass->getShadersRef()->setupLiveShader();
 	mBatchass->tapTempo();
@@ -130,140 +124,7 @@ void BatchassApp::setup()
 
 
 }
-void BatchassApp::setupMidi()
-{
-	stringstream ss;
-	ss << "setupMidi: ";
 
-	if (mMidiIn0.getNumPorts() > 0)
-	{
-		mMidiIn0.listPorts();
-		for (int i = 0; i < mMidiIn0.getNumPorts(); i++)
-		{
-
-			midiInput mIn;
-			mIn.portName = mMidiIn0.mPortNames[i];
-			mMidiInputs.push_back(mIn);
-			if (mParameterBag->mMIDIOpenAllInputPorts)
-			{
-				if (i == 0)
-				{
-					mMidiIn0.openPort(i);
-					mMidiIn0.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-				}
-				if (i == 1)
-				{
-					mMidiIn1.openPort(i);
-					mMidiIn1.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-				}
-				if (i == 2)				{
-					mMidiIn2.openPort(i);
-					mMidiIn2.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-				}
-				mMidiInputs[i].isConnected = true;
-				ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName;
-			}
-			else
-			{
-				mMidiInputs[i].isConnected = false;
-				ss << "Available MIDI port " << i << " " << mMidiIn0.mPortNames[i];
-			}
-		}
-	}
-	else
-	{
-		ss << "No MIDI Ports found!!!!" << std::endl;
-	}
-	ss << std::endl;
-
-	mParameterBag->newMsg = true;
-	mParameterBag->mMsg = ss.str();
-	midiControlType = "none";
-	midiControl = midiPitch = midiVelocity = midiNormalizedValue = midiValue = midiChannel = 0;
-}
-void BatchassApp::midiListener(midi::Message msg)
-{
-	midiChannel = msg.channel;
-	switch (msg.status)
-	{
-	case MIDI_CONTROL_CHANGE:
-		midiControlType = "/cc";
-		midiControl = msg.control;
-		midiValue = msg.value;
-		midiNormalizedValue = lmap<float>(midiValue, 0.0, 127.0, 0.0, 1.0);
-		if (mParameterBag->mOSCEnabled)
-		{
-			mOSC->updateAndSendOSCFloatMessage(midiControlType, midiControl, midiNormalizedValue, midiChannel);
-		}
-		updateParams(midiControl, midiNormalizedValue);
-
-		//mWebSockets->write("{\"params\" :[{" + controlType);
-		break;
-	case MIDI_NOTE_ON:
-		midiControlType = "/on";
-		midiPitch = msg.pitch;
-		midiVelocity = msg.velocity;
-		midiNormalizedValue = lmap<float>(midiVelocity, 0.0, 127.0, 0.0, 1.0);
-		break;
-	case MIDI_NOTE_OFF:
-		midiControlType = "/off";
-		midiPitch = msg.pitch;
-		midiVelocity = msg.velocity;
-		midiNormalizedValue = lmap<float>(midiVelocity, 0.0, 127.0, 0.0, 1.0);
-		break;
-	default:
-		break;
-	}
-}
-void BatchassApp::updateParams(int iarg0, float farg1)
-{
-	if (iarg0 > 0 && iarg0 < 9)
-	{
-		// sliders 
-		mParameterBag->controlValues[iarg0] = farg1;
-	}
-	if (iarg0 > 10 && iarg0 < 19)
-	{
-		// rotary 
-		mParameterBag->controlValues[iarg0] = farg1;
-		// audio multfactor
-		if (iarg0 == 13) mParameterBag->controlValues[iarg0] = (farg1 + 0.01) * 10;
-		// exposure
-		if (iarg0 == 14) mParameterBag->controlValues[iarg0] = (farg1 + 0.01) * mBatchass->maxExposure;
-	}
-	// buttons
-	if (iarg0 > 20 && iarg0 < 29)
-	{
-		// select index
-		mParameterBag->selectedWarp = iarg0 - 21;
-	}
-	if (iarg0 > 30 && iarg0 < 39)
-	{
-		// select input
-		mParameterBag->mWarpFbos[mParameterBag->selectedWarp].textureIndex = iarg0 - 31;
-		// activate
-		mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active = !mParameterBag->mWarpFbos[mParameterBag->selectedWarp].active;
-	}
-	if (iarg0 > 40 && iarg0 < 49)
-	{
-		// low row 
-		mParameterBag->controlValues[iarg0] = farg1;
-	}
-	if (iarg0 == 61 && farg1 > 0)
-	{
-		// left arrow
-		mParameterBag->iBlendMode--;
-		if (mParameterBag->iBlendMode < 0) mParameterBag->iBlendMode = mParameterBag->maxBlendMode;
-	}
-	if (iarg0 == 62 && farg1 > 0)
-	{
-		// left arrow
-		mParameterBag->iBlendMode++;
-		if (mParameterBag->iBlendMode > mParameterBag->maxBlendMode) mParameterBag->iBlendMode = 0;
-	}
-
-
-}
 void BatchassApp::createRenderWindow()
 {
 	deleteRenderWindows();
@@ -346,7 +207,7 @@ void BatchassApp::drawMain()
 				}
 				break;
 			case MODE_KINECT:
-				if (mParameterBag->mOSCEnabled)
+				/*if (mParameterBag->mOSCEnabled)
 				{
 					for (int i = 0; i < 20; i++)
 					{
@@ -354,7 +215,7 @@ void BatchassApp::drawMain()
 						gl::drawSolidCircle(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), 5.0f, 16);
 					}
 
-				}
+				}*/
 				break;
 			case MODE_VERTEXSPHERE:
 				mVertexSphere->draw();
@@ -826,6 +687,8 @@ void BatchassApp::drawMain()
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 		ui::Begin("MIDI");
 		{
+			sprintf_s(buf, "Enable");
+			if (ui::Button(buf)) mBatchass->midiSetup();
 			if (ui::CollapsingHeader("MidiIn", "20", true, true))
 			{
 				ui::Columns(2, "data", true);
@@ -833,11 +696,11 @@ void BatchassApp::drawMain()
 				ui::Text("Connect"); ui::NextColumn();
 				ui::Separator();
 
-				for (int i = 0; i < mMidiInputs.size(); i++)
+				for (int i = 0; i < mBatchass->midiInCount(); i++)
 				{
-					ui::Text(mMidiInputs[i].portName.c_str()); ui::NextColumn();
+					ui::Text(mBatchass->midiInPortName(i).c_str()); ui::NextColumn();
 					char buf[32];
-					if (mMidiInputs[i].isConnected)
+					if (mBatchass->midiInConnected(i))
 					{
 						sprintf_s(buf, "Disconnect %d", i);
 					}
@@ -848,68 +711,20 @@ void BatchassApp::drawMain()
 
 					if (ui::Button(buf))
 					{
-						stringstream ss;
-						if (mMidiInputs[i].isConnected)
+						if (mBatchass->midiInConnected(i))
 						{
-							if (i == 0)
-							{
-								mMidiIn0.closePort();
-							}
-							if (i == 1)
-							{
-								mMidiIn1.closePort();
-							}
-							if (i == 2)
-							{
-								mMidiIn2.closePort();
-							}
-							mMidiInputs[i].isConnected = false;
+							mBatchass->midiInClosePort(i);
 						}
 						else
 						{
-							if (i == 0)
-							{
-								mMidiIn0.openPort(i);
-								mMidiIn0.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-							}
-							if (i == 1)
-							{
-								mMidiIn1.openPort(i);
-								mMidiIn1.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-							}
-							if (i == 2)
-							{
-								mMidiIn2.openPort(i);
-								mMidiIn2.midiSignal.connect(boost::bind(&BatchassApp::midiListener, this, boost::arg<1>::arg()));
-							}
-							mMidiInputs[i].isConnected = true;
-							ss << "Opening MIDI port " << i << " " << mMidiInputs[i].portName << std::endl;
+							mBatchass->midiInOpenPort(i);
 						}
-						mParameterBag->mMsg = ss.str();
-						mParameterBag->newMsg = true;
 					}
 					ui::NextColumn();
 					ui::Separator();
 				}
 				ui::Columns(1);
-
 			}
-			//midiControlType ;
-			//midiControl = midiPitch = midiNormalizedValue = midiValue =  ;
-			ui::Text("Ch %d ", midiChannel);
-			ui::SameLine();
-			ui::Text(midiControlType.c_str());
-			ui::SameLine();
-			ui::Text(" CC %d ", midiControl);
-
-			ui::Text("Pitch %d ", midiPitch);
-			ui::SameLine();
-			ui::Text("Vel %d ", midiVelocity);
-
-			ui::Text("Val %d ", midiValue);
-			ui::SameLine();
-			ui::Text("NVal %.1f ", midiNormalizedValue);
-
 		}
 		ui::End();
 		xPos += largePreviewW + 20 + margin;
@@ -1043,7 +858,7 @@ void BatchassApp::drawMain()
 			ui::SameLine();
 			if (ui::Button("x##exposure")) { mBatchass->resetExposure(); }
 			ui::SameLine();
-			if (ui::DragFloat("exposure", &mParameterBag->controlValues[ctrl], 0.1f, mBatchass->minExposure, mBatchass->maxExposure))
+			if (ui::DragFloat("exposure", &mParameterBag->controlValues[ctrl], 0.1f, mBatchass->minExposure, mParameterBag->maxExposure))
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
@@ -1120,7 +935,7 @@ void BatchassApp::drawMain()
 			string strAParams = aParams.str();
 			if (strAParams.length() > 60)
 			{
-				mWebSockets->write(strAParams);
+				mBatchass->sendJSON(strAParams);
 			}
 		}
 		ui::PopItemWidth();
@@ -1142,26 +957,10 @@ void BatchassApp::drawMain()
 				{
 					sParams << ",{\"name\" : " << i + 1 << ",\"value\" : " << color[i] << "}";
 					mParameterBag->controlValues[i + 1] = color[i];
-					if (mParameterBag->mOSCEnabled)
-					{
-						if (i == 0) mOSC->sendOSCColorMessage("/fr", mParameterBag->controlValues[1]);
-						if (i == 1) mOSC->sendOSCColorMessage("/fg", mParameterBag->controlValues[2]);
-						if (i == 2) mOSC->sendOSCColorMessage("/fb", mParameterBag->controlValues[3]);
-						if (i == 3) mOSC->sendOSCColorMessage("/fa", mParameterBag->controlValues[4]);
-
-					}
 					colorChanged = true;
 				}
 			}
-			if (colorChanged)
-			{
-				char col[8];
-				int r = mParameterBag->controlValues[1] * 255;
-				int g = mParameterBag->controlValues[2] * 255;
-				int b = mParameterBag->controlValues[3] * 255;
-				ui::ImFormatString(col, IM_ARRAYSIZE(col), "#%02X%02X%02X", r, g, b);
-				mWebSockets->write(col);
-			}
+			if (colorChanged) mBatchass->colorWrite(); //lights4events
 			// background color
 			backcolor[0] = mParameterBag->controlValues[5];
 			backcolor[1] = mParameterBag->controlValues[6];
@@ -1286,7 +1085,7 @@ void BatchassApp::drawMain()
 				if (ui::Button(buf))
 				{
 					sprintf_s(buf, "IMG=%d.jpg", i);
-					mWebSockets->write(buf);
+					//mWebSockets->write(buf);
 				}
 				if (ui::IsItemHovered()) ui::SetTooltip("Send texture file name via WebSockets");
 
@@ -1517,7 +1316,7 @@ void BatchassApp::drawMain()
 			ui::InputText("address", str0, IM_ARRAYSIZE(str0));
 			ui::InputInt("track", &i0);
 			ui::InputFloat("clip", &f0, 0.01f, 1.0f);
-			if (ui::Button("Send")) { mOSC->sendOSCIntMessage(str0, i0); }
+			if (ui::Button("Send")) { mBatchass->sendOSCIntMessage(str0, i0); }
 		}
 		ui::End();
 		xPos += largeW + margin;
@@ -1753,8 +1552,6 @@ void BatchassApp::update()
 		}
 		if (mParameterBag->liveMeter > 0.85) mParameterBag->controlValues[14] = 3.0f;
 	}
-	mWebSockets->update();
-	if (mParameterBag->mOSCEnabled) mOSC->update();
 	mParameterBag->iFps = getAverageFps();
 	mParameterBag->sFps = toString(floor(mParameterBag->iFps));
 	getWindow()->setTitle("(" + mParameterBag->sFps + " fps) Batchass");
@@ -1945,9 +1742,8 @@ void BatchassApp::keyDown(KeyEvent event)
 			mParameterBag->save();
 			//mBatchass->shutdownLoader(); // Not used yet(loading shaders in a different thread
 			ui::Shutdown();
-			mMidiIn0.closePort();
-			mMidiIn1.closePort();
-			mMidiIn2.closePort();
+			mBatchass->shutdown();
+
 			quit();
 			break;
 		case ci::app::KeyEvent::KEY_0:

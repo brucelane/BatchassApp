@@ -2,11 +2,11 @@
 
 using namespace Reymenta;
 
-AppConsole::AppConsole(ParameterBagRef aParameterBag, BatchassRef aBatchass, WebSocketsRef aWebSockets)
+AppConsole::AppConsole(ParameterBagRef aParameterBag, BatchassRef aBatchass)
 {
 	mParameterBag = aParameterBag;
 	mBatchass = aBatchass;
-	mWebSockets = aWebSockets;
+
 	ClearLog();
 	HistoryPos = -1;
 	Commands.push_back("HELP");
@@ -184,7 +184,7 @@ void AppConsole::ExecCommand(const char* command_line)
 	{
 		mBatchass->changeMode(mParameterBag->MODE_MESH);
 	}
-	else if (ui::ImStricmp(command_line, "WSCNX") == 0)
+	/*else if (ui::ImStricmp(command_line, "WSCNX") == 0)
 	{
 		mWebSockets->connect();
 	}
@@ -202,7 +202,7 @@ void AppConsole::ExecCommand(const char* command_line)
 		{
 			AddLog("Client %s %s\n", mParameterBag->mWebSocketsHost.c_str(), (mWebSockets->isClientConnected() ? "true" : "false"));
 		}
-	}
+	}*/
 	else
 	{
 		AddLog("Unknown command: '%s'\n", command_line);
