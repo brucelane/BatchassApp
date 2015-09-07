@@ -979,10 +979,10 @@ void BatchassApp::drawMain()
 
 			sParams << "]}";
 			string strParams = sParams.str();
-			/*if (strParams.length() > 60)
+			if (strParams.length() > 60)
 			{
-			mWebSockets->write(strParams);
-			}*/
+				mBatchass->sendJSON(strParams);
+			}
 
 		}
 

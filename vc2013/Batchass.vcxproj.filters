@@ -94,6 +94,12 @@
     <Filter Include="assets">
       <UniqueIdentifier>{3e45864a-66d1-4947-ac6c-7db2d27842ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Blocks\Cinder-Spout">
+      <UniqueIdentifier>{328bec30-42f3-4b45-97cb-ba1b0e5cf6e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Blocks\Cinder-Spout\include">
+      <UniqueIdentifier>{30335575-bf80-47f2-b7d2-d04d55ee60d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\BatchassApp.cpp">
@@ -448,6 +454,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\blocks\Cinder-Reymenta\include\MessageRouter.h">
       <Filter>Blocks\Reymenta\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\blocks\Cinder-Spout\include\Spout.h">
+      <Filter>Blocks\Cinder-Spout\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
