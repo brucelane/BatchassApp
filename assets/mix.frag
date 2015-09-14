@@ -17,7 +17,7 @@ uniform float       iRatio;
 uniform vec2        iRenderXY;           	// move x y 
 uniform float       iZoom;               	// zoom
 uniform int        	iBlendmode;          	// blendmode for channels
-uniform float		    iRotationSpeed;	  		// Rotation Speed
+uniform float		iRotationSpeed;	  		// Rotation Speed
 uniform float       iCrossfade;          	// CrossFade 2 shaders
 uniform float       iPixelate;           	// pixelate
 uniform int         iGreyScale;          	// 1 for grey scale mode
@@ -35,14 +35,18 @@ uniform int         iDebug;           		// 1 to show debug
 uniform int         iShowFps;           	// 1 to show fps
 uniform float       iFps;          			// frames per second
 uniform float       iTempoTime;
-uniform vec4		    iDate;					// (year, month, day, time in seconds)
+uniform vec4		iDate;					// (year, month, day, time in seconds)
 uniform int         iGlitch;           		// 1 for glitch
 uniform float       iChromatic;				// chromatic if > 0.
 uniform float       iTrixels;           	// trixels if > 0.
-uniform float       iGridSize;            // gridSize if > 0.
-uniform bool        iFlipH;               // flip horizontally
-uniform int         iBeat;               // measure from ableton
-uniform float       iSeed;              // random 
+uniform float       iGridSize;				// gridSize if > 0.
+uniform bool        iFlipH;					// flip horizontally
+uniform bool        iFlipV;					// flip vertically
+uniform int         iBeat;					// measure from ableton
+uniform float       iSeed;					// random 
+uniform float       iRedMultiplier;			// red multiplier 
+uniform float       iGreenMultiplier;		// green multiplier 
+uniform float       iBlueMultiplier;		// blue multiplier 
 
 const 	float 		  PI = 3.14159265;
 // uniforms end
@@ -242,19 +246,21 @@ vec4 trixels( vec2 inUV, sampler2D tex )
 // trixels end
 // Squirclimation https://www.shadertoy.com/view/Ml23DW begin
 vec4 grid( vec2 inUV, sampler2D tex )
-{       
-    vec2 q = (gl_FragCoord.xy)/ iResolution.xy;   
-    vec2 p = (floor(gl_FragCoord.xy/iGridSize)*iGridSize)/ iResolution.xy;
-    vec3 texColor = texture2D(tex,p).xyz;
+{    
+    vec2 uv = (floor(gl_FragCoord.xy/iGridSize)*iGridSize)/ iResolution.xy;
+    vec3 texColor;
+
+    texColor = texture2D(tex, uv).xyz;
+    
     float diff = pow(distance(texColor,vec3(0.0,1.0,0.0)),8.0); 
     diff = smoothstep(0.0,1.5,diff);
-    texColor = mix(iColor,texColor,diff);
+    texColor = mix(iBackgroundColor,texColor,diff);
     
     float texLum = dot(vec3(0.2126,0.7152,0.0722),texColor);
     
     vec3 color = iBackgroundColor;
     
-    vec2 ppos = (q - p)/(vec2(iGridSize)/iResolution.xy);
+    vec2 ppos = (inUV - uv)/(vec2(iGridSize)/iResolution.xy);
   
     float power = texLum*texLum*16.0;
     float radius = 0.5;
@@ -263,7 +269,8 @@ vec4 grid( vec2 inUV, sampler2D tex )
     if( dist < pow(radius,power))
     {
       color = texColor;
-    }   
+    }
+    
     return vec4( color.r, color.g, color.b, 1.0 ); 
 }
 // Squirclimation end
@@ -624,21 +631,36 @@ void main(void)
 	uv.x -= iRenderXY.x;
 	uv.y -= iRenderXY.y;
 	// flip horizontally
-  if (iFlipH)
-  {
-    uv.x = 1.0 - uv.x;
-  }
-  // rotate
-  //float rad = radians(360.0 * fract(iGlobalTime*iRotationSpeed));
-  //mat2 rotate = mat2(cos(rad),sin(rad),-sin(rad),cos(rad));
-  //uv = rotate * (uv - 0.5) + 0.5;
+	if (iFlipH)
+	{
+		uv.x = 1.0 - uv.x;
+	}
+	// flip vertically
+	if (iFlipV)
+	{
+		uv.y = 1.0 - uv.y;
+	}
+	// rotate
+	//float rad = radians(360.0 * fract(iGlobalTime*iRotationSpeed));
+	//mat2 rotate = mat2(cos(rad),sin(rad),-sin(rad),cos(rad));
+	//uv = rotate * (uv - 0.5) + 0.5;
 
-  // zoom centered
-  float xZ = (uv.x - 0.5)*iZoom*2.0;
-  float yZ = (uv.y - 0.5)*iZoom*2.0;
-  vec2 cZ = vec2(xZ, yZ);
+	// zoom centered
+	float xZ = (uv.x - 0.5)*iZoom*2.0;
+	float yZ = (uv.y - 0.5)*iZoom*2.0;
+	vec2 cZ = vec2(xZ, yZ);
 
-  // glitch
+	// slitscan
+	if (iRatio < 20.0)
+	{
+		float x = gl_FragCoord.x;
+		float y = gl_FragCoord.y;
+		float z = floor((x/20.0) + 0.5);
+		float y2 = y + (sin(z + (iGlobalTime * 2.0)) * iRatio);
+		vec2 uv2 = vec2(x / iResolution.x, y2/ iResolution.y);
+		uv 	= texture2D( iChannel1, uv2 ).rg;
+	}
+	// glitch
 	if (iGlitch == 1) 
 	{
 		// glitch the point around
@@ -691,6 +713,9 @@ void main(void)
   {
     col = greyScale( col );
   }
+  col.r *= iRedMultiplier;
+  col.g *= iGreenMultiplier;
+  col.b *= iBlueMultiplier;
 
 	gl_FragColor = iAlpha * vec4( col, 1.0 );
 

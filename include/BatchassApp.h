@@ -139,9 +139,11 @@ private:
 	static const int			RENDER_DELETE = 5;
 	static const int			MIDI_IN = 6;
 
+	// imgui
 	float						color[4];
 	float						backcolor[4];
-	// imgui
+	int							playheadPositions[12];
+	float						speeds[12];
 	// mPreviewFboWidth 80 mPreviewFboHeight 60 margin 10 inBetween 15
 	int							w;
 	int							h;
