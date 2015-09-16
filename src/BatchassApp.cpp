@@ -1,12 +1,4 @@
-/*
-TODO
-- warp select mix fbo texture
-- flip horiz
-- check flip H and V (spout also)
-- sort fbo names and indexes (warps only 4 or 5 inputs)
-- spout texture 10 create shader 10.glsl(ThemeFromBrazil) iChannel0
-- warpwrapper handle texture mode 0 for spout (without fbo)
-*/
+// nothing TODO
 
 #include "BatchassApp.h"
 
@@ -165,14 +157,8 @@ void BatchassApp::drawMain()
 	mBatchass->getTexturesRef()->draw();
 
 	gl::setViewport(getWindowBounds());
-	//gl::setViewport(mBatchass->getTexturesRef()->getFbo(0).getBounds());
-	//Area mViewportArea = Area(0, -300, mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
-	//gl::setViewport(mViewportArea);
-
-	//gl::setMatricesWindow(mParameterBag->mMainDisplayWidth, mParameterBag->mMainDisplayHeight, true);// mParameterBag->mOriginUpperLeft);
 	gl::setMatricesWindow(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);// , false);
 
-	//gl::setMatricesWindow(getWindowSize());
 	gl::clear(ColorAf(0.0f, 0.0f, 0.0f, 0.0f));
 	gl::color(ColorAf(1.0f, 1.0f, 1.0f, 1.0f));
 	// draw preview
@@ -246,9 +232,7 @@ void BatchassApp::drawMain()
 	gl::setMatricesWindow(getWindowSize());
 	xPos = margin;
 	yPos = margin;
-	//const char* textureNames[] = { "audio", "img1", "img2", "img3", "4pvwFbo", "5mixFbo", "6leftFbo", "7rightFbo", "8warp1Fbo", "9warp2Fbo", "10spout", "11LiveFbo" };
-	const char* fboNames[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "live", "sphere", "mesh", "audio", "vtxsphere" };
-	const char* warpInputs[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "live" };
+	const char* warpInputs[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "live", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15" };
 
 #pragma region style
 	// our theme variables
@@ -313,7 +297,7 @@ void BatchassApp::drawMain()
 		if (mParameterBag->mMode == mParameterBag->MODE_WARP)
 		{
 			ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarp1FboIndex), Vec2i(mParameterBag->mPreviewWidth, mParameterBag->mPreviewHeight));
-			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mWarp1FboIndex);
+			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFboV(mParameterBag->mWarp1FboIndex);
 			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 			// renderXY mouse
 			ui::SliderFloat("W1RdrX", &mParameterBag->mWarp1RenderXY.x, -1.0f, 1.0f);
@@ -345,7 +329,7 @@ void BatchassApp::drawMain()
 		else
 		{
 			ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mLeftFboIndex), Vec2i(mParameterBag->mPreviewWidth, mParameterBag->mPreviewHeight));
-			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mLeftFboIndex);
+			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFboV(mParameterBag->mLeftFboIndex);
 			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 			// renderXY mouse
 			ui::SliderFloat("LeftRdrX", &mParameterBag->mLeftRenderXY.x, -1.0f, 1.0f);
@@ -394,7 +378,7 @@ void BatchassApp::drawMain()
 		if (mParameterBag->mMode == mParameterBag->MODE_WARP)
 		{
 			ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarp2FboIndex), Vec2i(mParameterBag->mPreviewWidth, mParameterBag->mPreviewHeight));
-			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mWarp2FboIndex);
+			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFboV(mParameterBag->mWarp2FboIndex);
 			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 			// renderXY mouse
 			ui::SliderFloat("W2RdrX", &mParameterBag->mWarp2RenderXY.x, -1.0f, 1.0f);
@@ -405,7 +389,7 @@ void BatchassApp::drawMain()
 		else
 		{
 			ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mRightFboIndex), Vec2i(mParameterBag->mPreviewWidth, mParameterBag->mPreviewHeight));
-			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(mParameterBag->mRightFboIndex);
+			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFboV(mParameterBag->mRightFboIndex);
 			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 			// renderXY mouse
 			ui::SliderFloat("RightRdrX", &mParameterBag->mRightRenderXY.x, -1.0f, 1.0f);
@@ -433,11 +417,13 @@ void BatchassApp::drawMain()
 		ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.1f, 0.8f, 0.8f));
 
 		sprintf_s(buf, "FV##fv%d", 42);
-		mParameterBag->iFlipVertically ^= ui::Button(buf);
+		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFboV(mParameterBag->mMixFboIndex);
+		//mParameterBag->iFlipVertically ^= ui::Button(buf);
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 		ui::SameLine();
 		sprintf_s(buf, "FH##fh%d", 42);
-		mParameterBag->iFlipHorizontally ^= ui::Button(buf);
+		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFboH(mParameterBag->mMixFboIndex);
+		//mParameterBag->iFlipHorizontally ^= ui::Button(buf);
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip horizontally");
 		// crossfade
 		if (ui::DragFloat("Xfade", &mParameterBag->controlValues[18], 0.01f, 0.001f, 1.0f))
@@ -476,6 +462,11 @@ void BatchassApp::drawMain()
 		mParameterBag->mPreviewEnabled ^= ui::Button(buf);
 		if (ui::IsItemHovered()) ui::SetTooltip("Preview enabled");
 
+		ui::Text(mBatchass->getTexturesRef()->getPreviewTime());
+		ui::SameLine();
+		sprintf_s(buf, "Reset##pvreset");
+		if (ui::Button(buf)) mParameterBag->reset();
+		if (ui::IsItemHovered()) ui::SetTooltip("Reset live params");
 		ui::PopStyleColor(3);
 		ui::Text(mBatchass->getTexturesRef()->getPreviewTime());
 
@@ -489,9 +480,6 @@ void BatchassApp::drawMain()
 #pragma region channels
 	if (showChannels)
 	{
-		static bool popupTexture_open = false;
-		static int selectedChn = -1;
-		static int selectedTex = -1;
 
 		ui::SetNextWindowSize(ImVec2(w * 2, largePreviewH), ImGuiSetCond_Once);
 		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
@@ -499,22 +487,22 @@ void BatchassApp::drawMain()
 		ui::Begin("Channels");
 		{
 			ui::Columns(3);
+			ui::SetColumnOffset(0, 4.0f);// int column_index, float offset)
+			ui::SetColumnOffset(1, 20.0f);// int column_index, float offset)
 			ui::Text("Chn"); ui::NextColumn();
 			ui::Text("Tex"); ui::NextColumn();
 			ui::Text("Name"); ui::NextColumn();
 
 			ui::Separator();
-			for (int i = 0; i < mParameterBag->iChannels.size() - 1; i++)
+			for (int i = 0; i < mParameterBag->MAX - 1; i++)
 			{
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				ui::Text("c%d", i); ui::NextColumn();
-				sprintf_s(buf, "%d", mParameterBag->iChannels[i]);
-				if (ImGui::Button(buf))
-				{
-					popupTexture_open = true;
-					selectedChn = i;
+				ui::Text("c%d", i);
+				ui::NextColumn();
+				sprintf_s(buf, "%d", i);
+				if (ui::SliderInt(buf, &mParameterBag->iChannels[i], 0, mParameterBag->MAX - 1)) {
 				}
 				ui::NextColumn();
 				ui::PopStyleColor(3);
@@ -525,36 +513,6 @@ void BatchassApp::drawMain()
 		}
 		ui::End();
 
-		ImGui::SameLine();
-		if (selectedTex == -1)
-		{
-			ImGui::Text("<None>");
-		}
-		else
-		{
-			sprintf_s(buf, "%d", mParameterBag->iChannels[selectedTex]);
-			ImGui::Text(buf);
-		}
-		if (popupTexture_open)
-		{
-			//sprintf_s(buf, "##wtpopup", selectedChn);
-			ImGui::BeginPopup(&popupTexture_open);
-			for (size_t i = 0; i < mBatchass->getTexturesRef()->getTextureCount(); i++)
-			{
-				sprintf_s(buf, "%d##chntpopup", i);
-				if (ImGui::Selectable(buf, false))
-				{
-					selectedTex = i;
-					if (selectedTex > -1) mBatchass->assignTextureToChannel(selectedTex, selectedChn);
-					// reinit
-					popupTexture_open = false;
-					selectedChn = -1;
-					selectedTex = -1;
-				}
-			}
-			ImGui::EndPopup();
-
-		}
 		xPos += w * 2 + margin;
 	}
 #pragma endregion channels
@@ -907,6 +865,20 @@ void BatchassApp::drawMain()
 			{
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
+			// badTv
+			if (ui::SliderFloat("badTv/min/max", &mParameterBag->iBadTv, 0.0f, 100.0f))
+			{
+			}
+			// param1
+			if (ui::SliderFloat("param1/min/max", &mParameterBag->iParam1, 0.01f, 100.0f))
+			{
+			}
+			// param2
+			if (ui::SliderFloat("param2/min/max", &mParameterBag->iParam2, 0.01f, 100.0f))
+			{
+			}
+			sprintf_s(buf, "XorY");
+			mParameterBag->iXorY ^= ui::Button(buf);
 			// blend modes
 			ui::SliderInt("blendmode", &mParameterBag->iBlendMode, 0, mParameterBag->maxBlendMode);
 
@@ -1033,10 +1005,6 @@ void BatchassApp::drawMain()
 #pragma region warps
 	if (mParameterBag->mMode == MODE_WARP)
 	{
-		static bool popup_open = false;
-		static int selected_index = -1;
-		static int selected_fbo = -1;
-
 		for (int i = 0; i < mBatchass->getWarpsRef()->getWarpsCount(); i++)
 		{
 			sprintf_s(buf, "Warp %d", i);
@@ -1049,39 +1017,18 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-
-				sprintf_s(buf, "In:%s##wm%d", warpInputs[mParameterBag->mWarpFbos[i].textureIndex], i);
-				if (ImGui::Button(buf))
-				{
-					popup_open = true;
-					selected_index = i;
+				sprintf_s(buf, "%d", mParameterBag->mWarpFbos[i].textureIndex);
+				if (ui::SliderInt(buf, &mParameterBag->mWarpFbos[i].textureIndex, 0, mParameterBag->MAX - 1)) {
 				}
+				sprintf_s(buf, "%s", warpInputs[mParameterBag->mWarpFbos[i].textureIndex]);
+				ui::Text(buf);
+
 				ui::PopStyleColor(3);
 				ui::PopID();
 			}
 			ui::End();
 		}
-		ImGui::SameLine();
-		ImGui::Text(selected_fbo == -1 ? "<None>" : warpInputs[selected_fbo]);
-		if (popup_open)
-		{
-			// needed? sprintf_s(buf, "##wmpopup", selected_index);
-			ImGui::BeginPopup(&popup_open);
-			for (size_t i = 0; i < IM_ARRAYSIZE(warpInputs); i++)
-			{
-				if (ImGui::Selectable(warpInputs[i], false))
-				{
-					selected_fbo = i;
-					if (selected_fbo > -1) mBatchass->assignFboToWarp(selected_index, selected_fbo);
-					// reinit
-					popup_open = false;
-					selected_index = -1;
-					selected_fbo = -1;
-				}
-			}
-			ImGui::EndPopup();
 
-		}
 		yPos += h + margin;
 	}
 #pragma endregion warps
@@ -1295,8 +1242,8 @@ void BatchassApp::drawMain()
 					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
 					ui::PopStyleColor(3);
 
-					// remove
-					if (i > 3)
+					// enable removing shaders
+					if (i > 4)
 					{
 						ui::SameLine();
 						sprintf_s(buf, "X##s%d", i);
@@ -1323,7 +1270,7 @@ void BatchassApp::drawMain()
 		{
 			ui::SetNextWindowSize(ImVec2(w, h));
 			ui::SetNextWindowPos(ImVec2((i * (w + inBetween)) + margin, yPos));
-			ui::Begin(fboNames[i], NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+			ui::Begin(mBatchass->getTexturesRef()->getFboName(i), NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 			{
 				//if (i > 0) ui::SameLine();
 				ui::PushID(i);
@@ -1333,7 +1280,7 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
 
 				sprintf_s(buf, "FV##f%d", i);
-				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFbo(i);
+				if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFboV(i);
 				if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
 
 				ui::PopStyleColor(3);
