@@ -480,5 +480,8 @@
     <None Include="..\assets\spectrum.vert">
       <Filter>assets</Filter>
     </None>
+    <None Include="..\assets\shadertoy.inc">
+      <Filter>assets</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -6,7 +6,6 @@ AppConsole::AppConsole(ParameterBagRef aParameterBag, BatchassRef aBatchass)
 {
 	mParameterBag = aParameterBag;
 	mBatchass = aBatchass;
-
 	ClearLog();
 	HistoryPos = -1;
 	Commands.push_back("HELP");
@@ -23,6 +22,8 @@ AppConsole::AppConsole(ParameterBagRef aParameterBag, BatchassRef aBatchass)
 	Commands.push_back("WSCNX");
 	Commands.push_back("WSPING");
 	Commands.push_back("WSCNF");
+	Commands.push_back("LOADSTOP");
+	Commands.push_back("TEMPO");
 }
 void AppConsole::ClearLog()
 {
@@ -56,12 +57,12 @@ void AppConsole::Run(const char* title, bool* opened)
 	// TODO: display from bottom
 	// TODO: clip manually
 
-	if (ImGui::SmallButton("Help")) 
+	if (ImGui::SmallButton("Help"))
 	{
 		AddLog("Commands:");
 		for (size_t i = 0; i < Commands.size(); i++)
 			AddLog("- %s", Commands[i]);
-	} 
+	}
 	ImGui::SameLine();
 	if (ImGui::SmallButton("Clear")) ClearLog();
 
@@ -151,17 +152,17 @@ void AppConsole::ExecCommand(const char* command_line)
 	}
 	else if (ui::ImStricmp(command_line, "WARPCREATE") == 0)
 	{
-		mBatchass->createWarp(); 
+		mBatchass->createWarp();
 	}
 	else if (ui::ImStrnicmp(command_line, "WARPF", 5) == 0)
 	{
 		// for instance WARPF 0 4
 		if (strlen(command_line) > 8)
-		{			
+		{
 			int index = command_line[6];
 			int fbo = command_line[8];
-			
-			mBatchass->assignFboToWarp(index-48, fbo-48);			
+
+			mBatchass->assignFboToWarp(index - 48, fbo - 48);
 		}
 	}
 	else if (ui::ImStricmp(command_line, "MODEMIX") == 0)
@@ -184,13 +185,26 @@ void AppConsole::ExecCommand(const char* command_line)
 	{
 		mBatchass->changeMode(mParameterBag->MODE_MESH);
 	}
-	/*else if (ui::ImStricmp(command_line, "WSCNX") == 0)
+	else if (ui::ImStricmp(command_line, "LOADSTOP") == 0)
 	{
-		mWebSockets->connect();
+		mBatchass->stopLoading();
+	}
+	else if (ui::ImStrnicmp(command_line, "TEMPO", 5) == 0)
+	{
+		if (strlen(command_line) > 7)
+		{
+			string to = command_line;
+			int firstDigit = to.find_first_of("0123456789");
+			if (firstDigit > -1) mParameterBag->mTempo = std::stoi(to.substr(firstDigit));
+		}
+	}
+	else if (ui::ImStricmp(command_line, "WSCNX") == 0)
+	{
+		mBatchass->wsConnect();
 	}
 	else if (ui::ImStricmp(command_line, "WSPING") == 0)
 	{
-		mWebSockets->ping();
+		mBatchass->wsPing();
 	}
 	else if (ui::ImStricmp(command_line, "WSCNF") == 0)
 	{
@@ -200,9 +214,10 @@ void AppConsole::ExecCommand(const char* command_line)
 		}
 		else
 		{
-			AddLog("Client %s %s\n", mParameterBag->mWebSocketsHost.c_str(), (mWebSockets->isClientConnected() ? "true" : "false"));
+			//AddLog("Client %s %s\n", mParameterBag->mWebSocketsHost.c_str(), (mWebSockets->isClientConnected() ? "true" : "false"));
+			AddLog("Client %s \n", mParameterBag->mWebSocketsHost.c_str());
 		}
-	}*/
+	}
 	else
 	{
 		AddLog("Unknown command: '%s'\n", command_line);

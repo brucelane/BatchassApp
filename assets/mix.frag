@@ -729,9 +729,9 @@ void main(void)
 	if (iBadTv > 0.0)
 	{
 		float c = 1.;
-		c += 2. * iBadTv * sin(iGlobalTime * 4. + uv.y * 1000.);
-		c += 1. * iBadTv * sin(iGlobalTime * 1. + uv.y * 800.);
-		c += 20. * iBadTv * sin(iGlobalTime * 10. + uv.y * 9000.);
+		c += iBadTv * sin(iGlobalTime * 2. + uv.y * 100. * iParam1);
+		c += iBadTv * sin(iGlobalTime * 1. + uv.y * 80.);
+		c += iBadTv * sin(iGlobalTime * 5. + uv.y * 900. * iParam2);
 	
 		c += 1. * cos(iGlobalTime + uv.x);
 	
