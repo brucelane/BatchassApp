@@ -74,8 +74,6 @@ void BatchassApp::setup()
 	mMeshes = Meshes::create(mParameterBag, mBatchass->getTexturesRef());
 	// instanciate the PointSphere class
 	mSphere = PointSphere::create(mParameterBag, mBatchass->getTexturesRef(), mBatchass->getShadersRef());
-	// instanciate the VertexSphere class
-	mVertexSphere = VertexSphere::create(mParameterBag, mBatchass->getTexturesRef(), mBatchass->getShadersRef());
 	// instanciate the ABP class
 	mABP = ABP::create(mParameterBag, mBatchass->getTexturesRef());
 	// instanciate the spout class
@@ -202,10 +200,6 @@ void BatchassApp::drawMain()
 					}
 
 				}*/
-				break;
-			case MODE_VERTEXSPHERE:
-				mVertexSphere->draw();
-				//OK gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mVertexSphereFboIndex), rect);
 				break;
 			case MODE_ABP:
 				//mABP->draw();
@@ -527,7 +521,7 @@ void BatchassApp::drawMain()
 		// mode
 		static int mode = mParameterBag->mMode;
 
-		const char* modes[] = { "Mix", "Warp", "Audio", "Sphere", "Mesh", "Live", "ABP", "VertexSphere" };
+		const char* modes[] = { "Mix", "Warp", "Audio", "Sphere", "Mesh", "Live", "ABP" };
 		ui::Combo("Mode", &mode, modes, IM_ARRAYSIZE(modes));
 
 		if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
@@ -1368,7 +1362,7 @@ void BatchassApp::drawRender()
 
 	gl::setViewport(allRenderWindows[0].mWRef->getBounds());
 	gl::enableAlphaBlending();
-	if (mParameterBag->mMode != MODE_VERTEXSPHERE) gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, false);//20150702 was true
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, false);//20150702 was true
 	switch (mParameterBag->mMode)
 	{
 	case MODE_AUDIO:
@@ -1382,10 +1376,6 @@ void BatchassApp::drawRender()
 		break;
 	case MODE_MESH:
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mMeshFboIndex));
-		break;
-	case MODE_VERTEXSPHERE:
-		mVertexSphere->draw();
-		//OK gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mVertexSphereFboIndex));
 		break;
 	case MODE_ABP:
 		gl::draw(mBatchass->getTexturesRef()->getFboTexture(mParameterBag->mABPFboIndex));
@@ -1620,9 +1610,6 @@ void BatchassApp::update()
 		break;
 	case MODE_MESH:
 		if (mMeshes->isSetup()) mMeshes->update();
-		break;
-	case MODE_VERTEXSPHERE:
-		mVertexSphere->update();
 		break;
 
 	default:

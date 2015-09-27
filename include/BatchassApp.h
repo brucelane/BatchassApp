@@ -41,8 +41,6 @@ along with Cinder-MIDI.  If not, see <http://www.gnu.org/licenses/>.
 #include "Meshes.h"
 // point sphere
 #include "PointSphere.h"
-// Vertex sphere
-#include "VertexSphere.h"
 // spout
 #include "SpoutWrapper.h"
 // ABP
@@ -97,8 +95,6 @@ private:
 	PointSphereRef				mSphere;
 	// spout
 	SpoutWrapperRef				mSpout;
-	//  Vertex Sphere
-	VertexSphereRef				mVertexSphere;
 	//  ABP
 	ABPRef						mABP;
 	// utils
@@ -131,7 +127,6 @@ private:
 	static const int			MODE_MESH = 4;
 	static const int			MODE_LIVE = 5;
 	static const int			MODE_ABP = 6;
-	static const int			MODE_VERTEXSPHERE = 7;
 	static const int			MODE_KINECT = 8;
 	// windows to create, should be the same as in ParameterBag
 	static const int			NONE = 0;

@@ -185,7 +185,6 @@ rem xcopy /y "..\..\..\blocks\Cinder-Spout\lib\SpoutPanel.exe" "$(OutDir)"</Com
     <ClInclude Include="..\..\..\blocks\OSC\src\osc\OscReceivedElements.h" />
     <ClInclude Include="..\..\..\blocks\OSC\src\osc\OscTypes.h" />
     <ClInclude Include="..\include\UI.h" />
-    <ClInclude Include="..\include\vertexSphere.h" />
     <ClInclude Include="..\include\WindowMngr.h" />
   </ItemGroup>
   <ItemGroup>
@@ -238,7 +237,6 @@ rem xcopy /y "..\..\..\blocks\Cinder-Spout\lib\SpoutPanel.exe" "$(OutDir)"</Com
     <ClCompile Include="..\src\Meshes.cpp" />
     <ClCompile Include="..\src\PointSphere.cpp" />
     <ClCompile Include="..\src\UI.cpp" />
-    <ClCompile Include="..\src\vertexSphere.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\mix.frag" />

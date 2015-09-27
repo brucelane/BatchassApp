@@ -399,9 +399,6 @@
     <ClCompile Include="..\src\AppConsole.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\vertexSphere.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\blocks\Cinder-Reymenta\src\WarpWrapper.cpp">
       <Filter>Blocks\Reymenta\src</Filter>
     </ClCompile>
@@ -441,9 +438,6 @@
       <Filter>Blocks\imGui\src</Filter>
     </ClInclude>
     <ClInclude Include="..\include\AppConsole.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\vertexSphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\blocks\Cinder-Reymenta\include\WarpWrapper.h">
