@@ -1452,6 +1452,15 @@ void BatchassApp::fileDrop(FileDropEvent event)
 		int rtn = mBatchass->getShadersRef()->loadPixelFragmentShaderAtIndex(mFile, index);
 		if (rtn > -1 && rtn < mBatchass->getShadersRef()->getCount())
 		{
+			// if shader got compiled without error, send it via websockets
+			if (mFile.find_last_of("\\") != std::string::npos) {
+				string name = mFile.substr(mFile.find_last_of("\\") + 1);
+				string fs = loadString(loadFile(mFile));
+				stringstream gParams;
+				gParams << "{\"glsl\" :[{\"name\" : \"" << name << "\",\"index\" : " << index << ",\"frag\" : \"" << fs << "\"}]}";
+
+				mBatchass->sendJSON(gParams.str());
+			}
 			mParameterBag->controlValues[22] = 1.0f;
 			// send content via OSC
 			/*fs::path fr = mFile;
