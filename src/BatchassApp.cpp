@@ -192,11 +192,11 @@ void BatchassApp::drawMain()
 			case MODE_KINECT:
 				/*if (mParameterBag->mOSCEnabled)
 				{
-					for (int i = 0; i < 20; i++)
-					{
-						gl::drawLine(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), Vec2f(mOSC->skeleton[i].z, mOSC->skeleton[i].w));
-						gl::drawSolidCircle(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), 5.0f, 16);
-					}
+				for (int i = 0; i < 20; i++)
+				{
+				gl::drawLine(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), Vec2f(mOSC->skeleton[i].z, mOSC->skeleton[i].w));
+				gl::drawSolidCircle(Vec2f(mOSC->skeleton[i].x, mOSC->skeleton[i].y), 5.0f, 16);
+				}
 
 				}*/
 				break;
@@ -680,6 +680,25 @@ void BatchassApp::drawMain()
 				}
 				ui::Columns(1);
 			}
+			// websockets
+
+			if (mParameterBag->mIsWebSocketsServer)
+			{
+				ui::Text("WS Server %d", mParameterBag->mWebSocketsPort);
+				ui::Text("IP %s", mParameterBag->mWebSocketsHost.c_str());
+			}
+			else
+			{
+				ui::Text("WS Client %d", mParameterBag->mWebSocketsPort);
+				ui::Text("IP %s", mParameterBag->mWebSocketsHost.c_str());
+			}
+			if (ui::Button("Connect")) { mBatchass->wsConnect(); }
+			ui::SameLine();
+			if (ui::Button("Ping")) { mBatchass->wsPing(); }
+			//static char str0[128] = mParameterBag->mWebSocketsHost.c_str();
+			//static int i0 = mParameterBag->mWebSocketsPort;
+			//ui::InputText("address", str0, IM_ARRAYSIZE(str0));
+			//if (ui::InputInt("port", &i0)) mParameterBag->mWebSocketsPort = i0;
 		}
 		ui::End();
 		xPos += largePreviewW + 20 + margin;
@@ -693,6 +712,12 @@ void BatchassApp::drawMain()
 	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
 	ui::Begin("Animation");
 	{
+		int ctrl;
+		stringstream aParams;
+		aParams << "{\"params\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
+		stringstream sParams;
+		sParams << "{\"params\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
+
 		ImGui::PushItemWidth(mParameterBag->mPreviewFboWidth);
 
 		if (ui::CollapsingHeader("Mouse", NULL, true, true))
@@ -708,7 +733,7 @@ void BatchassApp::drawMain()
 			}
 			else
 			{
-
+				ui::SameLine();
 				mParameterBag->iMouse.z = ui::Button("mouse click");
 			}
 			ui::SliderFloat("MouseX", &mParameterBag->mRenderPosXY.x, 0, mParameterBag->mFboWidth);
@@ -727,33 +752,51 @@ void BatchassApp::drawMain()
 			hue++;
 			ui::SameLine();
 
-			(mParameterBag->controlValues[45]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ctrl = 45;
+			(mParameterBag->controlValues[ctrl]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
 			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
-			if (ui::Button("glitch")) { mParameterBag->controlValues[45] = !mParameterBag->controlValues[45]; }
+			if (ui::Button("glitch")) { 
+
+				mParameterBag->controlValues[ctrl] = !mParameterBag->controlValues[ctrl];
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+
+			}
 			ui::PopStyleColor(3);
 			hue++;
 			ui::SameLine();
 
-			(mParameterBag->controlValues[46]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ctrl = 46;
+			(mParameterBag->controlValues[ctrl]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
 			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
-			if (ui::Button("toggle")) { mParameterBag->controlValues[46] = !mParameterBag->controlValues[46]; }
+			if (ui::Button("toggle")) {
+				mParameterBag->controlValues[ctrl] = !mParameterBag->controlValues[ctrl]; 
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
 			ui::PopStyleColor(3);
 			hue++;
 			ui::SameLine();
 
-			(mParameterBag->controlValues[47]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ctrl = 47;
+			(mParameterBag->controlValues[ctrl]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
 			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
-			if (ui::Button("vignette")) { mParameterBag->controlValues[47] = !mParameterBag->controlValues[47]; }
+			if (ui::Button("vignette")) { 
+				mParameterBag->controlValues[ctrl] = !mParameterBag->controlValues[ctrl]; 
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
 			ui::PopStyleColor(3);
 			hue++;
 
-			(mParameterBag->controlValues[48]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			ctrl = 48;
+			(mParameterBag->controlValues[ctrl]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
 			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
-			if (ui::Button("invert")) { mParameterBag->controlValues[48] = !mParameterBag->controlValues[48]; }
+			if (ui::Button("invert")) { 
+				mParameterBag->controlValues[ctrl] = !mParameterBag->controlValues[ctrl];
+				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
+			}
 			ui::PopStyleColor(3);
 			hue++;
 			ui::SameLine();
@@ -776,9 +819,6 @@ void BatchassApp::drawMain()
 		{
 
 			ui::SliderInt("mUIRefresh", &mParameterBag->mUIRefresh, 1, 255);
-			int ctrl;
-			stringstream aParams;
-			aParams << "{\"params\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
 
 			// iChromatic
 			ctrl = 10;
@@ -916,19 +956,11 @@ void BatchassApp::drawMain()
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 
-			aParams << "]}";
-			string strAParams = aParams.str();
-			if (strAParams.length() > 60)
-			{
-				mBatchass->sendJSON(strAParams);
-			}
 		}
 		ui::PopItemWidth();
 		if (ui::CollapsingHeader("Colors", NULL, true, true))
 		{
-			stringstream sParams;
 			bool colorChanged = false;
-			sParams << "{\"params\" :[{\"name\" : 0,\"value\" : " << getElapsedFrames() << "}"; // TimeStamp
 			// foreground color
 			color[0] = mParameterBag->controlValues[1];
 			color[1] = mParameterBag->controlValues[2];
@@ -978,13 +1010,6 @@ void BatchassApp::drawMain()
 			{
 			}
 
-			sParams << "]}";
-			string strParams = sParams.str();
-			if (strParams.length() > 60)
-			{
-				mBatchass->sendJSON(strParams);
-			}
-
 		}
 
 		if (ui::CollapsingHeader("Camera", NULL, true, true))
@@ -1001,6 +1026,19 @@ void BatchassApp::drawMain()
 			ui::SliderFloat("ABP Bend", &mParameterBag->mBend, -20.0f, 20.0f);
 
 		}
+		aParams << "]}";
+		string strAParams = aParams.str();
+		if (strAParams.length() > 60)
+		{
+			mBatchass->sendJSON(strAParams);
+		}
+		sParams << "]}";
+		string strParams = sParams.str();
+		if (strParams.length() > 60)
+		{
+			mBatchass->sendJSON(strParams);
+		}
+
 
 
 	}
