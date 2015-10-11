@@ -177,7 +177,6 @@ void BatchassApp::drawMain()
 				{
 					mBatchass->getWarpsRef()->draw();
 				}
-
 				break;
 			case MODE_SPHERE:
 				mSphere->draw();
@@ -1127,6 +1126,7 @@ void BatchassApp::drawMain()
 		yPos += h + margin;
 	}
 #pragma endregion textures
+
 #pragma region library
 	if (showShaders)
 	{
@@ -1272,6 +1272,7 @@ void BatchassApp::drawMain()
 		yPos += h + margin;
 	}
 #pragma endregion library
+
 #pragma region fbos
 
 	if (showFbos)
@@ -1454,6 +1455,7 @@ void BatchassApp::fileDrop(FileDropEvent event)
 		{
 			// if shader got compiled without error, send it via websockets
 			if (mFile.find_last_of("\\") != std::string::npos) {
+
 				string name = mFile.substr(mFile.find_last_of("\\") + 1);
 				string fs = loadString(loadFile(mFile));
 				stringstream gParams;
