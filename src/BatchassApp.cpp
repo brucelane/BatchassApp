@@ -570,6 +570,10 @@ void BatchassApp::drawMain()
 		mParameterBag->iDebug ^= ui::Button("Debug");
 		ui::SameLine();
 		mParameterBag->mRenderThumbs ^= ui::Button("Thumbs");
+		if (ui::Button("Warps")) { 
+			mBatchass->changeMode(mParameterBag->MODE_WARP); 
+			mBatchass->createWarp();
+		}
 		/*ui::SliderInt("RenderX", &mParameterBag->mRenderX, 0, 3000);
 		ui::SliderInt("RenderWidth", &mParameterBag->mRenderWidth, 1024, 3840);
 		ui::SliderInt("RenderHeight", &mParameterBag->mRenderHeight, 600, 1280);*/
@@ -1189,8 +1193,12 @@ void BatchassApp::drawMain()
 		{
 			if (filter.PassFilter(mBatchass->getShadersRef()->getShader(i).name.c_str()) && mBatchass->getShadersRef()->getShader(i).active)
 			{
-
-				sprintf_s(buf, "%d##lsh%d", mBatchass->getShadersRef()->getShader(i).microseconds, i);
+				if (mParameterBag->iTrack == i) {
+					sprintf_s(buf, "SEL ##lsh%d", i);
+				}
+				else {
+					sprintf_s(buf, "%d##lsh%d", mBatchass->getShadersRef()->getShader(i).microseconds, i);
+				}
 				ui::SetNextWindowSize(ImVec2(w, h));
 				ui::SetNextWindowPos(ImVec2(xPos + margin, yPos));
 				ui::Begin(buf, NULL, ImVec2(0, 0), ui::GetStyle().Alpha, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
