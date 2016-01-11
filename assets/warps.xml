@@ -7,10 +7,10 @@
 				<controlpoint x="0" y="1"/>
 				<controlpoint x="1" y="0"/>
 				<controlpoint x="1" y="1"/>
-				<corner x="0.300000012" y="0.356898516"/>
-				<corner x="0.58819443" y="0.293044478"/>
-				<corner x="0.611805558" y="0.673888266"/>
-				<corner x="0.303472221" y="0.663626015"/>
+				<corner x="0.223632813" y="0.266927093"/>
+				<corner x="0.635742188" y="0.171875"/>
+				<corner x="0.659179688" y="0.592447937"/>
+				<corner x="0.254882813" y="0.62890625"/>
 			</warp>
 		</map>
 		<map id="2" display="1">
@@ -95,6 +95,42 @@
 				<corner x="0.91736114" y="0.168757126"/>
 				<corner x="0.91180557" y="0.461801589"/>
 				<corner x="0.720138907" y="0.31698975"/>
+			</warp>
+		</map>
+		<map id="9" display="1">
+			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-842150451" srcAreaX2="-842150451" srcAreaY1="-842150451" srcAreaY2="-842150451" resolution="16" linear="0" adaptive="0">
+				<controlpoint x="0" y="0"/>
+				<controlpoint x="0" y="1"/>
+				<controlpoint x="1" y="0"/>
+				<controlpoint x="1" y="1"/>
+				<corner x="0.046875" y="0.778645813"/>
+				<corner x="0.184570313" y="0.727864563"/>
+				<corner x="0.211914063" y="0.7890625"/>
+				<corner x="0.0703125" y="0.873697937"/>
+			</warp>
+		</map>
+		<map id="10" display="1">
+			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-842150451" srcAreaX2="-842150451" srcAreaY1="-842150451" srcAreaY2="-842150451" resolution="16" linear="0" adaptive="0">
+				<controlpoint x="0" y="0"/>
+				<controlpoint x="0" y="1"/>
+				<controlpoint x="1" y="0"/>
+				<controlpoint x="1" y="1"/>
+				<corner x="0.418945313" y="0.674479187"/>
+				<corner x="0.62890625" y="0.63671875"/>
+				<corner x="0.663085938" y="0.716145813"/>
+				<corner x="0.430664063" y="0.734375"/>
+			</warp>
+		</map>
+		<map id="11" display="1">
+			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-1163005939" srcAreaX2="-1163005939" srcAreaY1="-1163005939" srcAreaY2="-1163005939" resolution="16" linear="0" adaptive="0">
+				<controlpoint x="0" y="0"/>
+				<controlpoint x="0" y="1"/>
+				<controlpoint x="1" y="0"/>
+				<controlpoint x="1" y="1"/>
+				<corner x="0.465624988" y="0.0874999985"/>
+				<corner x="0.667187512" y="0.0770833343"/>
+				<corner x="0.678125024" y="0.243750006"/>
+				<corner x="0.443749994" y="0.295833319"/>
 			</warp>
 		</map>
 	</profile>
