@@ -6,8 +6,8 @@
 	<Standalone value="0"/>
 	<MainWindowWidth value="1440"/>
 	<MainWindowHeight value="870"/>
-	<RenderWidth value="1440"/>
-	<RenderHeight value="900"/>
+	<RenderWidth value="1024"/>
+	<RenderHeight value="768"/>
 	<RenderX value="1600"/>
 	<RenderY value="0"/>
 	<AspectRatio value="0.75"/>

@@ -574,7 +574,7 @@ void BatchassApp::drawMain()
 		mParameterBag->iDebug ^= ui::Button("Debug");
 		ui::SameLine();
 		mParameterBag->mRenderThumbs ^= ui::Button("Thumbs");
-		if (ui::Button("Warps")) { 
+		if (ui::Button("CreateWarp")) { 
 			mBatchass->changeMode(mParameterBag->MODE_WARP); 
 			mBatchass->createWarp();
 		}
@@ -1747,6 +1747,16 @@ void BatchassApp::keyDown(KeyEvent event)
 	if (mParameterBag->mMode == mParameterBag->MODE_WARP)
 	{
 		handled = true;
+		if (keyCode == 27)
+		{
+			// ESCAPE pressed
+			mParameterBag->save();
+			//mBatchass->shutdownLoader(); // Not used yet(loading shaders in a different thread
+			ui::Shutdown();
+			mBatchass->shutdown();
+			quit();
+		}
+
 		mBatchass->getWarpsRef()->keyDown(event);
 		switch (event.getCode())
 		{
