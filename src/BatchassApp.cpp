@@ -107,6 +107,10 @@ void BatchassApp::setup()
 	mSeconds = 0;
 	// RTE mBatchass->getShadersRef()->setupLiveShader();
 	mBatchass->tapTempo();
+	mParameterBag->mMode = MODE_WARP;
+
+	if (mParameterBag->mRenderWindowAtStartup) { createRenderWindow(); }
+
 	// end profiling
 	end = Clock::now();
 	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -159,7 +163,7 @@ void BatchassApp::drawMain()
 
 	gl::clear(ColorAf(0.0f, 0.0f, 0.0f, 0.0f));
 	gl::color(ColorAf(1.0f, 1.0f, 1.0f, 1.0f));
-	// draw preview
+	// draw preview 
 	if (getElapsedFrames() % mParameterBag->mUIRefresh == 0)
 	{
 		Rectf rect = Rectf(50, 40, 50 + mParameterBag->mPreviewFboWidth, 40 + mParameterBag->mPreviewFboHeight);
@@ -557,11 +561,11 @@ void BatchassApp::drawMain()
 		if (ui::Button("Save Params"))
 		{
 			// save warp settings
-			mBatchass->getWarpsRef()->save("warps1.xml");
+			mBatchass->getWarpsRef()->save("warps" + toString(getElapsedFrames()) + ".xml");
+			mBatchass->getWarpsRef()->save("warps.xml");
 			// save params
 			mParameterBag->save();
 		}
-
 
 		if (ui::Button("Create")) { createRenderWindow(); }
 		ui::SameLine();

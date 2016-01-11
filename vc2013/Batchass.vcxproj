@@ -76,8 +76,8 @@
     <PostBuildEvent>
       <Command>xcopy /y "..\..\..\blocks\Cinder-Spout\lib\Spout2.dll" "$(OutDir)"
 xcopy /y "..\..\..\blocks\Cinder-Spout\lib\SpoutPanel.exe" "$(OutDir)"
-md "$(OutDir)..\assets"
-xcopy /y /s "..\assets" "$(OutDir)..\assets\"
+rem md "$(OutDir)..\assets"
+rem xcopy /y /s "..\assets" "$(OutDir)..\assets\"
 
 
 </Command>
@@ -114,8 +114,8 @@ xcopy /y /s "..\assets" "$(OutDir)..\assets\"
     <PostBuildEvent>
       <Command>xcopy /y "..\..\..\blocks\Cinder-Spout\lib\Spout2.dll" "$(OutDir)"
 xcopy /y "..\..\..\blocks\Cinder-Spout\lib\SpoutPanel.exe" "$(OutDir)"
-md "$(OutDir)..\assets"
-xcopy /y /s "..\assets" "$(OutDir)..\assets\"
+rem md "$(OutDir)..\assets"
+rem xcopy /y /s "..\assets" "$(OutDir)..\assets\"
 
 
 </Command>
