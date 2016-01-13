@@ -1242,7 +1242,14 @@ void BatchassApp::drawMain()
 					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.0f, 0.7f, 0.7f));
 					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.0f, 0.8f, 0.8f));
 					sprintf_s(buf, "L##s%d", i);
-					if (ui::Button(buf)) mParameterBag->mLeftFragIndex = i;
+					if (ui::Button(buf)){
+						mParameterBag->mLeftFragIndex = i;
+						// json to send with websockets
+						stringstream lParams;
+						lParams << "{\"lib\" :[{\"name\" : 3,\"value\" : " << i << "}]}";
+						string strLParams = lParams.str();
+						mBatchass->sendJSON(strLParams);
+					}
 					if (ui::IsItemHovered()) ui::SetTooltip("Set shader to left");
 					ui::PopStyleColor(3);
 					//ui::NextColumn();
@@ -1259,7 +1266,14 @@ void BatchassApp::drawMain()
 					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.3f, 0.7f, 0.7f));
 					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.3f, 0.8f, 0.8f));
 					sprintf_s(buf, "R##s%d", i);
-					if (ui::Button(buf)) mParameterBag->mRightFragIndex = i;
+					if (ui::Button(buf)){
+						mParameterBag->mRightFragIndex = i;
+						// json to send with websockets
+						stringstream lParams;
+						lParams << "{\"lib\" :[{\"name\" : 4,\"value\" : " << i << "}]}";
+						string strLParams = lParams.str();
+						mBatchass->sendJSON(strLParams);
+					}
 					if (ui::IsItemHovered()) ui::SetTooltip("Set shader to right");
 					ui::PopStyleColor(3);
 					//ui::NextColumn();
@@ -1292,7 +1306,14 @@ void BatchassApp::drawMain()
 					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.16f, 0.7f, 0.7f));
 					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.16f, 0.8f, 0.8f));
 					sprintf_s(buf, "1##s%d", i);
-					if (ui::Button(buf)) mParameterBag->mWarp1FragIndex = i;
+					if (ui::Button(buf)) {
+						mParameterBag->mWarp1FragIndex = i;
+						// json to send with websockets
+						stringstream lParams;
+						lParams << "{\"lib\" :[{\"name\" : 1,\"value\" : " << i << "}]}";
+						string strLParams = lParams.str();
+						mBatchass->sendJSON(strLParams);
+					}
 					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 1 shader");
 					ui::PopStyleColor(3);
 					ui::SameLine();
@@ -1309,7 +1330,14 @@ void BatchassApp::drawMain()
 					ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.77f, 0.7f, 0.7f));
 					ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.77f, 0.8f, 0.8f));
 					sprintf_s(buf, "2##s%d", i);
-					if (ui::Button(buf)) mParameterBag->mWarp2FragIndex = i;
+					if (ui::Button(buf)){
+						mParameterBag->mWarp2FragIndex = i;
+						// json to send with websockets
+						stringstream lParams;
+						lParams << "{\"lib\" :[{\"name\" : 2,\"value\" : " << i << "}]}";
+						string strLParams = lParams.str();
+						mBatchass->sendJSON(strLParams);
+					} 
 					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
 					ui::PopStyleColor(3);
 
