@@ -31,9 +31,8 @@ void BatchassApp::prepareSettings(Settings* settings)
 	{
 		settings->setWindowSize(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
 		settings->setWindowPos(Vec2i(mParameterBag->mRenderX, mParameterBag->mRenderY));
-		settings->setBorderless();
-		settings->setResizable(false);
 	}
+
 	auto end = Clock::now();
 	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 	mBatchass->log("prepareSettings: " + toString(msdur.count()));
@@ -46,7 +45,6 @@ void BatchassApp::setup()
 	//0SetWindowPos
 	mBatchass->log("setup");
 	mIsShutDown = false;
-	removeUI = false;
 	getWindow()->setTitle("Batchass");
 	ci::app::App::get()->getSignalShutdown().connect([&]() {
 		BatchassApp::shutdown();
@@ -58,11 +56,8 @@ void BatchassApp::setup()
 	// setup shaders and textures
 	mBatchass->setup();
 	//mParameterBag->mWarpFbos[0].textureIndex = 1;
-	// setup the main window and associated draw function
-	mMainWindow = getWindow();
-	mMainWindow->setTitle("Batchass");
-	mMainWindow->connectDraw(&BatchassApp::drawMain, this);
-	mMainWindow->connectClose(&BatchassApp::shutdown, this);
+
+
 	auto end = Clock::now();
 	auto mididur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 	mBatchass->log("setup before: " + toString(mididur.count()));
@@ -108,9 +103,23 @@ void BatchassApp::setup()
 	// RTE mBatchass->getShadersRef()->setupLiveShader();
 	mBatchass->tapTempo();
 	mParameterBag->mMode = MODE_WARP;
-
-	if (mParameterBag->mRenderWindowAtStartup) { createRenderWindow(); }
-
+	// setup the main window and associated draw function
+	mMainWindow = getWindow();
+	mMainWindow->setTitle("Batchass");
+	if (mParameterBag->mStandalone)
+	{
+		removeUI = true;
+		hideCursor();
+		mMainWindow->connectDraw(&BatchassApp::drawRender, this);
+	}
+	else
+	{
+		removeUI = false;
+		showCursor();
+		mMainWindow->connectDraw(&BatchassApp::drawMain, this);
+		mMainWindow->connectClose(&BatchassApp::shutdown, this);
+		if (mParameterBag->mRenderWindowAtStartup) { createRenderWindow(); }
+	}
 	// end profiling
 	end = Clock::now();
 	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -566,11 +575,13 @@ void BatchassApp::drawMain()
 			// save params
 			mParameterBag->save();
 		}
-
-		if (ui::Button("Create")) { createRenderWindow(); }
-		ui::SameLine();
-		if (ui::Button("Delete")) { deleteRenderWindows(); }
-
+		if ( !mParameterBag->mStandalone) {  
+			if (ui::Button("Create") && !mParameterBag->mStandalone) {
+				createRenderWindow();
+			}
+			ui::SameLine();
+			if (ui::Button("Delete")) { deleteRenderWindows(); }
+		}
 		mParameterBag->iDebug ^= ui::Button("Debug");
 		ui::SameLine();
 		mParameterBag->mRenderThumbs ^= ui::Button("Thumbs");
@@ -1407,11 +1418,20 @@ void BatchassApp::drawMain()
 }
 void BatchassApp::drawRender()
 {
+	// use the right screen bounds			
+	if (mParameterBag->mStandalone) {
+		// must be first to avoid gl matrices to change
+		// draw from Spout receivers
+		mSpout->draw();
+		// draw the fbos
+		mBatchass->getTexturesRef()->draw();
+
+		gl::setViewport(mMainWindow->getBounds());
+	} else {
+		gl::setViewport(allRenderWindows[0].mWRef->getBounds());
+	}
 	// clear
 	gl::clear();
-	// shaders			
-
-	gl::setViewport(allRenderWindows[0].mWRef->getBounds());
 	gl::enableAlphaBlending();
 	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, false);//20150702 was true
 	switch (mParameterBag->mMode)

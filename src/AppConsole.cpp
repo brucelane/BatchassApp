@@ -39,7 +39,9 @@ void AppConsole::AddLog(const char* fmt, ...)
 	va_start(args, fmt);
 	ui::ImFormatStringV(buf, IM_ARRAYSIZE(buf), fmt, args);
 	va_end(args);
+	sprintf_s(buf, "y%d", Items.size());
 	Items.push_back(ui::ImStrdup(buf));
+
 	ScrollToBottom = true;
 }
 
