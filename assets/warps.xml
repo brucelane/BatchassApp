@@ -8,7 +8,7 @@
 				<controlpoint x="1" y="0"/>
 				<controlpoint x="1" y="1"/>
 				<corner x="0.223632813" y="0.266927093"/>
-				<corner x="0.635742188" y="0.171875"/>
+				<corner x="0.668749988" y="0.217777774"/>
 				<corner x="0.659179688" y="0.592447937"/>
 				<corner x="0.254882813" y="0.62890625"/>
 			</warp>
@@ -19,10 +19,10 @@
 				<controlpoint x="0" y="1"/>
 				<controlpoint x="1" y="0"/>
 				<controlpoint x="1" y="1"/>
-				<corner x="0.0583333336" y="0.570125401"/>
-				<corner x="0.20763889" y="0.525655627"/>
+				<corner x="0.0581250004" y="0.374444455"/>
+				<corner x="0.213750005" y="0.362222224"/>
 				<corner x="0.245138884" y="0.67958951"/>
-				<corner x="0.0736111104" y="0.71493727"/>
+				<corner x="0.0731249973" y="0.682222247"/>
 			</warp>
 		</map>
 		<map id="3" display="1">
@@ -31,106 +31,10 @@
 				<controlpoint x="0" y="1"/>
 				<controlpoint x="1" y="0"/>
 				<controlpoint x="1" y="1"/>
-				<corner x="0.044921875" y="0.0768229142"/>
-				<corner x="0.23046875" y="0.06640625"/>
-				<corner x="0.240234375" y="0.243489578"/>
-				<corner x="0.0390625" y="0.255208343"/>
-			</warp>
-		</map>
-		<map id="4" display="1">
-			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-842150451" srcAreaX2="-842150451" srcAreaY1="-842150451" srcAreaY2="-842150451" resolution="16" linear="0" adaptive="0">
-				<controlpoint x="0" y="0"/>
-				<controlpoint x="0" y="1"/>
-				<controlpoint x="1" y="0"/>
-				<controlpoint x="1" y="1"/>
-				<corner x="0.236805558" y="0.849486887"/>
-				<corner x="0.385416657" y="0.884834647"/>
-				<corner x="0.375694454" y="0.988597512"/>
-				<corner x="0.199305549" y="1.0205245"/>
-			</warp>
-		</map>
-		<map id="5" display="1">
-			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-842150451" srcAreaX2="-842150451" srcAreaY1="-842150451" srcAreaY2="-842150451" resolution="16" linear="0" adaptive="0">
-				<controlpoint x="0" y="0"/>
-				<controlpoint x="0" y="1"/>
-				<controlpoint x="1" y="0"/>
-				<controlpoint x="1" y="1"/>
-				<corner x="0.431250006" y="0.793614566"/>
-				<corner x="0.530555546" y="0.784492612"/>
-				<corner x="0.547916651" y="0.946408212"/>
-				<corner x="0.414583325" y="0.986316979"/>
-			</warp>
-		</map>
-		<map id="6" display="1">
-			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-842150451" srcAreaX2="-842150451" srcAreaY1="-842150451" srcAreaY2="-842150451" resolution="16" linear="0" adaptive="0">
-				<controlpoint x="0" y="0"/>
-				<controlpoint x="0" y="1"/>
-				<controlpoint x="1" y="0"/>
-				<controlpoint x="1" y="1"/>
-				<corner x="0.543055534" y="0.719498277"/>
-				<corner x="0.67638886" y="0.754846036"/>
-				<corner x="0.693750024" y="0.977194965"/>
-				<corner x="0.590972245" y="0.942987442"/>
-			</warp>
-		</map>
-		<map id="7" display="1">
-			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-842150451" srcAreaX2="-842150451" srcAreaY1="-842150451" srcAreaY2="-842150451" resolution="16" linear="0" adaptive="0">
-				<controlpoint x="0" y="0"/>
-				<controlpoint x="0" y="1"/>
-				<controlpoint x="1" y="0"/>
-				<controlpoint x="1" y="1"/>
-				<corner x="0.701388896" y="0.548460662"/>
-				<corner x="0.956250012" y="0.613454938"/>
-				<corner x="0.975694418" y="0.974914491"/>
-				<corner x="0.750694454" y="0.917901933"/>
-			</warp>
-		</map>
-		<map id="8" display="1">
-			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-842150451" srcAreaX2="-842150451" srcAreaY1="-842150451" srcAreaY2="-842150451" resolution="16" linear="0" adaptive="0">
-				<controlpoint x="0" y="0"/>
-				<controlpoint x="0" y="1"/>
-				<controlpoint x="1" y="0"/>
-				<controlpoint x="1" y="1"/>
-				<corner x="0.709027767" y="0.0672748014"/>
-				<corner x="0.91736114" y="0.168757126"/>
-				<corner x="0.91180557" y="0.461801589"/>
-				<corner x="0.720138907" y="0.31698975"/>
-			</warp>
-		</map>
-		<map id="9" display="1">
-			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-842150451" srcAreaX2="-842150451" srcAreaY1="-842150451" srcAreaY2="-842150451" resolution="16" linear="0" adaptive="0">
-				<controlpoint x="0" y="0"/>
-				<controlpoint x="0" y="1"/>
-				<controlpoint x="1" y="0"/>
-				<controlpoint x="1" y="1"/>
-				<corner x="0.046875" y="0.778645813"/>
-				<corner x="0.184570313" y="0.727864563"/>
-				<corner x="0.211914063" y="0.7890625"/>
-				<corner x="0.0703125" y="0.873697937"/>
-			</warp>
-		</map>
-		<map id="10" display="1">
-			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-842150451" srcAreaX2="-842150451" srcAreaY1="-842150451" srcAreaY2="-842150451" resolution="16" linear="0" adaptive="0">
-				<controlpoint x="0" y="0"/>
-				<controlpoint x="0" y="1"/>
-				<controlpoint x="1" y="0"/>
-				<controlpoint x="1" y="1"/>
-				<corner x="0.418945313" y="0.674479187"/>
-				<corner x="0.62890625" y="0.63671875"/>
-				<corner x="0.663085938" y="0.716145813"/>
-				<corner x="0.430664063" y="0.734375"/>
-			</warp>
-		</map>
-		<map id="11" display="1">
-			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-1163005939" srcAreaX2="-1163005939" srcAreaY1="-1163005939" srcAreaY2="-1163005939" resolution="16" linear="0" adaptive="0">
-				<controlpoint x="0" y="0"/>
-				<controlpoint x="0" y="1"/>
-				<controlpoint x="1" y="0"/>
-				<controlpoint x="1" y="1"/>
-				<corner x="0.465624988" y="0.0874999985"/>
-				<corner x="0.667187512" y="0.0770833343"/>
-				<corner x="0.678125024" y="0.243750006"/>
-				<corner x="0.443749994" y="0.295833319"/>
+				<corner x="0.741874993" y="0.105555557"/>
+				<corner x="0.954999983" y="0.119999997"/>
+				<corner x="0.980000019" y="0.705555558"/>
+				<corner x="0.732500017" y="0.576666653"/>
 			</warp>
 		</map>
 	</profile>

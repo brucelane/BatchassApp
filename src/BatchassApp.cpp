@@ -444,7 +444,43 @@ void BatchassApp::drawMain()
 	}
 	ui::End();
 	xPos += largePreviewW + margin;
+	// warpmix fbo
+	if (mParameterBag->mMode == MODE_WARP) {
 
+		ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
+		ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
+		ui::Begin("Warpmix fbo");
+		{
+			ui::PushItemWidth(mParameterBag->mPreviewFboWidth);
+
+			ui::Image((void*)mBatchass->getTexturesRef()->getFboTextureId(mParameterBag->mWarpMixFboIndex), Vec2i(mParameterBag->mPreviewWidth, mParameterBag->mPreviewHeight));
+			ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.1f, 0.6f, 0.6f));
+			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(0.1f, 0.7f, 0.7f));
+			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(0.1f, 0.8f, 0.8f));
+
+			sprintf_s(buf, "FV##fv%d", 43);
+			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFboV(mParameterBag->mWarpMixFboIndex);
+			//mParameterBag->iFlipVertically ^= ui::Button(buf);
+			if (ui::IsItemHovered()) ui::SetTooltip("Flip vertically");
+			ui::SameLine();
+			sprintf_s(buf, "FH##fh%d", 43);
+			if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFboH(mParameterBag->mWarpMixFboIndex);
+			//mParameterBag->iFlipHorizontally ^= ui::Button(buf);
+			if (ui::IsItemHovered()) ui::SetTooltip("Flip horizontally");
+			// warp crossfade
+			if (ui::DragFloat("Xfade", &mParameterBag->controlValues[23], 0.01f, 0.001f, 1.0f)) //TODO new index
+			{
+			}
+			// renderXY mouse
+			ui::DragFloat("RdrX", &mParameterBag->mRenderXY.x, 0.01f, -1.0f, 1.0f);
+			ui::DragFloat("RdrY", &mParameterBag->mRenderXY.y, 0.01f, -1.0f, 1.0f);
+			ui::PopStyleColor(3);
+			ui::PopItemWidth();
+
+		}
+		ui::End();
+		xPos += largePreviewW + margin;
+	}
 	// preview fbo
 	ui::SetNextWindowSize(ImVec2(largePreviewW, largePreviewH), ImGuiSetCond_Once);
 	ui::SetNextWindowPos(ImVec2(xPos, yPos), ImGuiSetCond_Once);
@@ -575,7 +611,7 @@ void BatchassApp::drawMain()
 			// save params
 			mParameterBag->save();
 		}
-		if ( !mParameterBag->mStandalone) {  
+		if (!mParameterBag->mStandalone) {
 			if (ui::Button("Create") && !mParameterBag->mStandalone) {
 				createRenderWindow();
 			}
@@ -585,8 +621,8 @@ void BatchassApp::drawMain()
 		mParameterBag->iDebug ^= ui::Button("Debug");
 		ui::SameLine();
 		mParameterBag->mRenderThumbs ^= ui::Button("Thumbs");
-		if (ui::Button("CreateWarp")) { 
-			mBatchass->changeMode(mParameterBag->MODE_WARP); 
+		if (ui::Button("CreateWarp")) {
+			mBatchass->changeMode(mParameterBag->MODE_WARP);
 			mBatchass->createWarp();
 		}
 		/*ui::SliderInt("RenderX", &mParameterBag->mRenderX, 0, 3000);
@@ -775,7 +811,7 @@ void BatchassApp::drawMain()
 			(mParameterBag->controlValues[ctrl]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
 			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
-			if (ui::Button("glitch")) { 
+			if (ui::Button("glitch")) {
 
 				mParameterBag->controlValues[ctrl] = !mParameterBag->controlValues[ctrl];
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
@@ -790,7 +826,7 @@ void BatchassApp::drawMain()
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
 			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
 			if (ui::Button("toggle")) {
-				mParameterBag->controlValues[ctrl] = !mParameterBag->controlValues[ctrl]; 
+				mParameterBag->controlValues[ctrl] = !mParameterBag->controlValues[ctrl];
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			ui::PopStyleColor(3);
@@ -801,8 +837,8 @@ void BatchassApp::drawMain()
 			(mParameterBag->controlValues[ctrl]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
 			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
-			if (ui::Button("vignette")) { 
-				mParameterBag->controlValues[ctrl] = !mParameterBag->controlValues[ctrl]; 
+			if (ui::Button("vignette")) {
+				mParameterBag->controlValues[ctrl] = !mParameterBag->controlValues[ctrl];
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
 			ui::PopStyleColor(3);
@@ -812,7 +848,7 @@ void BatchassApp::drawMain()
 			(mParameterBag->controlValues[ctrl]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
 			ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(hue / 7.0f, 0.8f, 0.8f));
-			if (ui::Button("invert")) { 
+			if (ui::Button("invert")) {
 				mParameterBag->controlValues[ctrl] = !mParameterBag->controlValues[ctrl];
 				aParams << ",{\"name\" : " << ctrl << ",\"value\" : " << mParameterBag->controlValues[ctrl] << "}";
 			}
@@ -1337,7 +1373,7 @@ void BatchassApp::drawMain()
 						lParams << "{\"lib\" :[{\"name\" : 2,\"value\" : " << i << "}]}";
 						string strLParams = lParams.str();
 						mBatchass->sendJSON(strLParams);
-					} 
+					}
 					if (ui::IsItemHovered()) ui::SetTooltip("Set warp 2 shader");
 					ui::PopStyleColor(3);
 
@@ -1455,7 +1491,8 @@ void BatchassApp::drawRender()
 		mBatchass->getTexturesRef()->draw();
 
 		gl::setViewport(mMainWindow->getBounds());
-	} else {
+	}
+	else {
 		gl::setViewport(allRenderWindows[0].mWRef->getBounds());
 	}
 	// clear
