@@ -414,6 +414,9 @@
     <ClCompile Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui_draw.cpp">
       <Filter>Blocks\imGui\src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\blocks\Cinder-Reymenta\src\VDSession.cpp">
+      <Filter>Blocks\Reymenta\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Resources.h">
@@ -457,6 +460,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\blocks\Cinder-Spout\include\Spout.h">
       <Filter>Blocks\Cinder-Spout\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\blocks\Cinder-Reymenta\include\VDSession.h">
+      <Filter>Blocks\Reymenta\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

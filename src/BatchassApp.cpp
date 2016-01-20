@@ -1702,6 +1702,8 @@ void BatchassApp::shutdown()
 		deleteRenderWindows();
 		// save warp settings
 		mBatchass->getWarpsRef()->save();
+		// save session
+		mBatchass->getSessionRef()->save();
 		// save params
 		mParameterBag->save();
 		ui::Shutdown();

@@ -129,6 +129,7 @@ rem xcopy /y /s "..\assets" "$(OutDir)..\assets\"
     <ClInclude Include="..\..\..\blocks\Cinder-ImGui\lib\imgui\imgui.h" />
     <ClInclude Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.h" />
     <ClInclude Include="..\..\..\blocks\Cinder-Reymenta\include\MessageRouter.h" />
+    <ClInclude Include="..\..\..\blocks\Cinder-Reymenta\include\VDSession.h" />
     <ClInclude Include="..\..\..\blocks\Cinder-Reymenta\include\WarpWrapper.h" />
     <ClInclude Include="..\..\..\blocks\Cinder-Spout\include\Spout.h" />
     <ClInclude Include="..\include\ABP.h" />
@@ -198,6 +199,7 @@ rem xcopy /y /s "..\assets" "$(OutDir)..\assets\"
     <ClCompile Include="..\..\..\blocks\Cinder-ImGui\src\CinderImGui.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-MeshHelper\src\MeshHelper.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-Reymenta\src\MessageRouter.cpp" />
+    <ClCompile Include="..\..\..\blocks\Cinder-Reymenta\src\VDSession.cpp" />
     <ClCompile Include="..\..\..\blocks\Cinder-Reymenta\src\WarpWrapper.cpp" />
     <ClCompile Include="..\src\ABP.cpp" />
     <ClCompile Include="..\src\AppConsole.cpp" />
