@@ -7,10 +7,10 @@
 				<controlpoint x="0" y="1"/>
 				<controlpoint x="1" y="0"/>
 				<controlpoint x="1" y="1"/>
-				<corner x="0.223632813" y="0.266927093"/>
-				<corner x="0.668749988" y="0.217777774"/>
-				<corner x="0.659179688" y="0.592447937"/>
-				<corner x="0.254882813" y="0.62890625"/>
+				<corner x="0.278822064" y="0.855670094"/>
+				<corner x="0.659147859" y="0.879725099"/>
+				<corner x="0.659774423" y="0.216494843"/>
+				<corner x="0.268170416" y="0.232531503"/>
 			</warp>
 		</map>
 		<map id="2" display="1">
@@ -19,22 +19,22 @@
 				<controlpoint x="0" y="1"/>
 				<controlpoint x="1" y="0"/>
 				<controlpoint x="1" y="1"/>
-				<corner x="0.0581250004" y="0.374444455"/>
-				<corner x="0.213750005" y="0.362222224"/>
-				<corner x="0.245138884" y="0.67958951"/>
-				<corner x="0.0731249973" y="0.682222247"/>
+				<corner x="0.0444444455" y="0.643757164"/>
+				<corner x="0.247222215" y="0.665521204"/>
+				<corner x="0.220833331" y="0.325314999"/>
+				<corner x="0.0465277769" y="0.318442166"/>
 			</warp>
 		</map>
 		<map id="3" display="1">
-			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-842150451" srcAreaX2="-842150451" srcAreaY1="-842150451" srcAreaY2="-842150451" resolution="16" linear="0" adaptive="0">
+			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="-1" srcAreaX2="-1" srcAreaY1="-1" srcAreaY2="-1" resolution="16" linear="0" adaptive="0">
 				<controlpoint x="0" y="0"/>
 				<controlpoint x="0" y="1"/>
 				<controlpoint x="1" y="0"/>
 				<controlpoint x="1" y="1"/>
-				<corner x="0.741874993" y="0.105555557"/>
-				<corner x="0.954999983" y="0.119999997"/>
-				<corner x="0.980000019" y="0.705555558"/>
-				<corner x="0.732500017" y="0.576666653"/>
+				<corner x="0.697916687" y="0.601374567"/>
+				<corner x="0.929861128" y="0.611683846"/>
+				<corner x="0.94305557" y="0.269186705"/>
+				<corner x="0.693750024" y="0.276059568"/>
 			</warp>
 		</map>
 	</profile>

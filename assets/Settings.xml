@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <settings>
 	<AutoLayout value="0"/>
-	<RenderWindowAtStartup value="0"/>
+	<RenderWindowAtStartup value="1"/>
 	<CustomLayout value="0"/>
 	<Standalone value="0"/>
 	<MainWindowWidth value="1440"/>
 	<MainWindowHeight value="870"/>
-	<RenderWidth value="1600"/>
+	<RenderWidth value="1440"/>
 	<RenderHeight value="900"/>
-	<RenderX value="0"/>
+	<RenderX value="1600"/>
 	<RenderY value="0"/>
 	<AspectRatio value="0.75"/>
 	<FboWidth value="800"/>
@@ -32,6 +32,6 @@
 	<WindowSize value="1024"/>
 	<Info value="light4events.herokuapp.com 80"/>
 	<AssetsPath value="batchass"/>
-	<UseLineIn value="1"/>
+	<UseLineIn value="0"/>
 </settings>
 

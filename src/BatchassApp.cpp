@@ -843,6 +843,7 @@ void BatchassApp::drawMain()
 			}
 			ui::PopStyleColor(3);
 			hue++;
+			ui::SameLine();
 
 			ctrl = 48;
 			(mParameterBag->controlValues[ctrl]) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
@@ -854,7 +855,8 @@ void BatchassApp::drawMain()
 			}
 			ui::PopStyleColor(3);
 			hue++;
-			ui::SameLine();
+
+			mParameterBag->autoInvert ^= ui::Button("autoinvert");
 
 			(mParameterBag->iGreyScale) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(hue / 7.0f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
 			ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(hue / 7.0f, 0.7f, 0.7f));
@@ -1149,7 +1151,7 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
 				//BEGIN
-				//ui::SameLine();
+				/*
 				sprintf_s(buf, "WS##s%d", i);
 				if (ui::Button(buf))
 				{
@@ -1162,7 +1164,7 @@ void BatchassApp::drawMain()
 				if (ui::Button(buf))
 				{
 					mBatchass->getTexturesRef()->flipTexture(i);
-				}
+				}*/
 				if (mBatchass->getTexturesRef()->isSequence(i)) {
 					if (!mBatchass->getTexturesRef()->isLoadingFromDisk(i)) {
 						ui::SameLine();
@@ -1203,7 +1205,7 @@ void BatchassApp::drawMain()
 						mBatchass->getTexturesRef()->setPlayheadPosition(i, playheadPositions[i]);
 					}
 					speeds[i] = mBatchass->getTexturesRef()->getSpeed(i);
-					if (ui::SliderFloat("speed", &speeds[i], 0.0f, 6.0f))
+					if (ui::SliderInt("speed", &speeds[i], 1, 16))
 					{
 						mBatchass->getTexturesRef()->setSpeed(i, speeds[i]);
 					}
