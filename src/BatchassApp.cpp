@@ -431,6 +431,12 @@ void BatchassApp::drawMain()
 		if (ui::Button(buf)) mBatchass->getTexturesRef()->flipFboH(mParameterBag->mMixFboIndex);
 		//mParameterBag->iFlipHorizontally ^= ui::Button(buf);
 		if (ui::IsItemHovered()) ui::SetTooltip("Flip horizontally");
+
+		/*ui::SameLine();
+		sprintf_s(buf, "FC##fc%d", 42);
+		mParameterBag->mClear ^= ui::Button(buf);
+		if (ui::IsItemHovered()) ui::SetTooltip("Clear FBO before draw");*/
+
 		// crossfade
 		if (ui::DragFloat("Xfade", &mParameterBag->controlValues[18], 0.01f, 0.001f, 1.0f))
 		{
@@ -569,8 +575,19 @@ void BatchassApp::drawMain()
 		// mode
 		static int mode = mParameterBag->mMode;
 
-		const char* modes[] = { "Mix", "Warp", "Audio", "Sphere", "Mesh", "Live", "ABP" };
-		ui::Combo("Mode", &mode, modes, IM_ARRAYSIZE(modes));
+		//const char* modes[] = { "Mix", "Warp", "Audio", "Sphere", "Mesh", "Live", "ABP" };
+		//ui::Combo("Mode", &mode, modes, IM_ARRAYSIZE(modes));
+		if (ui::Button("Mix")) { mode = 0; }
+		ui::SameLine();
+		if (ui::Button("Warp")) { mode = 1; }
+		ui::SameLine();
+		if (ui::Button("Aud")) { mode = 2; }
+		ui::SameLine();
+		//if (ui::Button("Me")) { mode = 4; }
+		//ui::SameLine();
+		//if (ui::Button("Li")) { mode = 5; }
+		//ui::SameLine();
+		if (ui::Button("Abp")) { mode = 6; }
 
 		if (mParameterBag->mMode != mode) mBatchass->changeMode(mode);
 		// fps
@@ -1121,9 +1138,42 @@ void BatchassApp::drawMain()
 				ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(i / 7.0f, 0.6f, 0.6f));
 				ui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor::HSV(i / 7.0f, 0.7f, 0.7f));
 				ui::PushStyleColor(ImGuiCol_ButtonActive, ImColor::HSV(i / 7.0f, 0.8f, 0.8f));
-				sprintf_s(buf, "%d", mParameterBag->mWarpFbos[i].textureIndex);
+				/*sprintf_s(buf, "%d", mParameterBag->mWarpFbos[i].textureIndex);
 				if (ui::SliderInt(buf, &mParameterBag->mWarpFbos[i].textureIndex, 0, mParameterBag->MAX - 1)) {
-				}
+				}*/
+				//const char* warpInputs[] = { "mix", "left", "right", "warp1", "warp2", "preview", "abp", "live", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15" };
+				if (ui::Button("m")) mParameterBag->mWarpFbos[i].textureIndex = 0;
+				ui::SameLine();
+				if (ui::Button("l")) mParameterBag->mWarpFbos[i].textureIndex = 1;
+				ui::SameLine();
+				if (ui::Button("r")) mParameterBag->mWarpFbos[i].textureIndex = 2;
+				ui::SameLine();
+				if (ui::Button("1")) mParameterBag->mWarpFbos[i].textureIndex = 3;
+				//ui::SameLine();
+				if (ui::Button("2")) mParameterBag->mWarpFbos[i].textureIndex = 4;
+				ui::SameLine();
+				if (ui::Button("p")) mParameterBag->mWarpFbos[i].textureIndex = 5;
+				ui::SameLine();
+				if (ui::Button("a")) mParameterBag->mWarpFbos[i].textureIndex = 6;
+				ui::SameLine();
+				if (ui::Button("l")) mParameterBag->mWarpFbos[i].textureIndex = 7;
+				//ui::SameLine();
+				if (ui::Button("8")) mParameterBag->mWarpFbos[i].textureIndex = 8;
+				ui::SameLine();
+				if (ui::Button("9")) mParameterBag->mWarpFbos[i].textureIndex = 9;
+				ui::SameLine();
+				if (ui::Button("10")) mParameterBag->mWarpFbos[i].textureIndex = 10;
+				ui::SameLine();
+				if (ui::Button("11")) mParameterBag->mWarpFbos[i].textureIndex = 11;
+				//ui::SameLine();
+				if (ui::Button("12")) mParameterBag->mWarpFbos[i].textureIndex = 12;
+				ui::SameLine();
+				if (ui::Button("13")) mParameterBag->mWarpFbos[i].textureIndex = 13;
+				ui::SameLine();
+				if (ui::Button("14")) mParameterBag->mWarpFbos[i].textureIndex = 14;
+				ui::SameLine();
+				if (ui::Button("15")) mParameterBag->mWarpFbos[i].textureIndex = 15;
+
 				sprintf_s(buf, "%s", warpInputs[mParameterBag->mWarpFbos[i].textureIndex]);
 				ui::Text(buf);
 
@@ -1500,7 +1550,7 @@ void BatchassApp::drawRender()
 	// clear
 	gl::clear();
 	gl::enableAlphaBlending();
-	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, false);//20150702 was true
+	gl::setMatricesWindow(mParameterBag->mFboWidth, mParameterBag->mFboHeight, true);//20150702 was true
 	switch (mParameterBag->mMode)
 	{
 	case MODE_AUDIO:
