@@ -6,9 +6,9 @@
 	<Standalone value="0"/>
 	<MainWindowWidth value="1440"/>
 	<MainWindowHeight value="870"/>
-	<RenderWidth value="1440"/>
-	<RenderHeight value="900"/>
-	<RenderX value="1600"/>
+	<RenderWidth value="2048"/>
+	<RenderHeight value="768"/>
+	<RenderX value="1366"/>
 	<RenderY value="0"/>
 	<AspectRatio value="0.75"/>
 	<FboWidth value="800"/>
@@ -32,6 +32,6 @@
 	<WindowSize value="1024"/>
 	<Info value="light4events.herokuapp.com 80"/>
 	<AssetsPath value="batchass"/>
-	<UseLineIn value="0"/>
+	<UseLineIn value="1"/>
 </settings>
 
