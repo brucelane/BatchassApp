@@ -125,7 +125,7 @@ void BatchassApp::setup()
 	auto msdur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 	mBatchass->log("setup: " + toString(msdur.count()));
 
-
+	mBatchass->getTexturesRef()->flipFboV(mParameterBag->mMixFboIndex);
 }
 
 void BatchassApp::createRenderWindow()

@@ -41,10 +41,6 @@ ABP::ABP(ParameterBagRef aParameterBag, TexturesRef aTexturesRef)
 
 	mCam.lookAt(Vec3f(0.0f, CAMERA_Y_RANGE.first, 0.0f), Vec3f(0.0f, 0.0f, 0.0f)); 
 
-	gl::enableDepthWrite();
-	gl::enableDepthRead();
-
-
 }
 void ABP::addBrick(const bool &pressed)
 {
