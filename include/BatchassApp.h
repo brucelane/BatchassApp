@@ -103,6 +103,7 @@ private:
 	AppConsoleRef				mConsole;
 
 	// timeline
+	Anim<float>					mRenderWindowTimer;
 	Anim<float>					mTimer;
 
 	// misc
@@ -119,6 +120,9 @@ private:
 	void						drawRender();
 	void						createUIWindow();
 	bool						removeUI;
+	void						positionRenderWindow();
+	WindowRef					mRenderWindow;
+
 	// modes, should be the same as in ParameterBag
 	static const int			MODE_MIX = 0;
 	static const int			MODE_WARP = 1;

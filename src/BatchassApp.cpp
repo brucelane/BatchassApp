@@ -76,7 +76,7 @@ void BatchassApp::setup()
 	// instanciate the console class
 	mConsole = AppConsole::create(mParameterBag, mBatchass);
 
-	mTimer = 0.0f;
+	mTimer = mRenderWindowTimer = 0.0f;
 
 	// imgui
 	margin = 3;
@@ -126,6 +126,7 @@ void BatchassApp::setup()
 	mBatchass->log("setup: " + toString(msdur.count()));
 
 	mBatchass->getTexturesRef()->flipFboV(mParameterBag->mMixFboIndex);
+	mBatchass->getTexturesRef()->flipFboH(mParameterBag->mMixFboIndex);
 }
 
 void BatchassApp::createRenderWindow()
@@ -141,7 +142,6 @@ void BatchassApp::createRenderWindow()
 
 	string windowName = "render";
 
-	WindowRef	mRenderWindow;
 	mRenderWindow = createWindow(Window::Format().size(mParameterBag->iResolution.x, mParameterBag->iResolution.y));
 
 	// create instance of the window and store in vector
@@ -152,6 +152,13 @@ void BatchassApp::createRenderWindow()
 	mParameterBag->mRenderResoXY = Vec2f(mParameterBag->mRenderWidth, mParameterBag->mRenderHeight);
 	mRenderWindow->connectDraw(&BatchassApp::drawRender, this);
 	mParameterBag->mRenderPosXY = Vec2i(mParameterBag->mRenderX, mParameterBag->mRenderY);//20141214 was 0
+	mRenderWindow->setPos(50, 50);
+	mRenderWindowTimer = 0.0f;
+	timeline().apply(&mRenderWindowTimer, 1.0f, 2.0f).finishFn([&]{ positionRenderWindow(); });
+
+}
+void BatchassApp::positionRenderWindow()
+{
 	mRenderWindow->setPos(mParameterBag->mRenderX, mParameterBag->mRenderY);
 }
 void BatchassApp::deleteRenderWindows()
@@ -664,14 +671,18 @@ void BatchassApp::drawMain()
 		{
 			ui::Text("Beat %d", mParameterBag->iBeat);
 			ui::SameLine();
-			ui::Text("Time %.2f", mParameterBag->iGlobalTime);
-			//			ui::Checkbox("Playing", &mParameterBag->mIsPlaying);
+			ui::Text(" iGT %.1f", mParameterBag->iGlobalTime);
 
-			ui::Text("Tempo %.2f", mParameterBag->mTempo);
-			if (ui::Button("Tap tempo")) { mBatchass->tapTempo(); }
+			ui::Text("T %.1f", mParameterBag->mTempo);
 			ui::SameLine();
-			if (ui::Button("Time tempo")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
+			sprintf_s(buf, "Dt %.1f", mParameterBag->iDeltaTime);
+			if (ui::Button(buf)) { mParameterBag->iDeltaTime = 60 / mParameterBag->mTempo; }
 
+			if (ui::Button("Tap")) { mBatchass->tapTempo(); }
+			ui::SameLine();
+			(mParameterBag->mUseTimeWithTempo) ? ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(0.3f, 1.0f, 0.5f)) : ui::PushStyleColor(ImGuiCol_Button, ImColor::HSV(1.0f, 0.1f, 0.1f));
+			if (ui::Button("Use Time")) { mParameterBag->mUseTimeWithTempo = !mParameterBag->mUseTimeWithTempo; }
+			ui::PopStyleColor(1);
 			//void Batchass::setTimeFactor(const int &aTimeFactor)
 			ui::SliderFloat("time x", &mParameterBag->iTimeFactor, 0.0001f, 32.0f, "%.1f");
 
@@ -692,7 +703,6 @@ void BatchassApp::drawMain()
 			if (mParameterBag->maxVolume > 240.0) ui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
 			ui::PlotLines("Volume", &values.front(), (int)values.size(), values_offset, toString(mBatchass->formatFloat(mParameterBag->maxVolume)).c_str(), 0.0f, 255.0f, ImVec2(0, 30));
 			if (mParameterBag->maxVolume > 240.0) ui::PopStyleColor();
-			ui::Text("Time %.2f", mParameterBag->iGlobalTime);
 			ui::Text("Track %s %.2f", mParameterBag->mTrackName.c_str(), mParameterBag->liveMeter);
 
 			if (ui::Button("x##spdx")) { mParameterBag->iSpeedMultiplier = 1.0; }
@@ -778,6 +788,7 @@ void BatchassApp::drawMain()
 
 	}
 #pragma endregion MIDI
+
 #pragma region Global
 
 	ui::SetNextWindowSize(ImVec2(largeW, displayHeight), ImGuiSetCond_Once);
@@ -1662,6 +1673,7 @@ void BatchassApp::fileDrop(FileDropEvent event)
 			if (mParameterBag->mOSCEnabled) mOSC->sendOSCStringMessage("/fs", 0, fs, name);
 			}*/
 			// save thumb
+			mTimer = 0.0f;
 			timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ saveThumb(); });
 		}
 	}
@@ -1736,6 +1748,7 @@ void BatchassApp::fileDrop(FileDropEvent event)
 	if (mShaders->loadPixelFrag(mFile))
 	{
 	mParameterBag->controlValues[22] = 1.0f;
+	mTimer = 0.0f;
 	timeline().apply(&mTimer, 1.0f, 1.0f).finishFn([&]{ save(); });
 	}
 	if (mCodeEditor) mCodeEditor->fileDrop(event);
