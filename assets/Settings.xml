@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <settings>
 	<AutoLayout value="0"/>
-	<RenderWindowAtStartup value="1"/>
+	<RenderWindowAtStartup value="0"/>
 	<CustomLayout value="0"/>
 	<Standalone value="0"/>
 	<MainWindowWidth value="1440"/>
 	<MainWindowHeight value="870"/>
-	<RenderWidth value="2048"/>
-	<RenderHeight value="768"/>
-	<RenderX value="1366"/>
+	<RenderWidth value="1440"/>
+	<RenderHeight value="900"/>
+	<RenderX value="1600"/>
 	<RenderY value="0"/>
 	<AspectRatio value="0.75"/>
 	<FboWidth value="800"/>
@@ -25,13 +25,13 @@
 	<CursorVisible value="1"/>
 	<IsOSCSender value="0"/>
 	<AreWebSocketsEnabledAtStartup value="1"/>
-	<IsWebSocketsServer value="1"/>
-	<WebSocketsHost value="192.168.0.18"/>
-	<WebSocketsPort value="11111"/>
+	<IsWebSocketsServer value="0"/>
+	<WebSocketsHost value="192.168.0.35"/>
+	<WebSocketsPort value="9002"/>
 	<FftSize value="512"/>
 	<WindowSize value="1024"/>
 	<Info value="light4events.herokuapp.com 80"/>
-	<AssetsPath value="batchass"/>
+	<AssetsPath value="jef"/>
 	<UseLineIn value="1"/>
 </settings>
 

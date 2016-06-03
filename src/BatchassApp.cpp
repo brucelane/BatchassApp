@@ -92,7 +92,7 @@ void BatchassApp::setup()
 	mouseGlobal = false;
 	static float f = 0.0f;
 
-	showConsole = showGlobal = showTextures = showAudio = showMidi = showChannels = showShaders = true;
+	showTextures = showConsole = showGlobal = showAudio = showMidi = showChannels = showShaders = true;
 	showTest = showTheme = showOSC = showFbos = false;
 
 	// set ui window and io events callbacks
@@ -155,7 +155,6 @@ void BatchassApp::createRenderWindow()
 	mRenderWindow->setPos(50, 50);
 	mRenderWindowTimer = 0.0f;
 	timeline().apply(&mRenderWindowTimer, 1.0f, 2.0f).finishFn([&]{ positionRenderWindow(); });
-
 }
 void BatchassApp::positionRenderWindow()
 {
