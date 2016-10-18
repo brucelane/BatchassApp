@@ -23,8 +23,8 @@ void BatchassApp::prepareSettings(Settings* settings)
 	//settings->setWindowPos(Vec2i(w - mParameterBag->mMainWindowWidth, 0));
 	settings->setWindowPos(Vec2i(0, 0));
 
-	settings->setResizable(false);
-	settings->setBorderless();
+	//settings->setResizable(false);
+	//settings->setBorderless();
 
 	// if mStandalone, put on the 2nd screen
 	if (mParameterBag->mStandalone)
@@ -1896,25 +1896,8 @@ void BatchassApp::keyDown(KeyEvent event)
 	mParameterBag->newMsg = true;
 	mParameterBag->mMsg = toString(event.getChar()) + " " + toString(event.getCode());
 	if (mParameterBag->mMode == mParameterBag->MODE_WARP)
-	{
-		handled = true;
-		if (keyCode == 27)
-		{
-			// ESCAPE pressed
-			mParameterBag->save();
-			//mBatchass->shutdownLoader(); // Not used yet(loading shaders in a different thread
-			ui::Shutdown();
-			mBatchass->shutdown();
-			quit();
-		}
-
+	{		
 		mBatchass->getWarpsRef()->keyDown(event);
-		switch (event.getCode())
-		{
-		case ci::app::KeyEvent::KEY_c:
-			mBatchass->createWarp();
-			break;
-		}
 	}
 	if (!handled && (keyCode > 255 && keyCode < 265))
 	{
@@ -1926,7 +1909,7 @@ void BatchassApp::keyDown(KeyEvent event)
 
 		switch (event.getCode())
 		{
-		case ci::app::KeyEvent::KEY_n:
+		case ci::app::KeyEvent::KEY_x:
 			mBatchass->changeMode(mParameterBag->MODE_MIX);
 			break;
 		case ci::app::KeyEvent::KEY_a:
@@ -1990,7 +1973,6 @@ void BatchassApp::keyDown(KeyEvent event)
 			//mBatchass->shutdownLoader(); // Not used yet(loading shaders in a different thread
 			ui::Shutdown();
 			mBatchass->shutdown();
-
 			quit();
 			break;
 		case ci::app::KeyEvent::KEY_0:
@@ -2039,7 +2021,17 @@ void BatchassApp::keyDown(KeyEvent event)
 			textureIndex--;
 			mBatchass->assignTextureToChannel(textureIndex, mParameterBag->selectedChannel);
 			break;
-
+		case KeyEvent::KEY_PAGEDOWN:
+			// crossfade right
+			if (mParameterBag->controlValues[18] < 1.0) mParameterBag->controlValues[18] += 0.1;
+			break;
+		case KeyEvent::KEY_PAGEUP:
+			// crossfade left
+			if (mParameterBag->controlValues[18] > 0.0) mParameterBag->controlValues[18] -= 0.1;
+			break;
+		case ci::app::KeyEvent::KEY_n:
+			mBatchass->createWarp();
+			break;
 		default:
 			break;
 		}

@@ -55,102 +55,6 @@ uniform float       iBadTv;					// badtv if > 0.
 const 	float 		  PI = 3.14159265;
 // uniforms end
 
-// global functions begin
-const float kCharBlank = 12.0;
-const float kCharMinus = 11.0;
-const float kCharDecimalPoint = 10.0;
-//-----------------------------------------------------------------
-// Digit drawing function by P_Malin (https://www.shadertoy.com/view/4sf3RN)
-float SampleDigit(const in float n, const in vec2 vUV)
-{		
-	if(vUV.x  < 0.0) return 0.0;
-	if(vUV.y  < 0.0) return 0.0;
-	if(vUV.x >= 1.0) return 0.0;
-	if(vUV.y >= 1.0) return 0.0;
-	
-	float data = 0.0;
-	
-	     if(n < 0.5) data = 7.0 + 5.0*16.0 + 5.0*256.0 + 5.0*4096.0 + 7.0*65536.0;
-	else if(n < 1.5) data = 2.0 + 2.0*16.0 + 2.0*256.0 + 2.0*4096.0 + 2.0*65536.0;
-	else if(n < 2.5) data = 7.0 + 1.0*16.0 + 7.0*256.0 + 4.0*4096.0 + 7.0*65536.0;
-	else if(n < 3.5) data = 7.0 + 4.0*16.0 + 7.0*256.0 + 4.0*4096.0 + 7.0*65536.0;
-	else if(n < 4.5) data = 4.0 + 7.0*16.0 + 5.0*256.0 + 1.0*4096.0 + 1.0*65536.0;
-	else if(n < 5.5) data = 7.0 + 4.0*16.0 + 7.0*256.0 + 1.0*4096.0 + 7.0*65536.0;
-	else if(n < 6.5) data = 7.0 + 5.0*16.0 + 7.0*256.0 + 1.0*4096.0 + 7.0*65536.0;
-	else if(n < 7.5) data = 4.0 + 4.0*16.0 + 4.0*256.0 + 4.0*4096.0 + 7.0*65536.0;
-	else if(n < 8.5) data = 7.0 + 5.0*16.0 + 7.0*256.0 + 5.0*4096.0 + 7.0*65536.0;
-	else if(n < 9.5) data = 7.0 + 4.0*16.0 + 7.0*256.0 + 5.0*4096.0 + 7.0*65536.0;
-	else if(n < 10.5) data = 2.0 + 0.0 * 16.0 + 0.0 * 256.0 + 0.0 * 4096.0 + 0.0 * 65536.0;// '.'
-	else if(n < 11.5) data = 0.0 + 0.0 * 16.0 + 7.0 * 256.0 + 0.0 * 4096.0 + 0.0 * 65536.0;// '-'
-		
-	vec2 vPixel = floor(vUV * vec2(4.0, 5.0));
-	float fIndex = vPixel.x + (vPixel.y * 4.0);
-	
-	return mod(floor(data / pow(2.0, fIndex)), 2.0);
-}
-
-float PrintValue(const in vec2 vStringCharCoords, const in float fValue, const in float fMaxDigits, const in float fDecimalPlaces)
-{
-	float fAbsValue = abs(fValue);
-	
-	float fStringCharIndex = floor(vStringCharCoords.x);
-	
-	float fLog10Value = log2(fAbsValue) / log2(10.0);
-	float fBiggestDigitIndex = max(floor(fLog10Value), 0.0);
-	
-	// This is the character we are going to display for this pixel
-	float fDigitCharacter = kCharBlank;
-	
-	float fDigitIndex = fMaxDigits - fStringCharIndex;
-	if(fDigitIndex > (-fDecimalPlaces - 1.5))
-	{
-		if(fDigitIndex > fBiggestDigitIndex)
-		{
-			if(fValue < 0.0)
-			{
-				if(fDigitIndex < (fBiggestDigitIndex+1.5))
-				{
-					fDigitCharacter = kCharMinus;
-				}
-			}
-		}
-		else
-		{		
-			if(fDigitIndex == -1.0)
-			{
-				if(fDecimalPlaces > 0.0)
-				{
-					fDigitCharacter = kCharDecimalPoint;
-				}
-			}
-			else
-			{
-				if(fDigitIndex < 0.0)
-				{
-					// move along one to account for .
-					fDigitIndex += 1.0;
-				}
-
-				float fDigitValue = (fAbsValue / (pow(10.0, fDigitIndex)));
-
-				// This is inaccurate - I think because I treat each digit independently
-				// The value 2.0 gets printed as 2.09 :/
-				//fDigitCharacter = mod(floor(fDigitValue), 10.0);
-				fDigitCharacter = mod(floor(0.0001+fDigitValue), 10.0); // fix from iq
-			}		
-		}
-	}
-
-	vec2 vCharPos = vec2(fract(vStringCharCoords.x), vStringCharCoords.y);
-
-	return SampleDigit(fDigitCharacter, vCharPos);	
-}
-
-float PrintValue(const in vec2 vPixelCoords, const in vec2 vFontSize, const in float fValue, const in float fMaxDigits, const in float fDecimalPlaces)
-{
-	return PrintValue((gl_FragCoord.xy - vPixelCoords) / vFontSize, fValue, fMaxDigits, fDecimalPlaces);
-}
-
 vec3 spotLight( vec3 curSample )
 {
 
@@ -248,36 +152,6 @@ vec4 trixels( vec2 inUV, sampler2D tex )
    	return rtn;
 }
 // trixels end
-// Squirclimation https://www.shadertoy.com/view/Ml23DW begin
-vec4 grid( vec2 inUV, sampler2D tex )
-{    
-    vec2 uv = (floor(gl_FragCoord.xy/iGridSize)*iGridSize)/ iResolution.xy;
-    vec3 texColor;
-
-    texColor = texture2D(tex, uv).xyz;
-    
-    float diff = pow(distance(texColor,vec3(0.0,1.0,0.0)),8.0); 
-    diff = smoothstep(0.0,1.5,diff);
-    texColor = mix(iBackgroundColor,texColor,diff);
-    
-    float texLum = dot(vec3(0.2126,0.7152,0.0722),texColor);
-    
-    vec3 color = iBackgroundColor;
-    
-    vec2 ppos = (inUV - uv)/(vec2(iGridSize)/iResolution.xy);
-  
-    float power = texLum*texLum*16.0;
-    float radius = 0.5;
-    float dist = pow(abs(ppos.x-0.5),power) + pow(abs(ppos.y - 0.5),power);
-    
-    if( dist < pow(radius,power))
-    {
-      color = texColor;
-    }
-    
-    return vec4( color.r, color.g, color.b, 1.0 ); 
-}
-// Squirclimation end
 // global functions end
 
 // left main lines begin
@@ -296,11 +170,6 @@ vec3 shaderLeft(vec2 uv)
   if (iTrixels > 0.0) 
   {
         left = trixels( uv, iChannel0 );
-  }
-  // Grid
-  if (iGridSize > 0.0) 
-  {
-        left = grid( uv, iChannel0 );
   }
 	return vec3( left.r, left.g, left.b );
 }
@@ -323,12 +192,6 @@ vec3 shaderRight(vec2 uv)
 	{
       	right = trixels( uv, iChannel1 );
 	}
-  	// Grid
-  	if (iGridSize > 0.0) 
-  	{
-        right = grid( uv, iChannel1 );
-  	}
-
 	return vec3( right.r, right.g, right.b );
 }
 

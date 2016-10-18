@@ -2,15 +2,15 @@
 <warpconfig version="1.0" profile="default">
 	<profile name="default">
 		<map id="1" display="1">
-			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="0" srcAreaX2="0" srcAreaY1="1" srcAreaY2="1" resolution="16" linear="0" adaptive="0">
+			<warp method="perspectivebilinear" width="2" height="2" brightness="1" srcAreaX1="4259932" srcAreaX2="6357060" srcAreaY1="7340144" srcAreaY2="6357108" resolution="16" linear="0" adaptive="0">
 				<controlpoint x="0" y="0"/>
 				<controlpoint x="0" y="1"/>
 				<controlpoint x="1" y="0"/>
 				<controlpoint x="1" y="1"/>
-				<corner x="0" y="0"/>
-				<corner x="1" y="0"/>
-				<corner x="1" y="1"/>
-				<corner x="0" y="1"/>
+				<corner x="0.0126953125" y="0.157552078"/>
+				<corner x="0.9765625" y="0.16796875"/>
+				<corner x="1.00292969" y="0.703125"/>
+				<corner x="-0.0068359375" y="0.670572937"/>
 			</warp>
 		</map>
 	</profile>
